@@ -4,7 +4,7 @@ LabelImg is a graphical image annotation tool
 
 It is written in Python and uses Qt for its graphical interface.
 
-The annotation file will be saved as a XML file. The annotation format is Piscal VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
+The annotation file will be saved as a XML file. The annotation format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
 
 ## Dependencies
 Requires at least [Python 2.6](http://www.python.org/getit/) and has been tested with [PyQt

@@ -51,10 +51,10 @@ class MainWindow(QMainWindow, WindowMixin):
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
-        # Save as Piscal voc xml
+        # Save as Pascal voc xml
         self.defaultSaveDir = None
-        self.usingPiscalVocFormat = True
-        if self.usingPiscalVocFormat:
+        self.usingPascalVocFormat = True
+        if self.usingPascalVocFormat:
             LabelFile.suffix = '.xml'
         # For loading all image under a directory
         self.mImgList = []
@@ -548,7 +548,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         try:
-            if self.usingPiscalVocFormat is True:
+            if self.usingPascalVocFormat is True:
                 print 'savePascalVocFormat save to:' + filename
                 lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
