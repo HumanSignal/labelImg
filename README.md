@@ -16,9 +16,9 @@ In order to build the resource and assets, you need to install python-qt4 python
 After cloning the code, you should run `make` to generate the resource file.
 
 You can then start annotating by running `./labelImg.py`. For usage
-instructions you can view the screencast tutorial from the `Help` menu.
+instructions you can see [Here](https://youtu.be/p0nR2YsCY_U)
 
 At the moment annotations are saved as a XML file. The format is Piscal VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
 
-
+You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 

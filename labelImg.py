@@ -66,7 +66,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self._noSelectionSlot = False
         self._beginner = True
         self.screencastViewer = "firefox"
-        self.screencast = "http://www.google.com"
+        self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self)
