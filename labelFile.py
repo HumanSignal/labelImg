@@ -3,7 +3,7 @@ import os.path
 import numpy
 import Image
 import sys
-from piscal_voc_writer import PiscalVocWriter
+from pascal_voc_writer import PascalVocWriter
 from base64 import b64encode, b64decode
 
 class LabelFileError(Exception):
@@ -59,7 +59,7 @@ class LabelFile(object):
         imgFileName = os.path.basename(imagePath)
         imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
         imageShape = numpy.asarray(Image.open(imagePath)).shape
-        writer = PiscalVocWriter(imgFolderName, imgFileNameWithoutExt,\
+        writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,\
                                  imageShape, localImgPath=imagePath)
         bSave = False
         for shape in shapes:
