@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-
+import _init_path
 import os.path
 import re
 import sys
