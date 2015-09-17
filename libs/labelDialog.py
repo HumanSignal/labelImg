@@ -3,9 +3,6 @@ from PyQt4.QtCore import *
 
 from lib import newIcon, labelValidator
 
-# TODO:
-# - Calculate optimal position so as not to go out of screen area.
-
 BB = QDialogButtonBox
 
 class LabelDialog(QDialog):
