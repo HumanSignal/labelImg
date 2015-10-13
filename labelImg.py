@@ -68,8 +68,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
+        # Martin Kersner, 2015/10/13
+        # Each class name should be on its own line.
+        self.predefined_classes = []
+        if (filename != None):
+            with open(filename) as f:
+                for line in f:
+                    self.predefined_classes.append(line.split("\n")[0])
+
         # Main widgets and related state.
-        self.labelDialog = LabelDialog(parent=self)
+        self.labelDialog = LabelDialog(parent=self, predefined_classes=self.predefined_classes)
 
         self.labelList = QListWidget()
         self.itemsToShapes = {}
@@ -126,7 +134,7 @@ class MainWindow(QMainWindow, WindowMixin):
         action = partial(newAction, self)
         quit = action('&Quit', self.close,
                 'Ctrl+Q', 'quit', u'Quit application')
-        open = action('&Open', self.openFile,
+        openfile = action('&Open', self.openFile,
                 'Ctrl+O', 'open', u'Open image or label file')
 
         opendir = action('&Open Dir', self.openDir,
@@ -234,7 +242,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.customContextMenuRequested.connect(self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(save=save, saveAs=saveAs, open=openfile, close=close,
                 lineColor=color1, fillColor=color2,
                 create=create, delete=delete, edit=edit, copy=copy,
                 createMode=createMode, editMode=editMode, advancedMode=advancedMode,
@@ -242,7 +250,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                 fitWindow=fitWindow, fitWidth=fitWidth,
                 zoomActions=zoomActions,
-                fileMenuActions=(open,opendir,save,saveAs,close,quit),
+                fileMenuActions=(openfile,opendir,save,saveAs,close,quit),
                 beginner=(), advanced=(),
                 editMenu=(edit, copy, delete, None, color1, color2),
                 beginnerContext=(create, edit, copy, delete),
@@ -260,7 +268,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 labelList=labelMenu)
 
         addActions(self.menus.file,
-                (open, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
+                (openfile, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
         addActions(self.menus.help, (help,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
@@ -278,11 +286,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
+            openfile, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, save, None,
+            openfile, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -334,7 +342,11 @@ class MainWindow(QMainWindow, WindowMixin):
         # Populate the File menu dynamically.
         self.updateFileMenu()
         # Since loading the file may take some time, make sure it runs in the background.
-        self.queueEvent(partial(self.loadFile, self.filename))
+
+        # Commented by Martin Kersner, 2015/10/13
+        # Input file is used for loading valid classes of particular annotation instead
+        # of loading image.
+        #self.queueEvent(partial(self.loadFile, self.filename)) ]
 
         # Callbacks:
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
