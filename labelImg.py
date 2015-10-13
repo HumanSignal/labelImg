@@ -817,8 +817,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 savedPath = os.path.join(str(self.defaultSaveDir), savedFileName)
                 self._saveFile(savedPath)
             else:
+                # Martin Kersner, 2015/10/13
+                img_ext = self.filename.split('.')[-1]
+                xml_filename = self.filename.replace(img_ext, "xml")
+                self._saveFile(xml_filename)
+                '''
                 self._saveFile(self.filename if self.labelFile\
                                          else self.saveFileDialog())
+                '''
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
