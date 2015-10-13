@@ -138,6 +138,10 @@ class MainWindow(QMainWindow, WindowMixin):
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
 
+        # Martin Kersner, 2015/10/13
+        openPrevImg = action('&Prev Image', self.openPrevImg,
+                'n', 'prev', u'Open Prev')
+
         save = action('&Save', self.saveFile,
                 'Ctrl+S', 'save', u'Save labels to file', enabled=False)
         saveAs = action('&Save As', self.saveFileAs,
@@ -274,7 +278,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, save, None, create, copy, delete, None,
+            open, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
@@ -340,6 +344,10 @@ class MainWindow(QMainWindow, WindowMixin):
         #self.firstStart = True
         #if self.firstStart:
         #    QWhatsThis.enterWhatsThisMode()
+
+        # Martin Kersner, 2015/10/13
+        self.number_images = 0
+        self.current_img_index = 0
 
     ## Support Functions ##
 
@@ -782,14 +790,30 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.dirname = dirpath
         self.mImgList = self.scanAllImages(dirpath)
+        self.number_images = len(self.mImgList) # Martin Kersner, 2015/10/13
         self.openNextImg()
+        self.openPrevImg() # Martin Kersner, 2015/10/13
 
     def openNextImg(self, _value=False):
         if not self.mayContinue():
             return
         if len(self.mImgList) <= 0:
             return
-        filename = self.mImgList.pop(0)
+        if ((self.current_img_index + 1) >= self.number_images):
+            return
+        self.current_img_index += 1
+        filename = self.mImgList[self.current_img_index]
+        if filename:
+            self.loadFile(filename)
+
+    # Martin Kersner, 2015/10/13
+    def openPrevImg(self, _value=False):
+        if not self.mayContinue():
+            return
+        if ((self.current_img_index - 1) < 0):
+            return
+        self.current_img_index -= 1
+        filename = self.mImgList[self.current_img_index]
         if filename:
             self.loadFile(filename)
 
