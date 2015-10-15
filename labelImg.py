@@ -76,6 +76,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 for line in f:
                     self.predefined_classes.append(line.split("\n")[0])
 
+        self.not_displayed_image = True
+
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, predefined_classes=self.predefined_classes)
 
@@ -804,15 +806,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = self.scanAllImages(dirpath)
         self.number_images = len(self.mImgList) # Martin Kersner, 2015/10/13
         self.openNextImg()
+        self.not_displayed_image = False
 
     def openNextImg(self, _value=False):
-        if not self.mayContinue():
-            return
-
         if len(self.mImgList) <= 0:
             return
 
         if ((self.current_img_index) < 0):
+            if self.automaticSave(self) == None:
+                return
+
             # the first image is shown and we want to skip to second image using next button
             self.current_img_index += 2
         else:
@@ -820,8 +823,11 @@ class MainWindow(QMainWindow, WindowMixin):
                 # the last image is shown, we dont want to get out of range
                 return
             else:
-                # proceed to next image
-                self.current_img_index += 1
+                if self.automaticSave(self) == None:
+                    return
+
+                if not self.not_displayed_image:
+                    self.current_img_index += 1 # proceed to next image
 
         filename = self.mImgList[self.current_img_index]
         if filename:
@@ -829,10 +835,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Martin Kersner, 2015/10/13
     def openPrevImg(self, _value=False):
-        if not self.mayContinue():
+        if ((self.current_img_index) <= 0):
             return
 
-        if ((self.current_img_index) <= 0):
+        if self.automaticSave(self) == None:
             return
 
         if (self.current_img_index >= self.number_images):
@@ -845,6 +851,12 @@ class MainWindow(QMainWindow, WindowMixin):
         filename = self.mImgList[self.current_img_index]
         if filename:
             self.loadFile(filename)
+
+    def automaticSave(self, _value=False):
+        if not self.not_displayed_image:
+            return self.saveFile(self) # automatic saving when proceeding to next image
+        else:
+            return True
 
     def openFile(self, _value=False):
         if not self.mayContinue():
@@ -874,6 +886,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 img_ext = self.filename.split('.')[-1]
                 xml_filename = self.filename.replace(img_ext, "xml")
                 self._saveFile(xml_filename)
+                return True
                 '''
                 self._saveFile(self.filename if self.labelFile\
                                          else self.saveFileDialog())
