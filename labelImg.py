@@ -574,11 +574,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 print 'savePascalVocFormat save to:' + filename
                 lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
-            else:
+
+                # Martin Kersner, 2015/10/15
+                # save even a label file
+                filename = filename + ".xml"
                 lf.save(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
                 self.labelFile = lf
-                self.filename = filename
+
             return True
         except LabelFileError, e:
             self.errorMessage(u'Error saving label data',
@@ -677,7 +680,11 @@ class MainWindow(QMainWindow, WindowMixin):
                             % (e, filename))
                     self.status("Error reading %s" % filename)
                     return False
-                self.imageData = self.labelFile.imageData
+
+                # Martin Kersner, 2015/10/15
+                filename = filename.replace("xml.xml", "jpg")
+                self.imageData = read(filename, None)
+
                 self.lineColor = QColor(*self.labelFile.lineColor)
                 self.fillColor = QColor(*self.labelFile.fillColor)
             else:
@@ -685,6 +692,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 # read data first and store for saving into label file.
                 self.imageData = read(filename, None)
                 self.labelFile = None
+
+                # Martin Kersner, 2015/10/15
+                filename = filename.replace("jpg", "xml.xml")
+                if QFile.exists(filename):
+                    if LabelFile.isLabelFile(filename):
+                        self.labelFile = LabelFile(filename)
+                filename = filename.replace("xml.xml", "jpg")
+
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
