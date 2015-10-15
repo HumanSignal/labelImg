@@ -804,16 +804,25 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = self.scanAllImages(dirpath)
         self.number_images = len(self.mImgList) # Martin Kersner, 2015/10/13
         self.openNextImg()
-        self.openPrevImg() # Martin Kersner, 2015/10/13
 
     def openNextImg(self, _value=False):
         if not self.mayContinue():
             return
+
         if len(self.mImgList) <= 0:
             return
-        if ((self.current_img_index + 1) >= self.number_images):
-            return
-        self.current_img_index += 1
+
+        if ((self.current_img_index) < 0):
+            # the first image is shown and we want to skip to second image using next button
+            self.current_img_index += 2
+        else:
+            if ((self.current_img_index + 1) >= self.number_images):
+                # the last image is shown, we dont want to get out of range
+                return
+            else:
+                # proceed to next image
+                self.current_img_index += 1
+
         filename = self.mImgList[self.current_img_index]
         if filename:
             self.loadFile(filename)
@@ -822,9 +831,17 @@ class MainWindow(QMainWindow, WindowMixin):
     def openPrevImg(self, _value=False):
         if not self.mayContinue():
             return
-        if ((self.current_img_index - 1) < 0):
+
+        if ((self.current_img_index) <= 0):
             return
-        self.current_img_index -= 1
+
+        if (self.current_img_index >= self.number_images):
+            # the last image is shown and we want to skip to previous one
+            self.current_img_index -= 2
+        else:
+            # proceed to previous image
+            self.current_img_index -= 1
+
         filename = self.mImgList[self.current_img_index]
         if filename:
             self.loadFile(filename)
