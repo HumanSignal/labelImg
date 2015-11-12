@@ -72,6 +72,7 @@ class LabelFile(object):
             points = shape['points']
             label = shape['label']
             bndbox = LabelFile.convertPoints2BndBox(points)
+            print bndbox # KERSNEER
             writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label)
             bSave = True
 
@@ -97,4 +98,14 @@ class LabelFile(object):
             ymin = min(y,ymin)
             xmax = max(x,xmax)
             ymax = max(y,ymax)
+
+        # Martin Kersner, 2015/11/12
+        # 0-valued coordinates of BB caused an error while
+        # training faster-rcnn object detector.
+        if (xmin < 1):
+            xmin = 1
+
+        if (ymin < 1):
+            ymin = 1
+
         return (int(xmin), int(ymin), int(xmax), int(ymax))
