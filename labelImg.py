@@ -68,8 +68,18 @@ class MainWindow(QMainWindow, WindowMixin):
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
+        # Martin Kersner, 2015/10/13
+        # Each class name should be on its own line.
+        self.predefined_classes = []
+        if (filename != None):
+            with open(filename) as f:
+                for line in f:
+                    self.predefined_classes.append(line.split("\n")[0])
+
+        self.not_displayed_image = True
+
         # Main widgets and related state.
-        self.labelDialog = LabelDialog(parent=self)
+        self.labelDialog = LabelDialog(parent=self, predefined_classes=self.predefined_classes)
 
         self.labelList = QListWidget()
         self.itemsToShapes = {}
@@ -126,7 +136,7 @@ class MainWindow(QMainWindow, WindowMixin):
         action = partial(newAction, self)
         quit = action('&Quit', self.close,
                 'Ctrl+Q', 'quit', u'Quit application')
-        open = action('&Open', self.openFile,
+        openfile = action('&Open', self.openFile,
                 'Ctrl+O', 'open', u'Open image or label file')
 
         opendir = action('&Open Dir', self.openDir,
@@ -137,6 +147,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
+
+        # Martin Kersner, 2015/10/13
+        openPrevImg = action('&Prev Image', self.openPrevImg,
+                'n', 'prev', u'Open Prev')
 
         save = action('&Save', self.saveFile,
                 'Ctrl+S', 'save', u'Save labels to file', enabled=False)
@@ -230,7 +244,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.customContextMenuRequested.connect(self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(save=save, saveAs=saveAs, open=openfile, close=close,
                 lineColor=color1, fillColor=color2,
                 create=create, delete=delete, edit=edit, copy=copy,
                 createMode=createMode, editMode=editMode, advancedMode=advancedMode,
@@ -238,7 +252,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                 fitWindow=fitWindow, fitWidth=fitWidth,
                 zoomActions=zoomActions,
-                fileMenuActions=(open,opendir,save,saveAs,close,quit),
+                fileMenuActions=(openfile,opendir,save,saveAs,close,quit),
                 beginner=(), advanced=(),
                 editMenu=(edit, copy, delete, None, color1, color2),
                 beginnerContext=(create, edit, copy, delete),
@@ -256,7 +270,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 labelList=labelMenu)
 
         addActions(self.menus.file,
-                (open, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
+                (openfile, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
         addActions(self.menus.help, (help,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
@@ -274,11 +288,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, save, None, create, copy, delete, None,
+            openfile, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, save, None,
+            openfile, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -330,7 +344,11 @@ class MainWindow(QMainWindow, WindowMixin):
         # Populate the File menu dynamically.
         self.updateFileMenu()
         # Since loading the file may take some time, make sure it runs in the background.
-        self.queueEvent(partial(self.loadFile, self.filename))
+
+        # Commented by Martin Kersner, 2015/10/13
+        # Input file is used for loading valid classes of particular annotation instead
+        # of loading image.
+        #self.queueEvent(partial(self.loadFile, self.filename)) ]
 
         # Callbacks:
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
@@ -340,6 +358,10 @@ class MainWindow(QMainWindow, WindowMixin):
         #self.firstStart = True
         #if self.firstStart:
         #    QWhatsThis.enterWhatsThisMode()
+
+        # Martin Kersner, 2015/10/13
+        self.number_images = 0
+        self.current_img_index = 0
 
     ## Support Functions ##
 
@@ -552,11 +574,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 print 'savePascalVocFormat save to:' + filename
                 lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
-            else:
+
+                # Martin Kersner, 2015/10/15
+                # save even a label file
+                filename = filename + ".xml"
                 lf.save(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
                 self.labelFile = lf
-                self.filename = filename
+
             return True
         except LabelFileError, e:
             self.errorMessage(u'Error saving label data',
@@ -655,7 +680,11 @@ class MainWindow(QMainWindow, WindowMixin):
                             % (e, filename))
                     self.status("Error reading %s" % filename)
                     return False
-                self.imageData = self.labelFile.imageData
+
+                # Martin Kersner, 2015/10/15
+                filename = filename.replace("xml.xml", "jpg")
+                self.imageData = read(filename, None)
+
                 self.lineColor = QColor(*self.labelFile.lineColor)
                 self.fillColor = QColor(*self.labelFile.fillColor)
             else:
@@ -663,6 +692,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 # read data first and store for saving into label file.
                 self.imageData = read(filename, None)
                 self.labelFile = None
+
+                # Martin Kersner, 2015/10/15
+                filename = filename.replace("jpg", "xml.xml")
+                if QFile.exists(filename):
+                    if LabelFile.isLabelFile(filename):
+                        self.labelFile = LabelFile(filename)
+                filename = filename.replace("xml.xml", "jpg")
+
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
@@ -782,16 +819,59 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.dirname = dirpath
         self.mImgList = self.scanAllImages(dirpath)
+        self.number_images = len(self.mImgList) # Martin Kersner, 2015/10/13
         self.openNextImg()
+        self.not_displayed_image = False
 
     def openNextImg(self, _value=False):
-        if not self.mayContinue():
-            return
         if len(self.mImgList) <= 0:
             return
-        filename = self.mImgList.pop(0)
+
+        if ((self.current_img_index) < 0):
+            if self.automaticSave(self) == None:
+                return
+
+            # the first image is shown and we want to skip to second image using next button
+            self.current_img_index += 2
+        else:
+            if ((self.current_img_index + 1) >= self.number_images):
+                # the last image is shown, we dont want to get out of range
+                return
+            else:
+                if self.automaticSave(self) == None:
+                    return
+
+                if not self.not_displayed_image:
+                    self.current_img_index += 1 # proceed to next image
+
+        filename = self.mImgList[self.current_img_index]
         if filename:
             self.loadFile(filename)
+
+    # Martin Kersner, 2015/10/13
+    def openPrevImg(self, _value=False):
+        if ((self.current_img_index) <= 0):
+            return
+
+        if self.automaticSave(self) == None:
+            return
+
+        if (self.current_img_index >= self.number_images):
+            # the last image is shown and we want to skip to previous one
+            self.current_img_index -= 2
+        else:
+            # proceed to previous image
+            self.current_img_index -= 1
+
+        filename = self.mImgList[self.current_img_index]
+        if filename:
+            self.loadFile(filename)
+
+    def automaticSave(self, _value=False):
+        if not self.not_displayed_image:
+            return self.saveFile(self) # automatic saving when proceeding to next image
+        else:
+            return True
 
     def openFile(self, _value=False):
         if not self.mayContinue():
@@ -817,8 +897,15 @@ class MainWindow(QMainWindow, WindowMixin):
                 savedPath = os.path.join(str(self.defaultSaveDir), savedFileName)
                 self._saveFile(savedPath)
             else:
+                # Martin Kersner, 2015/10/13
+                img_ext = self.filename.split('.')[-1]
+                xml_filename = self.filename.replace(img_ext, "xml")
+                self._saveFile(xml_filename)
+                return True
+                '''
                 self._saveFile(self.filename if self.labelFile\
                                          else self.saveFileDialog())
+                '''
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"

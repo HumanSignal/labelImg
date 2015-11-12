@@ -55,17 +55,24 @@ class LabelFile(object):
     def savePascalVocFormat(self, filename, shapes, imagePath, imageData,
             lineColor=None, fillColor=None, databaseSrc=None):
         imgFolderPath = os.path.dirname(imagePath)
-        imgFolderName = os.path.split(imgFolderPath)[-1]
+
+        # Folder name is implicitly set to VOC2007 for purpose of annotation
+        # used in detection using py_faster_rcnn.
+        #imgFolderName = os.path.split(imgFolderPath)[-1]
+        imgFolderName = "VOC2007"
+
         imgFileName = os.path.basename(imagePath)
         imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
         imageShape = numpy.asarray(Image.open(imagePath)).shape
-        writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,\
+        # Martin Kersner, 2015/11/03
+        writer = PascalVocWriter(imgFolderName, imgFileName,\
                                  imageShape, localImgPath=imagePath)
         bSave = False
         for shape in shapes:
             points = shape['points']
             label = shape['label']
-            bndbox = LabelFile.convertPoints2BndBox(points) 
+            bndbox = LabelFile.convertPoints2BndBox(points)
+            print bndbox # KERSNEER
             writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label)
             bSave = True
 
@@ -87,8 +94,18 @@ class LabelFile(object):
         for p in points:
             x = p[0]
             y = p[1]
-            xmin = min(x,xmin) 
-            ymin = min(y,ymin) 
-            xmax = max(x,xmax) 
-            ymax = max(y,ymax) 
+            xmin = min(x,xmin)
+            ymin = min(y,ymin)
+            xmax = max(x,xmax)
+            ymax = max(y,ymax)
+
+        # Martin Kersner, 2015/11/12
+        # 0-valued coordinates of BB caused an error while
+        # training faster-rcnn object detector.
+        if (xmin < 1):
+            xmin = 1
+
+        if (ymin < 1):
+            ymin = 1
+
         return (int(xmin), int(ymin), int(xmax), int(ymax))

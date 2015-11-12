@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from xml.dom import minidom
 from lxml import etree
+import re # Martin Kersner, 2015/11/03
 
 class PascalVocWriter:
     def __init__(self, foldername, filename, imgSize, databaseSrc='Unknown', localImgPath=None):
@@ -11,13 +12,12 @@ class PascalVocWriter:
         self.databaseSrc = databaseSrc
         self.imgSize = imgSize
         self.boxlist = []
-        self.localImgPath = localImgPath
 
     def prettify(self, elem):
         """
             Return a pretty-printed XML string for the Element.
         """
-        rough_string = ElementTree.tostring(elem,'utf8')
+        rough_string = ElementTree.tostring(elem, 'utf-8')
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="\t")
 
@@ -38,9 +38,6 @@ class PascalVocWriter:
 
         filename = SubElement(top,'filename')
         filename.text = self.filename
-
-        localImgPath = SubElement(top,'path')
-        localImgPath.text = self.localImgPath
 
         source = SubElement(top,'source')
         database = SubElement(source,'database')
@@ -97,7 +94,12 @@ class PascalVocWriter:
         else:
             out_file = open(targetFile, 'w')
 
-        out_file.write(self.prettify(root))
+        generated_xml = self.prettify(root)
+        xml_split = generated_xml.split("\n")
+        xml_split.pop(0)
+        xml_without_declaration = "\n".join(xml_split)
+
+        out_file.write(xml_without_declaration)
         out_file.close()
 
 """
