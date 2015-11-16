@@ -853,6 +853,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if filename and self.saveLabels(filename):
             self.addRecentFile(filename)
             self.setClean()
+            self.statusBar().showMessage('Saved to  %s' % filename)
+            self.statusBar().show()
 
     def closeFile(self, _value=False):
         if not self.mayContinue():
