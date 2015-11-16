@@ -316,6 +316,9 @@ class MainWindow(QMainWindow, WindowMixin):
         saveDir = settings.get('savedir', None)
         if os.path.exists(unicode(saveDir)):
             self.defaultSaveDir = unicode(saveDir)
+            self.statusBar().showMessage('%s started. Annotation will be saved to %s' %(__appname__, self.defaultSaveDir))
+            self.statusBar().show()
+
         # or simply:
         #self.restoreGeometry(settings['window/geometry']
         self.restoreState(settings['window/state'])
@@ -749,7 +752,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def scanAllImages(self, folderPath):
-        extensions = {'.jpeg','.jpg', '.png'}
+        extensions = {'.jpeg','.jpg', '.png', '.bmp'}
         images = []
 
         for root, dirs, files in os.walk(folderPath):
@@ -770,6 +773,8 @@ class MainWindow(QMainWindow, WindowMixin):
             '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                 | QFileDialog.DontResolveSymlinks))
         self.defaultSaveDir = str(dirpath)
+        self.statusBar().showMessage('%s . Annotation will be saved to %s' %('Change saved folder', self.defaultSaveDir))
+        self.statusBar().show()
 
     def openDir(self, _value=False):
         if not self.mayContinue():
