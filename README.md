@@ -1,6 +1,6 @@
 # LabelImg
 
-LabelImg is a graphical image annotation tool
+LabelImg is a graphical image annotation tool. The source mainly comes from [labelme](labelme.csail.mit.edu).
 
 It is written in Python and uses Qt for its graphical interface.
 
@@ -26,3 +26,11 @@ At the moment annotations are saved as a XML file. The format is PASCAL VOC form
 
 You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 
+
+### Hotkeys
+
+* Ctrl + n : Create a bounding box
+
+* Ctrl + s : Save
+
+* n : Next image
