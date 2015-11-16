@@ -305,6 +305,7 @@ class MainWindow(QMainWindow, WindowMixin):
             'window/geometry': QByteArray,
             # Docks and toolbars:
             'window/state': QByteArray,
+            'savedir': QString,
         }
         self.settings = settings = Settings(types)
         self.recentFiles = list(settings['recentFiles'])
@@ -737,7 +738,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.defaultSaveDir is not None:
             s['savedir'] = str(self.defaultSaveDir)
         else:
-            s['savedir'] = ''
+            s['savedir'] = ""
         # ask the use for where to save the labels
         #s['window/geometry'] = self.saveGeometry()
 
@@ -785,6 +786,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.openNextImg()
 
     def openNextImg(self, _value=False):
+        if self.dirty == True:
+            print 'dirty'
         if not self.mayContinue():
             return
         if len(self.mImgList) <= 0:
