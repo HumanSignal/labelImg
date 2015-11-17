@@ -60,6 +60,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = []
         self.dirname = None
         self.labelHist = []
+        self.lastOpenDir = None
 
         # Whether we need to save or not.
         self.dirty = False
@@ -133,8 +134,8 @@ class MainWindow(QMainWindow, WindowMixin):
         opendir = action('&Open Dir', self.openDir,
                 'Ctrl+u', 'open', u'Open Dir')
 
-        changeSavedir = action('&Change default save dir', self.changeSavedir,
-                'Ctrl+r', 'open', u'Change default save dir')
+        changeSavedir = action('&Change default saved Annotation dir', self.changeSavedir,
+                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
@@ -307,6 +308,7 @@ class MainWindow(QMainWindow, WindowMixin):
             # Docks and toolbars:
             'window/state': QByteArray,
             'savedir': QString,
+            'lastOpenDir': QString,
         }
         self.settings = settings = Settings(types)
         self.recentFiles = list(settings['recentFiles'])
@@ -315,6 +317,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.resize(size)
         self.move(position)
         saveDir = settings.get('savedir', None)
+        self.lastOpenDir = settings.get('lastOpenDir', None)
         if os.path.exists(unicode(saveDir)):
             self.defaultSaveDir = unicode(saveDir)
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %(__appname__, self.defaultSaveDir))
@@ -746,11 +749,17 @@ class MainWindow(QMainWindow, WindowMixin):
         s['fill/color'] = self.fillColor
         s['recentFiles'] = self.recentFiles
         s['advanced'] = not self._beginner
-        if self.defaultSaveDir is not None:
+        if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
             s['savedir'] = str(self.defaultSaveDir)
         else:
             s['savedir'] = ""
-        # ask the use for where to save the labels
+
+        if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
+            s['lastOpenDir'] = str(self.lastOpenDir)
+        else:
+            s['lastOpenDir'] = ""
+
+        #ask the use for where to save the labels
         #s['window/geometry'] = self.saveGeometry()
 
     ## User Dialogs ##
@@ -771,28 +780,37 @@ class MainWindow(QMainWindow, WindowMixin):
         return images
 
     def changeSavedir(self, _value=False):
-        path = os.path.dirname(unicode(self.filename))\
-                if self.filename else '.'
-
-        if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)) > 0:
+        if self.defaultSaveDir is not None:
             path = unicode(self.defaultSaveDir)
+        else:
+            path = '.'
 
         dirpath = unicode(QFileDialog.getExistingDirectory(self,
             '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                 | QFileDialog.DontResolveSymlinks))
-        self.defaultSaveDir = str(dirpath)
+
+        if dirpath is not None and len(dirpath) > 1:
+            self.defaultSaveDir = dirpath
+
         self.statusBar().showMessage('%s . Annotation will be saved to %s' %('Change saved folder', self.defaultSaveDir))
         self.statusBar().show()
 
     def openDir(self, _value=False):
         if not self.mayContinue():
             return
+
         path = os.path.dirname(unicode(self.filename))\
                 if self.filename else '.'
+
+        if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
+            path = self.lastOpenDir
 
         dirpath = unicode(QFileDialog.getExistingDirectory(self,
             '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                 | QFileDialog.DontResolveSymlinks))
+
+        if dirpath is not None and len(dirpath) > 1:
+            self.lastOpenDir = dirpath
 
         self.dirname = dirpath
         self.mImgList = self.scanAllImages(dirpath)
