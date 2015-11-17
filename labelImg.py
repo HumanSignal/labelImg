@@ -59,6 +59,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # For loading all image under a directory
         self.mImgList = []
         self.dirname = None
+        self.labelHist = []
 
         # Whether we need to save or not.
         self.dirty = False
@@ -593,6 +594,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
+        if len(self.labelHist) > 0:
+            self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
+
         text = self.labelDialog.popUp()
         if text is not None:
             self.addLabel(self.canvas.setLastLabel(text))
@@ -602,6 +606,10 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 self.actions.editMode.setEnabled(True)
             self.setDirty()
+
+
+            if text not in self.labelHist:
+                self.labelHist.append(text)
         else:
             #self.canvas.undoLastLine()
             self.canvas.resetAllLines()
@@ -790,9 +798,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
 
+    def openPrevImg(self, _value=False):
+        if not self.mayContinue():
+            return
+
+
     def openNextImg(self, _value=False):
-        if self.dirty == True:
-            print 'dirty'
         if not self.mayContinue():
             return
         if len(self.mImgList) <= 0:
