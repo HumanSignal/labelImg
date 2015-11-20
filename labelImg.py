@@ -65,13 +65,17 @@ class MainWindow(QMainWindow, WindowMixin):
         # Whether we need to save or not.
         self.dirty = False
 
+        # Enble auto saving if pressing next
+        self.autoSaving = True
         self._noSelectionSlot = False
         self._beginner = True
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
         # Main widgets and related state.
-        self.labelDialog = LabelDialog(parent=self)
+        predefined_classes = ['person', 'dog']
+        self.labelHist = predefined_classes
+        self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
 
         self.labelList = QListWidget()
         self.itemsToShapes = {}
@@ -822,8 +826,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
 
     def openNextImg(self, _value=False):
+        # Proceding next image without dialog if having any label
+        if self.autoSaving is True and self.defaultSaveDir is not None:
+            if self.dirty is True and self.hasLabels():
+                self.saveFile()
+
         if not self.mayContinue():
             return
+
         if len(self.mImgList) <= 0:
             return
         filename = self.mImgList.pop(0)

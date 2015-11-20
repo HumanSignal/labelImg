@@ -49,3 +49,4 @@ class LabelDialog(QDialog):
     def listItemClick(self, tQListWidgetItem):
         text = tQListWidgetItem.text().trimmed()
         self.edit.setText(text)
+        self.validate()
