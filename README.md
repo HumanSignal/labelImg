@@ -27,7 +27,10 @@ At the moment annotations are saved as a XML file. The format is PASCAL VOC form
 You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 
 
+
 ### Hotkeys
+
+* Ctrl + r : Change the defult target dir which saving annotation files
 
 * Ctrl + n : Create a bounding box
 
