@@ -26,7 +26,9 @@ At the moment annotations are saved as a XML file. The format is PASCAL VOC form
 
 You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 
+### Create pre-defined classes
 
+You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt) to load pre-defined classes
 
 ### Hotkeys
 
