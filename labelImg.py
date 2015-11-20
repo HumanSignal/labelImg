@@ -72,11 +72,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
+        self.loadPredefinedClasses()
         # Main widgets and related state.
-        predefined_classes = ['person', 'dog']
-        self.labelHist = predefined_classes
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
-
         self.labelList = QListWidget()
         self.itemsToShapes = {}
         self.shapesToItems = {}
@@ -981,6 +979,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.endMove(copy=False)
         self.setDirty()
 
+    def loadPredefinedClasses(self):
+        predefined_classes_path = os.path.join('data', 'predefined_classes.txt')
+        if os.path.exists(predefined_classes_path) is True:
+            with open(predefined_classes_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if self.labelHist is None:
+                        self.lablHist = [line]
+                    else:
+                        self.labelHist.append(line)
 
 class Settings(object):
     """Convenience dict-like wrapper around QSettings."""
