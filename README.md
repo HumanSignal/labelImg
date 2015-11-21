@@ -17,7 +17,7 @@ In order to build the resource and assets, you need to install pyqt4-dev-tools:
 `$ sudo apt-get install pyqt4-dev-tools`
 
 ## Usage
-After cloning the code, you should run `make` to generate the resource file.
+After cloning the code, you should run `make all` to generate the resource file.
 
 You can then start annotating by running `./labelImg.py`. For usage
 instructions you can see [Here](https://youtu.be/p0nR2YsCY_U)
@@ -30,6 +30,18 @@ You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to
 
 You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt) to load pre-defined classes
 
+### General steps from scratch
+
+* Build and launch. `make all; python labelImg.py`
+
+* Click 'Change default saved annotation folder' in Menu/File
+
+* Click 'Open Dir'
+
+* Click 'Create RectBox'
+
+The annotation will be saved to the folder you specifiy
+
 ### Hotkeys
 
 * Ctrl + r : Change the defult target dir which saving annotation files
@@ -39,3 +51,5 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 * Ctrl + s : Save
 
 * n : Next image
+
+* p : Previou image
