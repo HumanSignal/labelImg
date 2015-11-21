@@ -556,6 +556,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         points=[(p.x(), p.y()) for p in s.points])
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
+        # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
                 print 'savePascalVocFormat save to:' + filename
@@ -830,9 +831,9 @@ class MainWindow(QMainWindow, WindowMixin):
         currIndex = self.mImgList.index(self.filename)
         if currIndex -1 >= 0:
             filename = self.mImgList[currIndex-1]
+            if filename:
+                self.loadFile(filename)
 
-        if filename:
-            self.loadFile(filename)
 
 
     def openNextImg(self, _value=False):
