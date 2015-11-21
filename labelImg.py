@@ -142,6 +142,9 @@ class MainWindow(QMainWindow, WindowMixin):
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
 
+        openPrevImg = action('&Prev Image', self.openPrevImg,
+                'p', 'prev', u'Open Prev')
+
         save = action('&Save', self.saveFile,
                 'Ctrl+S', 'save', u'Save labels to file', enabled=False)
         saveAs = action('&Save As', self.saveFileAs,
@@ -278,7 +281,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, save, None, create, copy, delete, None,
+            open, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
@@ -346,10 +349,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
 
         self.populateModeActions()
-
-        #self.firstStart = True
-        #if self.firstStart:
-        #    QWhatsThis.enterWhatsThisMode()
 
     ## Support Functions ##
 
@@ -822,6 +821,19 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
 
+        if len(self.mImgList) <= 0:
+            return
+
+        if self.filename is None:
+            return
+
+        currIndex = self.mImgList.index(self.filename)
+        if currIndex -1 >= 0:
+            filename = self.mImgList[currIndex-1]
+
+        if filename:
+            self.loadFile(filename)
+
 
     def openNextImg(self, _value=False):
         # Proceding next image without dialog if having any label
@@ -834,7 +846,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
         if len(self.mImgList) <= 0:
             return
-        filename = self.mImgList.pop(0)
+
+        if self.filename is None:
+            filename = self.mImgList[0]
+        else:
+            currIndex = self.mImgList.index(self.filename)
+            if currIndex + 1 < len(self.mImgList):
+                filename = self.mImgList[currIndex+1]
+
         if filename:
             self.loadFile(filename)
 

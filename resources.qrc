@@ -26,6 +26,7 @@
 <file alias="zoom-out">icons/zoom-out.png</file>
 <file alias="delete">icons/cancel.png</file>
 <file alias="next">icons/next.png</file>
+<file alias="prev">icons/prev.png</file>
 
 </qresource>
 </RCC>
