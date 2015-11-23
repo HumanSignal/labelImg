@@ -9,7 +9,8 @@ The annotation file will be saved as a XML file. The annotation format is PASCAL
 ![](icons/demo.png)
 
 ## Dependencies
-* Linux/Ubuntu
+* Linux/Ubuntu/Mac
+
 Requires at least [Python 2.6](http://www.python.org/getit/) and has been tested with [PyQt
 4.8](http://www.riverbankcomputing.co.uk/software/pyqt/intro).
 
@@ -17,9 +18,12 @@ In order to build the resource and assets, you need to install pyqt4-dev-tools:
 
 `$ sudo apt-get install pyqt4-dev-tools`
 
+`$ make all`
+ 
 `$ ./labelImg.py`
 
 * Windows
+
 Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Open cmd and go to $labelImg, 
 
 `$ pyrcc4 -o resources.py resources.qrc`
@@ -63,3 +67,6 @@ The annotation will be saved to the folder you specifiy
 * n : Next image
 
 * p : Previous image
+
+### How to contribute
+Send a pull request and help me write setup.py to build executable file for all platforms.
