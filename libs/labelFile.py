@@ -1,7 +1,7 @@
 import json
 import os.path
 import numpy
-import Image
+import cv2
 import sys
 from pascal_voc_writer import PascalVocWriter
 from base64 import b64encode, b64decode
@@ -58,14 +58,16 @@ class LabelFile(object):
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
         imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
-        imageShape = numpy.asarray(Image.open(imagePath)).shape
+
+        img = cv2.imread(imagePath)
+        imageShape = img.shape
         writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,\
                                  imageShape, localImgPath=imagePath)
         bSave = False
         for shape in shapes:
             points = shape['points']
             label = shape['label']
-            bndbox = LabelFile.convertPoints2BndBox(points) 
+            bndbox = LabelFile.convertPoints2BndBox(points)
             writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label)
             bSave = True
 

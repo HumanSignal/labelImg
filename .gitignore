@@ -6,3 +6,7 @@ resources.py
 *.pyc
 .*.swp
 
+build/
+dist/
+
+tags
