@@ -24,7 +24,9 @@ In order to build the resource and assets, you need to install pyqt4-dev-tools:
 
 * Windows
 
-Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Open cmd and go to $labelImg, 
+Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). You can also try to download the whole neccessary executable files from [my drive](https://copy.com/oyYjFzJwPb4tKl93) and install them.
+
+Open cmd and go to $labelImg, 
 
 `$ pyrcc4 -o resources.py resources.qrc`
 
