@@ -22,6 +22,7 @@ from labelDialog import LabelDialog
 from colorDialog import ColorDialog
 from labelFile import LabelFile, LabelFileError
 from toolBar import ToolBar
+from pascal_voc_io import PascalVocReader
 
 __appname__ = 'labelImg'
 
@@ -138,6 +139,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         changeSavedir = action('&Change default saved Annotation dir', self.changeSavedir,
                 'Ctrl+r', 'open', u'Change default saved Annotation dir')
+
+        openAnnotation = action('&Open Annotation', self.openAnnotation,
+                'Ctrl+q', 'openAnnotation', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
                 'n', 'next', u'Open Next')
@@ -263,7 +267,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 labelList=labelMenu)
 
         addActions(self.menus.file,
-                (open, opendir,changeSavedir, self.menus.recentFiles, save, saveAs, close, None, quit))
+                (open, opendir,changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quit))
         addActions(self.menus.help, (help,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
@@ -797,6 +801,22 @@ class MainWindow(QMainWindow, WindowMixin):
         self.statusBar().showMessage('%s . Annotation will be saved to %s' %('Change saved folder', self.defaultSaveDir))
         self.statusBar().show()
 
+    def openAnnotation(self, _value=False):
+        path = os.path.dirname(unicode(self.filename))\
+                if self.filename else '.'
+
+        formats = ['*.%s' % unicode(fmt).lower()\
+                for fmt in QImageReader.supportedImageFormats()]
+        filters = "Open Annotation XML file (%s)" % \
+                ' '.join(formats + ['*.xml'])
+        filename = unicode(QFileDialog.getOpenFileName(self,
+            '%s - Choose a xml file' % __appname__, path, filters))
+
+        tVocParseReader = PascalVocReader(filename)
+        shapes = tVocParseReader.getShapes()
+        self.loadLabels(shapes)
+        return
+
     def openDir(self, _value=False):
         if not self.mayContinue():
             return
@@ -833,8 +853,6 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[currIndex-1]
             if filename:
                 self.loadFile(filename)
-
-
 
     def openNextImg(self, _value=False):
         # Proceding next image without dialog if having any label
@@ -1038,7 +1056,6 @@ class Settings(object):
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
-
 
 def read(filename, default=None):
     try:

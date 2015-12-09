@@ -100,6 +100,45 @@ class PascalVocWriter:
         out_file.write(self.prettify(root))
         out_file.close()
 
+
+class PascalVocReader:
+
+    def __init__(self, filepath):
+        ## shapes type:
+        ## [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color]
+        self.shapes=[]
+        self.filepath = filepath
+        self.parseXML()
+
+    def getShapes(self):
+        return self.shapes
+
+    def addShape(self, label, rect):
+        xmin = rect[0]
+        ymin = rect[1]
+        xmax = rect[2]
+        ymax = rect[3]
+        points = [(xmin,ymin), (xmin,ymax), (xmax, ymax), (xmax, ymin)]
+        self.shapes.append((label, points, None, None))
+
+    def parseXML(self):
+        assert self.filepath.endswith('.xml'), "Unsupport file format"
+        xmltree = ElementTree.parse(self.filepath).getroot()
+        filename = xmltree.find('filename').text
+
+        for object_iter in xmltree.findall('object'):
+           rects = []
+           bndbox = object_iter.find("bndbox")
+           rects.append([int(it.text) for it in bndbox])
+           label = object_iter.find('name').text
+
+           for rect in rects:
+               self.addShape(label, rect)
+        return True
+
+
+# tempParseReader = PascalVocReader('test.xml')
+# print tempParseReader.getShapes()
 """
 # Test
 tmp = PascalVocWriter('temp','test', (10,20,3))
