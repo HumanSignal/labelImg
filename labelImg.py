@@ -702,6 +702,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paintCanvas()
             self.addRecentFile(self.filename)
             self.toggleActions(True)
+
+            ## Label xml file and show bound box according to its filename
+            if self.usingPascalVocFormat is True and \
+                    self.changeSavedir is not None:
+					print 'Try to load xml file to the image'
+
             return True
         return False
 
@@ -802,6 +808,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.statusBar().show()
 
     def openAnnotation(self, _value=False):
+        if self.filename is None:
+            return
+
         path = os.path.dirname(unicode(self.filename))\
                 if self.filename else '.'
 
