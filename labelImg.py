@@ -705,8 +705,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
             ## Label xml file and show bound box according to its filename
             if self.usingPascalVocFormat is True and \
-                    self.changeSavedir is not None:
-					print 'Try to load xml file to the image'
+                    self.defaultSaveDir is not None:
+                    basename = os.path.basename(self.filename).split('.')[:-1][0]
+                    xmlPath = os.path.join(self.defaultSaveDir, basename + '.xml')
+                    self.loadPascalXMLByFilename(xmlPath)
 
             return True
         return False
@@ -813,18 +815,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
         path = os.path.dirname(unicode(self.filename))\
                 if self.filename else '.'
-
-        formats = ['*.%s' % unicode(fmt).lower()\
-                for fmt in QImageReader.supportedImageFormats()]
-        filters = "Open Annotation XML file (%s)" % \
-                ' '.join(formats + ['*.xml'])
-        filename = unicode(QFileDialog.getOpenFileName(self,
-            '%s - Choose a xml file' % __appname__, path, filters))
-
-        tVocParseReader = PascalVocReader(filename)
-        shapes = tVocParseReader.getShapes()
-        self.loadLabels(shapes)
-        return
+        if self.usingPascalVocFormat:
+            formats = ['*.%s' % unicode(fmt).lower()\
+                    for fmt in QImageReader.supportedImageFormats()]
+            filters = "Open Annotation XML file (%s)" % \
+                    ' '.join(formats + ['*.xml'])
+            filename = unicode(QFileDialog.getOpenFileName(self,
+                '%s - Choose a xml file' % __appname__, path, filters))
+            self.loadPascalXMLByFilename(filename)
 
     def openDir(self, _value=False):
         if not self.mayContinue():
@@ -1036,6 +1034,16 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.lablHist = [line]
                     else:
                         self.labelHist.append(line)
+
+    def loadPascalXMLByFilename(self, filename):
+        if self.filename is None:
+            return
+        if os.path.exists(filename) is False:
+            return
+
+        tVocParseReader = PascalVocReader(filename)
+        shapes = tVocParseReader.getShapes()
+        self.loadLabels(shapes)
 
 class Settings(object):
     """Convenience dict-like wrapper around QSettings."""
