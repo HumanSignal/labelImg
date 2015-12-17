@@ -288,7 +288,22 @@ class Canvas(QWidget):
         point = shape[index]
         if self.outOfPixmap(pos):
             pos = self.intersectionPoint(point, pos)
-        shape.moveVertexBy(index, pos - point)
+
+        shiftPos = pos - point
+        shape.moveVertexBy(index, shiftPos)
+
+        lindex = (index + 1) % 4
+        rindex = (index + 3) % 4
+        lshift = None
+        rshift = None
+        if index % 2 == 0:
+            rshift = QPointF(shiftPos.x(), 0)
+            lshift = QPointF(0, shiftPos.y())
+        else:
+            lshift = QPointF(shiftPos.x(), 0)
+            rshift = QPointF(0, shiftPos.y())
+        shape.moveVertexBy(rindex, rshift)
+        shape.moveVertexBy(lindex, lshift)
 
     def boundedMoveShape(self, shape, pos):
         if self.outOfPixmap(pos):
