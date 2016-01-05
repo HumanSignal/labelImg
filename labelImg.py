@@ -791,6 +791,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if file.lower().endswith(tuple(extensions)):
                     relatviePath = os.path.join(root, file)
                     images.append(os.path.abspath(relatviePath))
+        images.sort(key=lambda x: x.lower())
         return images
 
     def changeSavedir(self, _value=False):
