@@ -920,17 +920,16 @@ class MainWindow(QMainWindow, WindowMixin):
         caption = '%s - Choose File' % __appname__
         filters = 'File (*%s)' % LabelFile.suffix
         openDialogPath = self.currentPath()
-        dlg = QFileDialog(self, caption, openDialogPath, filters)
+        dlg =  (self, caption, openDialogPath, filters)
         dlg.setDefaultSuffix(LabelFile.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
         dlg.setConfirmOverwrite(True)
+        filenameWithoutExtension = os.path.splitext(self.filename)[0]
+        dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
             return dlg.selectedFiles()[0]
         return ''
-        #return unicode(QFileDialog.getSaveFileName(self,
-        #    '%s - Choose File', self.currentPath(),
-        #    'Label files (*%s)' % LabelFile.suffix))
 
     def _saveFile(self, filename):
         if filename and self.saveLabels(filename):
@@ -1093,4 +1092,3 @@ def main(argv):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
-
