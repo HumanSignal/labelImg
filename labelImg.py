@@ -708,7 +708,6 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.defaultSaveDir is not None:
                     basename = os.path.basename(os.path.splitext(self.filename)[0])
                     xmlPath = os.path.join(self.defaultSaveDir, basename + '.xml')
-                    print xmlPath
                     self.loadPascalXMLByFilename(xmlPath)
 
             return True
@@ -1040,7 +1039,6 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filename is None:
             return
         if os.path.exists(filename) is False:
-            print filename + ': xml not exist'
             return
 
         tVocParseReader = PascalVocReader(filename)
