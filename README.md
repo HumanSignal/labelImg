@@ -4,7 +4,7 @@ LabelImg is a graphical image annotation tool. The source mainly comes from [lab
 
 It is written in Python and uses Qt for its graphical interface.
 
-The annotation file will be saved as a XML file. The annotation format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
+The annotation file will be saved as an XML file. The annotation format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
 
 ![](icons/demo.png)
 
@@ -38,7 +38,7 @@ After cloning the code, you should run `make all` to generate the resource file.
 You can then start annotating by running `./labelImg.py`. For usage
 instructions you can see [Here](https://youtu.be/p0nR2YsCY_U)
 
-At the moment annotations are saved as a XML file. The format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
+At the moment annotations are saved as an XML file. The format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
 
 You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 
@@ -71,4 +71,4 @@ The annotation will be saved to the folder you specifiy
 * p : Previous image
 
 ### How to contribute
-Send a pull request and help me write setup.py to build executable file for all platforms.
+Send a pull request
