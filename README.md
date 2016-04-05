@@ -8,6 +8,8 @@ The annotation file will be saved as an XML file. The annotation format is PASCA
 
 ![](icons/demo.png)
 
+[![Demo video](https://j.gifs.com/NkWVz8.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
+
 ## Dependencies
 * Linux/Ubuntu/Mac
 
@@ -19,7 +21,7 @@ In order to build the resource and assets, you need to install pyqt4-dev-tools:
 `$ sudo apt-get install pyqt4-dev-tools`
 
 `$ make all`
- 
+
 `$ ./labelImg.py`
 
 * Windows
@@ -33,9 +35,9 @@ Open cmd and go to $labelImg,
 `$ python labelImg.py`
 
 ## Usage
-After cloning the code, you should run `make all` to generate the resource file.
+After cloning the code, you should run `$ make all` to generate the resource file.
 
-You can then start annotating by running `./labelImg.py`. For usage
+You can then start annotating by running `$ ./labelImg.py`. For usage
 instructions you can see [Here](https://youtu.be/p0nR2YsCY_U)
 
 At the moment annotations are saved as an XML file. The format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
@@ -48,7 +50,7 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 
 ### General steps from scratch
 
-* Build and launch. `make all; python labelImg.py`
+* Build and launch: `$ make all; python labelImg.py`
 
 * Click 'Change default saved annotation folder' in Menu/File
 
