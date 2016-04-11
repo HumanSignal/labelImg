@@ -1,6 +1,6 @@
 # LabelImg
 
-LabelImg is a graphical image annotation tool. The source mainly comes from [labelme](labelme.csail.mit.edu).
+LabelImg is a graphical image annotation tool.
 
 It is written in Python and uses Qt for its graphical interface.
 
@@ -74,3 +74,6 @@ The annotation will be saved to the folder you specifiy
 
 ### How to contribute
 Send a pull request
+
+### License
+[License](LICENSE.md)
