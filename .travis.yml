@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+
+addons:
+  apt:
+    packages:
+    - cmake
+    - time
+    - pyqt4-dev-tools
+# command to install dependencies
+install: "sudo apt-get install pyqt4-dev-tools"
+# command to run tests
+script: make all
