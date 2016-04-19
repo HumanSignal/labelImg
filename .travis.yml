@@ -9,6 +9,6 @@ addons:
     - pyqt4-dev-tools
 
 # command to install dependencies
-install: "pip install --user -r requirements.txt"
+#install: "pip install --user -r requirements.txt"
 # command to run tests
 script: make all
