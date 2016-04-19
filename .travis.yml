@@ -6,9 +6,9 @@ addons:
   apt:
     packages:
     - cmake
-    - time
     - pyqt4-dev-tools
+
 # command to install dependencies
-install: "sudo apt-get install pyqt4-dev-tools"
+install: "pip install --user -r requirements.txt"
 # command to run tests
 script: make all
