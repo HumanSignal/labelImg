@@ -28,9 +28,9 @@ In order to build the resource and assets, you need to install pyqt4-dev-tools:
 
 * Windows
 
-Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). You can also try to download the whole neccessary executable files from [my drive](https://copy.com/oyYjFzJwPb4tKl93) and install them.
+Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Also, you need to install other python dependencies.
 
-Open cmd and go to $labelImg, 
+Open cmd and go to [labelImg]
 
 `$ pyrcc4 -o resources.py resources.qrc`
 
@@ -46,9 +46,6 @@ At the moment annotations are saved as an XML file. The format is PASCAL VOC for
 
 You can also see [ImageNet Utils](https://github.com/tzutalin/ImageNet_Utils) to download image, create a label text for machine learning, etc
 
-### Create pre-defined classes
-
-You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt) to load pre-defined classes
 
 ### General steps from scratch
 
@@ -60,7 +57,11 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 
 * Click 'Create RectBox'
 
-The annotation will be saved to the folder you specifiy
+The annotation will be saved to the folder you specify
+
+### Create pre-defined classes
+
+You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt) to load pre-defined classes
 
 ### Hotkeys
 
@@ -79,3 +80,4 @@ Send a pull request
 
 ### License
 [License](LICENSE.md)
+
