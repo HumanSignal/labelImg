@@ -10,7 +10,7 @@ The annotation file will be saved as an XML file. The annotation format is PASCA
 
 ![](icons/demo.png)
 
-[![Demo video](https://j.gifs.com/NkWVz8.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
+[![Demo video](https://j.gifs.com/4xy9z2.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
 
 ## Dependencies
 * Linux/Ubuntu/Mac
