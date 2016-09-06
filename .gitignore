@@ -1,4 +1,3 @@
-
 icons/.DS_Store
 
 resources.py
@@ -10,3 +9,6 @@ build/
 dist/
 
 tags
+cscope*
+.ycm_extra_conf.py
+.subvimrc

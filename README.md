@@ -8,7 +8,9 @@ It is written in Python and uses Qt for its graphical interface.
 
 The annotation file will be saved as an XML file. The annotation format is PASCAL VOC format, and the format is the same as [ImageNet](http://www.image-net.org/)
 
-![](icons/demo.png)
+![](demo/demo.png)
+
+![](demo/demo2.png)
 
 [![Demo video](https://j.gifs.com/4xy9z2.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
 
