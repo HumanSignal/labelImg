@@ -101,6 +101,18 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setObjectName(u'Labels')
         self.dock.setWidget(self.labelListContainer)
 
+        # Tzutalin 20160906 : Add file list and dock to move faster
+        self.fileListWidget = QListWidget()
+        self.fileListWidget.itemDoubleClicked.connect(self.fileitemDoubleClicked)
+        filelistLayout = QVBoxLayout()
+        filelistLayout.setContentsMargins(0, 0, 0, 0)
+        filelistLayout.addWidget(self.fileListWidget)
+        self.fileListContainer = QWidget()
+        self.fileListContainer.setLayout(filelistLayout)
+        self.filedock = QDockWidget(u'File List', self)
+        self.filedock.setObjectName(u'Files')
+        self.filedock.setWidget(self.fileListContainer)
+
         self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
 
@@ -123,6 +135,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.setCentralWidget(scroll)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        # Tzutalin 20160906 : Add file list and dock to move faster
+        self.addDockWidget(Qt.RightDockWidgetArea, self.filedock)
         self.dockFeatures = QDockWidget.DockWidgetClosable\
                           | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
@@ -500,6 +514,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if text is not None:
             item.setText(text)
             self.setDirty()
+    
+    # Tzutalin 20160906 : Add file list and dock to move faster
+    def fileitemDoubleClicked(self, item=None):
+        currIndex = self.mImgList.index(str(item.text()))
+        if currIndex  < len(self.mImgList):
+            filename = self.mImgList[currIndex]
+            if filename:
+                self.loadFile(filename)
 
     # React to canvas signals.
     def shapeSelectionChanged(self, selected=False):
@@ -665,6 +687,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if filename is None:
             filename = self.settings['filename']
         filename = unicode(filename)
+
+        # Tzutalin 20160906 : Add file list and dock to move faster 
+        # Highlight the file item
+        if filename and self.fileListWidget.count() > 0:
+            index = self.mImgList.index(filename)
+            fileWidgetItem = self.fileListWidget.item(index)
+            self.fileListWidget.setItemSelected(fileWidgetItem, True)
+
         if QFile.exists(filename):
             if LabelFile.isLabelFile(filename):
                 try:
@@ -845,6 +875,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dirname = dirpath
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
+        for imgPath in self.mImgList:
+            item = QListWidgetItem(imgPath)
+            self.fileListWidget.addItem(item)
 
     def openPrevImg(self, _value=False):
         if not self.mayContinue():
