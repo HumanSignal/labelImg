@@ -1,10 +1,13 @@
-import json
-import os.path
-import numpy
-import cv2
-import sys
-from pascal_voc_io import PascalVocWriter
+# Copyright (c) 2016 Tzutalin
+# Create by TzuTaLin <tzu.ta.lin@gmail.com>
+
+from PyQt4.QtGui import QImage
 from base64 import b64encode, b64decode
+from pascal_voc_io import PascalVocWriter
+import json
+import numpy
+import os.path
+import sys
 
 class LabelFileError(Exception):
     pass
@@ -58,9 +61,11 @@ class LabelFile(object):
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
         imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
-
-        img = cv2.imread(imagePath)
-        imageShape = img.shape
+        # Read from file path because self.imageData might be empty if saving to
+        # Pascal format
+        image = QImage()
+        image.load(imagePath)
+        imageShape = [image.height(), image.width(), 1 if image.isGrayscale() else 3]
         writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,\
                                  imageShape, localImgPath=imagePath)
         bSave = False
