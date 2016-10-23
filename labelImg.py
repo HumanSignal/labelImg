@@ -907,6 +907,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if len(self.mImgList) <= 0:
             return
 
+        filename = None
         if self.filename is None:
             filename = self.mImgList[0]
         else:
