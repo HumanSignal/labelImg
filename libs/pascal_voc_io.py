@@ -118,7 +118,7 @@ class PascalVocReader:
         ymin = rect[1]
         xmax = rect[2]
         ymax = rect[3]
-        points = [(xmin,ymin), (xmin,ymax), (xmax, ymax), (xmax, ymin)]
+        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)] 
         self.shapes.append((label, points, None, None))
 
     def parseXML(self):
