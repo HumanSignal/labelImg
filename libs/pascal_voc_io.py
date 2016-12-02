@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
+import _init_path
 import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
-from xml.dom import minidom
 from lxml import etree
 
+
 class PascalVocWriter:
+
     def __init__(self, foldername, filename, imgSize, databaseSrc='Unknown', localImgPath=None):
         self.foldername = foldername
         self.filename = filename
@@ -17,9 +21,9 @@ class PascalVocWriter:
         """
             Return a pretty-printed XML string for the Element.
         """
-        rough_string = ElementTree.tostring(elem,'utf8')
-        reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="\t")
+        rough_string = ElementTree.tostring(elem, 'utf8')
+        root = etree.fromstring(rough_string)
+        return etree.tostring(root, pretty_print=True)
 
     def genXML(self):
         """
@@ -30,46 +34,45 @@ class PascalVocWriter:
                 self.foldername is None or \
                 self.imgSize is None or \
                 len(self.boxlist) <= 0:
-                    return None
+            return None
 
         top = Element('annotation')
-        folder = SubElement(top,'folder')
+        folder = SubElement(top, 'folder')
         folder.text = self.foldername
 
-        filename = SubElement(top,'filename')
+        filename = SubElement(top, 'filename')
         filename.text = self.filename
 
-        localImgPath = SubElement(top,'path')
+        localImgPath = SubElement(top, 'path')
         localImgPath.text = self.localImgPath
 
-        source = SubElement(top,'source')
-        database = SubElement(source,'database')
+        source = SubElement(top, 'source')
+        database = SubElement(source, 'database')
         database.text = self.databaseSrc
 
-        size_part = SubElement(top,'size')
-        width = SubElement(size_part,'width')
-        height = SubElement(size_part,'height')
-        depth = SubElement(size_part,'depth')
+        size_part = SubElement(top, 'size')
+        width = SubElement(size_part, 'width')
+        height = SubElement(size_part, 'height')
+        depth = SubElement(size_part, 'depth')
         width.text = str(self.imgSize[1])
         height.text = str(self.imgSize[0])
-        if len(self.imgSize)==3:
+        if len(self.imgSize) == 3:
             depth.text = str(self.imgSize[2])
         else:
             depth.text = '1'
 
-        segmented = SubElement(top,'segmented')
-        segmented.text ='0'
-
+        segmented = SubElement(top, 'segmented')
+        segmented.text = '0'
         return top
 
     def addBndBox(self, xmin, ymin, xmax, ymax, name):
-        bndbox = {'xmin':xmin, 'ymin':ymin, 'xmax':xmax, 'ymax':ymax}
+        bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
-        self.boxlist.append(bndbox);
+        self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
         for each_object in self.boxlist:
-            object_item = SubElement(top,'object')
+            object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
             name.text = str(each_object['name'])
             pose = SubElement(object_item, 'pose')
@@ -88,25 +91,26 @@ class PascalVocWriter:
             ymax = SubElement(bndbox, 'ymax')
             ymax.text = str(each_object['ymax'])
 
-    def save(self, targetFile = None):
+    def save(self, targetFile=None):
         root = self.genXML()
         self.appendObjects(root)
         out_file = None
         if targetFile is None:
-            out_file = open(self.filename + '.xml','w')
+            out_file = open(self.filename + '.xml', 'w')
         else:
             out_file = open(targetFile, 'w')
 
-        out_file.write(self.prettify(root))
+        prettifyResult = self.prettify(root)
+        out_file.write(prettifyResult)
         out_file.close()
 
 
 class PascalVocReader:
 
     def __init__(self, filepath):
-        ## shapes type:
-        ## [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color]
-        self.shapes=[]
+        # shapes type:
+        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color]
+        self.shapes = []
         self.filepath = filepath
         self.parseXML()
 
@@ -118,22 +122,23 @@ class PascalVocReader:
         ymin = rect[1]
         xmax = rect[2]
         ymax = rect[3]
-        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)] 
+        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None))
 
     def parseXML(self):
         assert self.filepath.endswith('.xml'), "Unsupport file format"
-        xmltree = ElementTree.parse(self.filepath).getroot()
+        parser = etree.XMLParser(encoding='utf-8')
+        xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
 
         for object_iter in xmltree.findall('object'):
-           rects = []
-           bndbox = object_iter.find("bndbox")
-           rects.append([int(it.text) for it in bndbox])
-           label = object_iter.find('name').text
+            rects = []
+            bndbox = object_iter.find("bndbox")
+            rects.append([int(it.text) for it in bndbox])
+            label = object_iter.find('name').text
 
-           for rect in rects:
-               self.addShape(label, rect)
+            for rect in rects:
+                self.addShape(label, rect)
         return True
 
 
@@ -146,4 +151,3 @@ tmp.addBndBox(10,10,20,30,'chair')
 tmp.addBndBox(1,1,600,600,'car')
 tmp.save()
 """
-
