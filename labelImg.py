@@ -514,7 +514,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if text is not None:
             item.setText(text)
             self.setDirty()
-    
+
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
         currIndex = self.mImgList.index(str(item.text()))
@@ -538,7 +538,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.edit.setEnabled(selected)
         self.actions.shapeLineColor.setEnabled(selected)
         self.actions.shapeFillColor.setEnabled(selected)
-        print 'shapeSelectionChanged'
 
     def addLabel(self, shape):
         item = QListWidgetItem(shape.label)
@@ -688,7 +687,7 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.settings['filename']
         filename = unicode(filename)
 
-        # Tzutalin 20160906 : Add file list and dock to move faster 
+        # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
         if filename and self.fileListWidget.count() > 0:
             index = self.mImgList.index(filename)
@@ -736,8 +735,8 @@ class MainWindow(QMainWindow, WindowMixin):
             ## Label xml file and show bound box according to its filename
             if self.usingPascalVocFormat is True and \
                     self.defaultSaveDir is not None:
-                    basename = os.path.basename(os.path.splitext(self.filename)[0])
-                    xmlPath = os.path.join(self.defaultSaveDir, basename + '.xml')
+                    basename = os.path.basename(os.path.splitext(self.filename)[0]) + '.xml'
+                    xmlPath = os.path.join(self.defaultSaveDir, basename)
                     self.loadPascalXMLByFilename(xmlPath)
 
             return True
@@ -1069,13 +1068,13 @@ class MainWindow(QMainWindow, WindowMixin):
                     else:
                         self.labelHist.append(line)
 
-    def loadPascalXMLByFilename(self, filename):
+    def loadPascalXMLByFilename(self, xmlPath):
         if self.filename is None:
             return
-        if os.path.exists(filename) is False:
+        if os.path.isfile(xmlPath) is False:
             return
 
-        tVocParseReader = PascalVocReader(filename)
+        tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
 
