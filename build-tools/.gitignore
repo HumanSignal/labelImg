@@ -7,3 +7,4 @@ pywin32*
 virtual-wine
 venv_wine
 PyQt4-*
+lxml-*
