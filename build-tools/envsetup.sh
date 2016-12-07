@@ -1,9 +1,14 @@
 #!/bin/sh
 
+THIS_SCRIPT_PATH=`readlink -f $0`
+THIS_SCRIPT_DIR=`dirname ${THIS_SCRIPT_PATH}`
 #OS Ubuntu 14.04
 ### Common packages for linux/windows
 if [ ! -e "pyinstaller" ]; then
     git clone https://github.com/pyinstaller/pyinstaller
+    cd pyinstaller
+    git checkout v2.1 -b v2.1
+    cd ${THIS_SCRIPT_DIR}
 fi
 
 echo "Going to clone and download packages for building windows"
@@ -38,5 +43,10 @@ if [ ! -e "pywin32-218.win32-py2.7.exe" ]; then
     wget "http://nchc.dl.sourceforge.net/project/pywin32/pywin32/Build%20218/pywin32-218.win32-py2.7.exe"
 fi
 
+if [ ! -e "PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe" ]; then
+    wget "http://nchc.dl.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe"
+fi
+
 wine msiexec -i python-2.7.8.msi
 wine pywin32-218.win32-py2.7.exe
+wine PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe
