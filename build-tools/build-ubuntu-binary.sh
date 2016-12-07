@@ -1,5 +1,7 @@
 #!/bin/bash
-
+rm -r build
+rm -r dist
+rm labelImg.spec
 python pyinstaller/pyinstaller.py --hidden-import=xml \
             --hidden-import=xml.etree \
             --hidden-import=xml.etree.ElementTree \

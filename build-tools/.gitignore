@@ -2,3 +2,7 @@
 build
 dist
 pyinstaller
+python-2.*
+pywin32*
+virtual-wine
+venv_wine
