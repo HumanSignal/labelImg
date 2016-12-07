@@ -14,7 +14,7 @@ The annotation file will be saved as an XML file. The annotation format is PASCA
 
 [![Demo video](https://j.gifs.com/4xy9z2.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
 
-## Dependencies
+## Build source and use it
 * Linux/Ubuntu/Mac
 
 Requires at least [Python 2.6](http://www.python.org/getit/) and has been tested with [PyQt
@@ -32,7 +32,7 @@ Mac requires "$ brew install libxml2" when installing lxml
 
 * Windows
 
-Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Also, you need to install other python dependencies.
+Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Also, you need to install lxml.
 
 Open cmd and go to [labelImg]
 
@@ -40,6 +40,9 @@ Open cmd and go to [labelImg]
 $ pyrcc4 -o resources.py resources.qrc
 $ python labelImg.py
 ```
+
+## Download the prebuilt binary directly
+[http://tzutalin.github.io/labelImg/](http://tzutalin.github.io/labelImg/). However, there are only prebuilt binaries for Windows and Linux because I don't have Mac OS to do that. If someone can help me to write a script to build binary for Mac OS, I will appreciate that.
 
 ## Usage
 After cloning the code, you should run `$ make all` to generate the resource file.
