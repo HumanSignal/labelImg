@@ -47,6 +47,11 @@ if [ ! -e "PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe" ]; then
     wget "http://nchc.dl.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe"
 fi
 
+if [ ! -e "lxml-2.3.win32-py2.7.exe" ]; then
+    wget "https://pypi.python.org/packages/3d/ee/affbc53073a951541b82a0ba2a70de266580c00f94dd768a60f125b04fca/lxml-2.3.win32-py2.7.exe#md5=9c02aae672870701377750121f5a6f84"
+fi
+
 wine msiexec -i python-2.7.8.msi
 wine pywin32-218.win32-py2.7.exe
 wine PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe
+wine lxml-2.3.win32-py2.7.exe
