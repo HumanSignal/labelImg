@@ -1,0 +1,5 @@
+*.pyc
+resources.py
+libs
+dist
+build-tools/
