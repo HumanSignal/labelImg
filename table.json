@@ -1,4 +1,4 @@
 {
-  "Windows": "https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/windows/labelImg",
-  "Linux": "https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/linux/labelImg"
+  "Windows": "https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/windows/windows_v1.2.zip",
+  "Linux": "https://raw.githubusercontent.com/tzutalin/LabelImg/gh-pages/linux/linux_v1.2.zip"
 }
