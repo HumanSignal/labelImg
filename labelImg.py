@@ -812,7 +812,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def scanAllImages(self, folderPath):
-        extensions = {'.jpeg','.jpg', '.png', '.bmp'}
+        extensions = ['.jpeg','.jpg', '.png', '.bmp']
         images = []
 
         for root, dirs, files in os.walk(folderPath):
