@@ -117,11 +117,11 @@ class PascalVocReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, rect):
-        xmin = rect[0]
-        ymin = rect[1]
-        xmax = rect[2]
-        ymax = rect[3]
+    def addShape(self, label, bndbox):
+        xmin = int(bndbox.find('xmin').text)
+        ymin = int(bndbox.find('ymin').text)
+        xmax = int(bndbox.find('xmax').text)
+        ymax = int(bndbox.find('ymax').text)
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None))
 
@@ -132,13 +132,9 @@ class PascalVocReader:
         filename = xmltree.find('filename').text
 
         for object_iter in xmltree.findall('object'):
-            rects = []
             bndbox = object_iter.find("bndbox")
-            rects.append([int(it.text) for it in bndbox])
             label = object_iter.find('name').text
-
-            for rect in rects:
-                self.addShape(label, rect)
+            self.addShape(label, bndbox)
         return True
 
 
