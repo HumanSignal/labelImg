@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import _init_path
+import codecs
 import os.path
 import re
 import sys
@@ -1060,7 +1061,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def loadPredefinedClasses(self):
         predefined_classes_path = os.path.join('data', 'predefined_classes.txt')
         if os.path.exists(predefined_classes_path) is True:
-            with open(predefined_classes_path) as f:
+            with codecs.open(predefined_classes_path, 'r', 'utf8') as f:
                 for line in f:
                     line = line.strip()
                     if self.labelHist is None:
