@@ -3,7 +3,7 @@
 THIS_SCRIPT_PATH=`readlink -f $0`
 THIS_SCRIPT_DIR=`dirname ${THIS_SCRIPT_PATH}`
 cd pyinstaller
-git checkout v3.0
+git checkout v3.2
 cd ${THIS_SCRIPT_DIR}
 
 rm -r build
