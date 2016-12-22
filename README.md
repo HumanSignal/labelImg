@@ -21,6 +21,8 @@ Requires at least [Python 2.6](http://www.python.org/getit/) and has been tested
 4.8](http://www.riverbankcomputing.co.uk/software/pyqt/intro).
 
 In order to build the resource and assets, you need to install pyqt4-dev-tools and lxml:
+
+* Ubuntu
 ```
 $ sudo apt-get install pyqt4-dev-tools
 $ sudo pip install lxml
@@ -28,7 +30,13 @@ $ make all
 $ ./labelImg.py
 ```
 
-Mac requires "$ brew install libxml2" when installing lxml
+* OS X
+```
+$ brew install qt qt4
+$ brew install libxml2
+$ make all
+$ ./labelImg.py
+```
 
 * Windows
 
