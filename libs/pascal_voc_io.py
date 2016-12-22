@@ -74,7 +74,7 @@ class PascalVocWriter:
         for each_object in self.boxlist:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
-            name.text = str(each_object['name'])
+            name.text = unicode(each_object['name'])
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
