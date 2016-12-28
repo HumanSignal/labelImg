@@ -15,39 +15,35 @@ The annotation file will be saved as an XML file. The annotation format is PASCA
 [![Demo video](https://j.gifs.com/4xy9z2.gif)](https://www.youtube.com/watch?v=p0nR2YsCY_U&feature=youtu.be)
 
 ## Build source and use it
-* Linux/Ubuntu/Mac
 
-Requires at least [Python 2.6](http://www.python.org/getit/) and has been tested with [PyQt
+Linux/Ubuntu/Mac requires at least [Python 2.6](http://www.python.org/getit/) and has been tested with [PyQt
 4.8](http://www.riverbankcomputing.co.uk/software/pyqt/intro).
 
 In order to build the resource and assets, you need to install pyqt4-dev-tools and lxml:
 
-* Ubuntu
-```
-$ sudo apt-get install pyqt4-dev-tools
-$ sudo pip install lxml
-$ make all
-$ ./labelImg.py
-```
+### Ubuntu
 
-* OS X
-```
-$ brew install qt qt4
-$ brew install libxml2
-$ make all
-$ ./labelImg.py
-```
+    sudo apt-get install pyqt4-dev-tools
+    sudo pip install lxml
+    make all
+    ./labelImg.py
 
-* Windows
+### OS X
+
+    brew install qt qt4
+    brew install libxml2
+    make all
+    ./labelImg.py
+
+### Windows
 
 Need to download and setup [Python 2.6](https://www.python.org/downloads/windows/) or later and [PyQt4](https://www.riverbankcomputing.com/software/pyqt/download). Also, you need to install lxml.
 
 Open cmd and go to [labelImg]
 
-```
-$ pyrcc4 -o resources.py resources.qrc
-$ python labelImg.py
-```
+    pyrcc4 -o resources.py resources.qrc
+    python labelImg.py
+
 
 ## Download the prebuilt binary directly
 [http://tzutalin.github.io/labelImg/](http://tzutalin.github.io/labelImg/). However, there are only prebuilt binaries for Windows and Linux because I don't have Mac OS to do that. If someone can help me to write a script to build binary for Mac OS, I will appreciate that.
