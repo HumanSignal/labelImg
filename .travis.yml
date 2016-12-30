@@ -43,5 +43,27 @@ matrix:
         - make qt5
         - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
 
+    # OS X Python 3 + QT5
+    - os: osx
+      osx_image: xcode8.2  # OS X 10.12
+      sudo: required
+      language: generic
+      python: "3.6"
+      env:
+        - QT=5
+      before_install:
+        #- brew update
+        - brew install libxml2
+        - brew install pyqt5
+        - which python3 pip3
+        - python3 --version
+        #- sudo -H pip3 install --user --upgrade lxml  # pyqt5 installs python3.x, which installs pip3
+        - sudo -H easy_install-3.6 lxml || true
+        - python3 -c 'import sys; print(sys.path)'
+        - python3 -c 'import lxml'
+        - make qt5
+        - python3 -c 'help("modules")'
+        - ( python3 labelImg.py ) & sleep 10 ; kill $!
+
 script:
   - exit 0
