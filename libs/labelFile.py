@@ -53,10 +53,10 @@ class LabelFile(object):
 
     @staticmethod
     def convertPoints2BndBox(points):
-        xmin = sys.maxint
-        ymin = sys.maxint
-        xmax = -sys.maxint
-        ymax = -sys.maxint
+        xmin = float('inf')
+        ymin = float('inf')
+        xmax = float('-inf')
+        ymax = float('-inf')
         for p in points:
             x = p[0]
             y = p[1]
