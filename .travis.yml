@@ -1,14 +1,47 @@
-language: python
-python:
-  - "2.7"
+# vim: set ts=2 et:
 
-addons:
-  apt:
-    packages:
-    - cmake
-    - pyqt4-dev-tools
+matrix:
+  include:
 
-# command to install dependencies
-#install: "pip install --user -r requirements.txt"
-# command to run tests
-script: make all
+    # Python 2.7 + QT4
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
+      python: "2.7"
+      env:
+        - QT=4
+      addons:
+        apt:
+          packages:
+            - cmake
+            - pyqt4-dev-tools
+            - xvfb
+      before_install:
+        - sudo pip install lxml
+        - make qt4
+        - ( xvfb-run python2.7 labelImg.py ) & sleep 10 ; kill $!
+
+    # Python 3 + QT5
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
+      python: "3.4"
+      env:
+        - QT=5
+      addons:
+        apt:
+          packages:
+            - cmake
+            - xvfb
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y pyqt5-dev-tools
+        - sudo apt-get install -y python3-pip
+        - sudo pip3 install lxml
+        - make qt5
+        - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
+
+script:
+  - exit 0
