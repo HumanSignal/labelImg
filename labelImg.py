@@ -29,6 +29,15 @@ __appname__ = 'labelImg'
 
 ### Utility functions and classes.
 
+
+def u(x):
+    '''unicode helper'''
+    try:
+        return x.decode('utf8')  # py2
+    except AttributeError:
+        return x  # py3
+
+
 class WindowMixin(object):
     def menu(self, title, actions=None):
         menu = self.menuBar().addMenu(title)
@@ -342,8 +351,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.move(position)
         saveDir = settings.get('savedir', None)
         self.lastOpenDir = settings.get('lastOpenDir', None)
-        if os.path.exists(unicode(saveDir)):
-            self.defaultSaveDir = unicode(saveDir)
+        if os.path.exists(str(saveDir)):
+            self.defaultSaveDir = str(saveDir)
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %(__appname__, self.defaultSaveDir))
             self.statusBar().show()
 
@@ -493,7 +502,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def updateFileMenu(self):
         current = self.filename
         def exists(filename):
-            return os.path.exists(unicode(filename))
+            return os.path.exists(filename)
         menu = self.menus.recentFiles
         menu.clear()
         files = [f for f in self.recentFiles if f != current and exists(f)]
@@ -518,7 +527,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
-        currIndex = self.mImgList.index(str(item.text()))
+        currIndex = self.mImgList.index(item.text())
         if currIndex  < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
@@ -574,7 +583,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def saveLabels(self, filename):
         lf = LabelFile()
         def format_shape(s):
-            return dict(label=unicode(s.label),
+            return dict(label=s.label,
                         line_color=s.line_color.getRgb()\
                                 if s.line_color != self.lineColor else None,
                         fill_color=s.fill_color.getRgb()\
@@ -586,10 +595,10 @@ class MainWindow(QMainWindow, WindowMixin):
         try:
             if self.usingPascalVocFormat is True:
                 print('savePascalVocFormat save to:' + filename)
-                lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
+                lf.savePascalVocFormat(filename, shapes, str(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
-                lf.save(filename, shapes, unicode(self.filename), self.imageData,
+                lf.save(filename, shapes, str(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
                 self.labelFile = lf
                 self.filename = filename
@@ -612,9 +621,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
-        label = unicode(item.text())
+        label = item.text()
         if label != shape.label:
-            shape.label = unicode(item.text())
+            shape.label = item.text()
             self.setDirty()
         else: # User probably changed item visibility
             self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
@@ -686,7 +695,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.setEnabled(False)
         if filename is None:
             filename = self.settings['filename']
-        filename = unicode(filename)
+        filename = filename
 
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
@@ -720,7 +729,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         u"<p>Make sure <i>%s</i> is a valid image file." % filename)
                 self.status("Error reading %s" % filename)
                 return False
-            self.status("Loaded %s" % os.path.basename(unicode(filename)))
+            self.status("Loaded %s" % os.path.basename(str(filename)))
             self.image = image
             self.filename = filename
             self.canvas.loadPixmap(QPixmap.fromImage(image))
@@ -820,17 +829,18 @@ class MainWindow(QMainWindow, WindowMixin):
             for file in files:
                 if file.lower().endswith(tuple(extensions)):
                     relatviePath = os.path.join(root, file)
-                    images.append(os.path.abspath(relatviePath))
+                    path = u(os.path.abspath(relatviePath))
+                    images.append(path)
         images.sort(key=lambda x: x.lower())
         return images
 
     def changeSavedir(self, _value=False):
         if self.defaultSaveDir is not None:
-            path = unicode(self.defaultSaveDir)
+            path = str(self.defaultSaveDir)
         else:
             path = '.'
 
-        dirpath = unicode(QFileDialog.getExistingDirectory(self,
+        dirpath = str(QFileDialog.getExistingDirectory(self,
             '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                 | QFileDialog.DontResolveSymlinks))
 
@@ -844,14 +854,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filename is None:
             return
 
-        path = os.path.dirname(unicode(self.filename))\
+        path = os.path.dirname(str(self.filename))\
                 if self.filename else '.'
         if self.usingPascalVocFormat:
-            formats = ['*.%s' % unicode(fmt).lower()\
+            formats = ['*.%s' % str(fmt).lower()\
                     for fmt in QImageReader.supportedImageFormats()]
             filters = "Open Annotation XML file (%s)" % \
                     ' '.join(formats + ['*.xml'])
-            filename = unicode(QFileDialog.getOpenFileName(self,
+            filename = str(QFileDialog.getOpenFileName(self,
                 '%s - Choose a xml file' % __appname__, path, filters))
             self.loadPascalXMLByFilename(filename)
 
@@ -859,13 +869,13 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
 
-        path = os.path.dirname(unicode(self.filename))\
+        path = os.path.dirname(self.filename)\
                 if self.filename else '.'
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
             path = self.lastOpenDir
 
-        dirpath = unicode(QFileDialog.getExistingDirectory(self,
+        dirpath = str(QFileDialog.getExistingDirectory(self,
             '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                 | QFileDialog.DontResolveSymlinks))
 
@@ -921,13 +931,13 @@ class MainWindow(QMainWindow, WindowMixin):
     def openFile(self, _value=False):
         if not self.mayContinue():
             return
-        path = os.path.dirname(unicode(self.filename))\
+        path = os.path.dirname(str(self.filename))\
                 if self.filename else '.'
-        formats = ['*.%s' % unicode(fmt).lower()\
+        formats = ['*.%s' % str(fmt).lower()\
                 for fmt in QImageReader.supportedImageFormats()]
         filters = "Image & Label files (%s)" % \
                 ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename = unicode(QFileDialog.getOpenFileName(self,
+        filename = str(QFileDialog.getOpenFileName(self,
             '%s - Choose Image or Label file' % __appname__, path, filters))
         if filename:
             self.loadFile(filename)
@@ -1002,7 +1012,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 '<p><b>%s</b></p>%s' % (title, message))
 
     def currentPath(self):
-        return os.path.dirname(unicode(self.filename)) if self.filename else '.'
+        return os.path.dirname(str(self.filename)) if self.filename else '.'
 
     def chooseColor1(self):
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
