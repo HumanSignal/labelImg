@@ -48,7 +48,7 @@ class WindowMixin(object):
 
 
 class MainWindow(QMainWindow, WindowMixin):
-    FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = range(3)
+    FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
     def __init__(self, filename=None):
         super(MainWindow, self).__init__()
@@ -472,7 +472,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.editMode.setEnabled(not drawing)
         if not drawing and self.beginner():
             # Cancel creation.
-            print 'Cancel creation.'
+            print('Cancel creation.')
             self.canvas.setEditing(True)
             self.canvas.restoreCursor()
             self.actions.create.setEnabled(True)
@@ -585,7 +585,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                print 'savePascalVocFormat save to:' + filename
+                print('savePascalVocFormat save to:' + filename)
                 lf.savePascalVocFormat(filename, shapes, unicode(self.filename), self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
@@ -594,7 +594,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelFile = lf
                 self.filename = filename
             return True
-        except LabelFileError, e:
+        except LabelFileError as e:
             self.errorMessage(u'Error saving label data',
                     u'<b>%s</b>' % e)
             return False
@@ -677,7 +677,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.adjustScale()
 
     def togglePolygons(self, value):
-        for item, shape in self.itemsToShapes.iteritems():
+        for item, shape in self.itemsToShapes.items():
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
 
     def loadFile(self, filename=None):
@@ -699,7 +699,7 @@ class MainWindow(QMainWindow, WindowMixin):
             if LabelFile.isLabelFile(filename):
                 try:
                     self.labelFile = LabelFile(filename)
-                except LabelFileError, e:
+                except LabelFileError as e:
                     self.errorMessage(u'Error opening file',
                             (u"<p><b>%s</b></p>"
                              u"<p>Make sure <i>%s</i> is a valid label file.")\
@@ -936,7 +936,7 @@ class MainWindow(QMainWindow, WindowMixin):
         assert not self.image.isNull(), "cannot save empty image"
         if self.hasLabels():
             if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
-                print 'handle the image:' + self.filename
+                print('handle the image:' + self.filename)
                 imgFileName = os.path.basename(self.filename)
                 savedFileName = os.path.splitext(imgFileName)[0] + LabelFile.suffix
                 savedPath = os.path.join(str(self.defaultSaveDir), savedFileName)
