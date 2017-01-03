@@ -24,7 +24,7 @@ matrix:
       before_install:
         - sudo pip install lxml
         - make qt4py2
-        - ( xvfb-run python2.7 labelImg.py ) & sleep 10 ; kill $!
+        - xvfb-run make testpy2
 
     # Python 2 + QT5
     # disabled; can't get it to work
@@ -47,7 +47,7 @@ matrix:
     #    - sudo pip install lxml
     #    - pyrcc5 --help || true  # does QT5 support python2 out of the box?
     #    - make qt5py3
-    #    - ( xvfb-run python2.7 labelImg.py ) & sleep 10 ; kill $!
+    #    - xvfb-run make testpy2
 
     # Python 3 + QT4
     - os: linux
@@ -69,7 +69,7 @@ matrix:
         - sudo apt-get install -y python3-pip
         - sudo pip3 install lxml
         - make qt4py3
-        - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
+        - xvfb-run make testpy3
 
     # Python 3 + QT5
     - os: linux
@@ -90,7 +90,7 @@ matrix:
         - sudo apt-get install -y python3-pip
         - sudo pip3 install lxml
         - make qt5py3
-        - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
+        - xvfb-run make testpy3
 
     # OS X Python 3 + QT5
     - os: osx
@@ -112,7 +112,9 @@ matrix:
         - python3 -c 'import lxml'
         - make qt5py3
         - python3 -c 'help("modules")'
-        - ( python3 labelImg.py ) & sleep 10 ; kill $!
+        #- make testpy3  # FIXME: does not work, segfault on travis-ci
+        # just make sure the app runs... :-/
+        - ( python3 labelImg.py ) & sleep 10; kill $!
 
 script:
   - exit 0
