@@ -10,8 +10,19 @@ import subprocess
 from functools import partial
 from collections import defaultdict
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+try:
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtWidgets import *
+except ImportError:
+    # needed for py3+qt4
+    # ref: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
+    # ref: http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
+    if sys.version_info.major >= 3:
+        import sip
+        sip.setapi('QVariant', 2)
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
 
 import resources
 
@@ -31,11 +42,20 @@ __appname__ = 'labelImg'
 
 
 def u(x):
-    '''unicode helper'''
+    '''py2/py3 unicode helper'''
     try:
         return x.decode('utf8')  # py2
     except AttributeError:
         return x  # py3
+
+
+def have_qstring():
+    '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
+    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
+
+
+def util_qt_strlistclass():
+    return QStringList if have_qstring() else list
 
 
 class WindowMixin(object):
@@ -54,6 +74,14 @@ class WindowMixin(object):
             addActions(toolbar, actions)
         self.addToolBar(Qt.LeftToolBarArea, toolbar)
         return toolbar
+
+
+# PyQt5: TypeError: unhashable type: 'QListWidgetItem'
+class HashableQListWidgetItem(QListWidgetItem):
+    def __init__(self, *args):
+        super(HashableQListWidgetItem, self).__init__(*args)
+    def __hash__(self):
+        return hash(id(self))
 
 
 class MainWindow(QMainWindow, WindowMixin):
@@ -332,19 +360,40 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # XXX: Could be completely declarative.
         # Restore application settings.
-        types = {
-            'filename': QString,
-            'recentFiles': QStringList,
-            'window/size': QSize,
-            'window/position': QPoint,
-            'window/geometry': QByteArray,
-            # Docks and toolbars:
-            'window/state': QByteArray,
-            'savedir': QString,
-            'lastOpenDir': QString,
-        }
+
+        if have_qstring():
+            types = {
+                'filename': QString,
+                'recentFiles': QStringList,
+                'window/size': QSize,
+                'window/position': QPoint,
+                'window/geometry': QByteArray,
+                'line/color': QColor,
+                'fill/color': QColor,
+                'advanced': bool,
+                # Docks and toolbars:
+                'window/state': QByteArray,
+                'savedir': QString,
+                'lastOpenDir': QString,
+            }
+        else:
+            types = {
+                'filename': str,
+                'recentFiles': list,
+                'window/size': QSize,
+                'window/position': QPoint,
+                'window/geometry': QByteArray,
+                'line/color': QColor,
+                'fill/color': QColor,
+                'advanced': bool,
+                # Docks and toolbars:
+                'window/state': QByteArray,
+                'savedir': str,
+                'lastOpenDir': str,
+            }
+
         self.settings = settings = Settings(types)
-        self.recentFiles = list(settings['recentFiles'])
+        self.recentFiles = list(settings.get('recentFiles', []))
         size = settings.get('window/size', QSize(600, 500))
         position = settings.get('window/position', QPoint(0, 0))
         self.resize(size)
@@ -358,13 +407,18 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # or simply:
         #self.restoreGeometry(settings['window/geometry']
-        self.restoreState(settings['window/state'])
+        self.restoreState(settings.get('window/state', QByteArray()))
         self.lineColor = QColor(settings.get('line/color', Shape.line_color))
         self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
 
-        if settings.get('advanced', QVariant()).toBool():
+        def xbool(x):
+            if isinstance(x, QVariant):
+                return x.toBool()
+            return bool(x)
+
+        if xbool(settings.get('advanced', False)):
             self.actions.advancedMode.setChecked(True)
             self.toggleAdvancedMode()
 
@@ -540,7 +594,7 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             shape = self.canvas.selectedShape
             if shape:
-                self.labelList.setItemSelected(self.shapesToItems[shape], True)
+                self.shapesToItems[shape].setSelected(True)
             else:
                 self.labelList.clearSelection()
         self.actions.delete.setEnabled(selected)
@@ -550,7 +604,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
-        item = QListWidgetItem(shape.label)
+        item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
         self.itemsToShapes[item] = shape
@@ -694,17 +748,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.resetState()
         self.canvas.setEnabled(False)
         if filename is None:
-            filename = self.settings['filename']
-        filename = filename
+            filename = self.settings.get('filename')
 
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
         if filename and self.fileListWidget.count() > 0:
             index = self.mImgList.index(filename)
             fileWidgetItem = self.fileListWidget.item(index)
-            self.fileListWidget.setItemSelected(fileWidgetItem, True)
+            fileWidgetItem.setSelected(True)
 
-        if QFile.exists(filename):
+        if filename and QFile.exists(filename):
             if LabelFile.isLabelFile(filename):
                 try:
                     self.labelFile = LabelFile(filename)
@@ -791,7 +844,7 @@ class MainWindow(QMainWindow, WindowMixin):
         s = self.settings
         # If it loads images from dir, don't load it at the begining
         if self.dirname is None:
-            s['filename'] = self.filename if self.filename else QString()
+            s['filename'] = self.filename if self.filename else ''
         else:
             s['filename'] = ''
 
@@ -967,7 +1020,6 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg =  QFileDialog(self, caption, openDialogPath, filters)
         dlg.setDefaultSuffix(LabelFile.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
-        dlg.setConfirmOverwrite(True)
         filenameWithoutExtension = os.path.splitext(self.filename)[0]
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
@@ -1108,10 +1160,20 @@ class Settings(object):
 
     def _cast(self, key, value):
         # XXX: Very nasty way of converting types to QVariant methods :P
-        t = self.types[key]
-        if t != QVariant:
-            method = getattr(QVariant, re.sub('^Q', 'to', t.__name__, count=1))
-            return method(value)
+        print('_cast', key, repr(value))
+        t = self.types.get(key)
+        print('t', t)
+        if t is not None and t != QVariant:
+            if t is str:
+                return str(value)
+            else:
+                # XXX: awful
+                try:
+                    method = getattr(QVariant, re.sub('^Q', 'to', t.__name__, count=1))
+                    return method(value)
+                except AttributeError as e:
+                    print(e)
+                    return value
         return value
 
 

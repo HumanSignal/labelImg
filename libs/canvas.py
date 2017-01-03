@@ -1,5 +1,12 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+
+try:
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtWidgets import *
+except ImportError:
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+
 #from PyQt4.QtOpenGL import *
 
 from shape import Shape
@@ -85,7 +92,7 @@ class Canvas(QWidget):
 
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
-        pos = self.transformPos(ev.posF())
+        pos = self.transformPos(ev.pos())
 
         self.restoreCursor()
 
@@ -169,7 +176,8 @@ class Canvas(QWidget):
             self.hVertex, self.hShape = None, None
 
     def mousePressEvent(self, ev):
-        pos = self.transformPos(ev.posF())
+        pos = self.transformPos(ev.pos())
+
         if ev.button() == Qt.LeftButton:
             if self.drawing():
                 if self.current and self.current.reachMaxPoints() is False:

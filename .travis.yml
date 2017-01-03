@@ -1,5 +1,8 @@
 # vim: set ts=2 et:
 
+# run xvfb with 32-bit color
+# xvfb-run -s '-screen 0 1600x1200x24+32' command_goes_here
+
 matrix:
   include:
 
@@ -15,12 +18,58 @@ matrix:
         apt:
           packages:
             - cmake
+            - python-qt4
             - pyqt4-dev-tools
             - xvfb
       before_install:
         - sudo pip install lxml
-        - make qt4
+        - make qt4py2
         - ( xvfb-run python2.7 labelImg.py ) & sleep 10 ; kill $!
+
+    # Python 2 + QT5
+    # disabled; can't get it to work
+    #- os: linux
+    #  dist: trusty
+    #  sudo: required
+    #  language: generic
+    #  python: "2.7"
+    #  env:
+    #    - QT=5
+    #  addons:
+    #    apt:
+    #      packages:
+    #        - cmake
+    #        - pyqt5-dev-tools
+    #        - xvfb
+    #  before_install:
+    #    - sudo apt-get update
+    #    - sudo apt-get install -y python-pip
+    #    - sudo pip install lxml
+    #    - pyrcc5 --help || true  # does QT5 support python2 out of the box?
+    #    - make qt5py3
+    #    - ( xvfb-run python2.7 labelImg.py ) & sleep 10 ; kill $!
+
+    # Python 3 + QT4
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
+      python: "3.4"
+      env:
+        - QT=4
+      addons:
+        apt:
+          packages:
+            - cmake
+            - python3-pyqt4
+            - pyqt4-dev-tools
+            - xvfb
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y python3-pip
+        - sudo pip3 install lxml
+        - make qt4py3
+        - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
 
     # Python 3 + QT5
     - os: linux
@@ -34,13 +83,13 @@ matrix:
         apt:
           packages:
             - cmake
+            - pyqt5-dev-tools
             - xvfb
       before_install:
         - sudo apt-get update
-        - sudo apt-get install -y pyqt5-dev-tools
         - sudo apt-get install -y python3-pip
         - sudo pip3 install lxml
-        - make qt5
+        - make qt5py3
         - ( xvfb-run python3 labelImg.py ) & sleep 10 ; kill $!
 
     # OS X Python 3 + QT5
@@ -61,7 +110,7 @@ matrix:
         - sudo -H easy_install-3.6 lxml || true
         - python3 -c 'import sys; print(sys.path)'
         - python3 -c 'import lxml'
-        - make qt5
+        - make qt5py3
         - python3 -c 'help("modules")'
         - ( python3 labelImg.py ) & sleep 10 ; kill $!
 
