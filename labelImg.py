@@ -1187,13 +1187,21 @@ def read(filename, default=None):
     except:
         return default
 
-def main(argv):
-    """Standard boilerplate Qt application code."""
+def get_main_app(argv=[]):
+    """
+    Standard boilerplate Qt application code.
+    Do everything but app.exec_() -- so that we can test the application in one thread
+    """
     app = QApplication(argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("app"))
     win = MainWindow(argv[1] if len(argv) == 2 else None)
     win.show()
+    return app, win
+
+def main(argv):
+    '''construct main app and run it'''
+    app, _win = get_main_app(argv)
     return app.exec_()
 
 if __name__ == '__main__':
