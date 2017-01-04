@@ -92,6 +92,48 @@ matrix:
         - make qt5py3
         - xvfb-run make testpy3
 
+    # OS X 10.12 Python 2 + QT4
+    - os: osx
+      osx_image: xcode8.2  # OS X 10.12
+      sudo: required
+      language: generic
+      python: "2.7"
+      env:
+        - QT=4
+      before_install:
+        - brew install libxml2
+        - brew install cartr/qt4/qt
+        - which python pip
+        - python --version
+        - sudo -H easy_install-2.7 lxml || true
+        - python -c 'import sys; print(sys.path)'
+        - python -c 'import lxml'
+        - make qt4py2
+        - python3 -c 'help("modules")'
+        #- make testpy2  # FIXME: does not work, segfault on travis-ci
+        - ( python labelImg.py ) & sleep 10; kill $!
+
+    # OS X 10.12 Python 3 + QT4
+    - os: osx
+      osx_image: xcode8.2  # OS X 10.12
+      sudo: required
+      language: generic
+      python: "3.6"
+      env:
+        - QT=4
+      before_install:
+        - brew install libxml2
+        - brew install cartr/qt4/qt
+        - which python3 pip3
+        - python3 --version
+        - sudo -H easy_install-3.6 lxml || true
+        - python3 -c 'import sys; print(sys.path)'
+        - python3 -c 'import lxml'
+        - make qt4py3
+        - python3 -c 'help("modules")'
+        #- make testpy3  # FIXME: does not work, segfault on travis-ci
+        - ( python3 labelImg.py ) & sleep 10; kill $!
+
     # OS X 10.10 Python 3 + QT5
     - os: osx
       osx_image: xcode6.4  # Xcode 6.4, OS X 10.10
