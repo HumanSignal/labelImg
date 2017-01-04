@@ -26,6 +26,34 @@ matrix:
         - make qt4py2
         - xvfb-run make testpy2
 
+    # Python 2.7 + QT4
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
+      python: "2.7"
+      env:
+        - CONDA=2.7
+        - QT=4
+      addons:
+        apt:
+          packages:
+            - cmake
+            #- python-qt4
+            #- pyqt4-dev-tools
+            - xvfb
+      before_install:
+        # ref: https://www.continuum.io/downloads
+        - curl -O https://repo.continuum.io/archive/Anaconda2-4.2.0-Linux-x86_64.sh
+        - /bin/bash Anaconda2-4.2.0-Linux-x86_64.sh
+        # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
+        - conda create -n labelImg-py2qt4 python=2.7
+        - source activate labelImg-py2qt4
+        - conda install pyqt=4
+        - conda install lxml
+        - make qt4py2
+        - xvfb-run make testpy2
+
     # Python 2 + QT5
     # disabled; can't get it to work
     #- os: linux
@@ -89,6 +117,32 @@ matrix:
         - sudo apt-get update
         - sudo apt-get install -y python3-pip
         - sudo pip3 install lxml
+        - make qt5py3
+        - xvfb-run make testpy3
+
+    # Python 3 + QT5
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
+      python: "3.5"
+      env:
+        - CONDA=3.5
+        - QT=5
+      addons:
+        apt:
+          packages:
+            - cmake
+            - xvfb
+      before_install:
+        # ref: https://www.continuum.io/downloads
+        - curl -O https://repo.continuum.io/archive/Anaconda3-4.2.0-Linux-x86_64.sh
+        - /bin/bash Anaconda3-4.2.0-Linux-x86_64.sh
+        # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
+        - conda create -n labelImg-py3qt5 python=3.5
+        - source activate labelImg-py3qt5
+        - conda install pyqt=5
+        - conda install lxml
         - make qt5py3
         - xvfb-run make testpy3
 
