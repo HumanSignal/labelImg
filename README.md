@@ -79,13 +79,13 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 
 * Ctrl + r : Change the defult target dir which saving annotation files
 
-* Ctrl + n : Create a bounding box
-
 * Ctrl + s : Save
 
-* n : Next image
+* w : Create a bounding box
 
-* p : Previous image
+* d : Next image
+
+* a : Previous image
 
 ### How to contribute
 Send a pull request
