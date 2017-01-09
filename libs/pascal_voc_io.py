@@ -74,7 +74,11 @@ class PascalVocWriter:
         for each_object in self.boxlist:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
-            name.text = unicode(each_object['name'])
+            try:
+                name.text = unicode(each_object['name'])
+            except NameError:
+                # Py3: NameError: name 'unicode' is not defined
+                name.text = each_object['name']
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
@@ -101,7 +105,7 @@ class PascalVocWriter:
             out_file = open(targetFile, 'w')
 
         prettifyResult = self.prettify(root)
-        out_file.write(prettifyResult)
+        out_file.write(prettifyResult.decode('utf8'))
         out_file.close()
 
 

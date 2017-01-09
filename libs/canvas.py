@@ -1,5 +1,12 @@
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+
+try:
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtWidgets import *
+except ImportError:
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+
 #from PyQt4.QtOpenGL import *
 
 from shape import Shape
@@ -20,7 +27,7 @@ class Canvas(QWidget):
     shapeMoved = pyqtSignal()
     drawingPolygon = pyqtSignal(bool)
 
-    CREATE, EDIT = range(2)
+    CREATE, EDIT = list(range(2))
 
     epsilon = 11.0
 
@@ -85,7 +92,7 @@ class Canvas(QWidget):
 
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
-        pos = self.transformPos(ev.posF())
+        pos = self.transformPos(ev.pos())
 
         self.restoreCursor()
 
@@ -169,7 +176,8 @@ class Canvas(QWidget):
             self.hVertex, self.hShape = None, None
 
     def mousePressEvent(self, ev):
-        pos = self.transformPos(ev.posF())
+        pos = self.transformPos(ev.pos())
+
         if ev.button() == Qt.LeftButton:
             if self.drawing():
                 if self.current and self.current.reachMaxPoints() is False:
@@ -456,12 +464,14 @@ class Canvas(QWidget):
                 return QPointF(min(max(0, x2), max(x3, x4)), y3)
         return QPointF(x, y)
 
-    def intersectingEdges(self, (x1, y1), (x2, y2), points):
+    def intersectingEdges(self, x1y1, x2y2, points):
         """For each edge formed by `points', yield the intersection
         with the line segment `(x1,y1) - (x2,y2)`, if it exists.
         Also return the distance of `(x2,y2)' to the middle of the
         edge along with its index, so that the one closest can be chosen."""
-        for i in xrange(4):
+        x1, y1 = x1y1
+        x2, y2 = x2y2
+        for i in range(4):
             x3, y3 = points[i]
             x4, y4 = points[(i+1) % 4]
             denom = (y4-y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
@@ -506,7 +516,7 @@ class Canvas(QWidget):
     def keyPressEvent(self, ev):
         key = ev.key()
         if key == Qt.Key_Escape and self.current:
-            print 'ESC press'
+            print('ESC press')
             self.current = None
             self.drawingPolygon.emit(False)
             self.update()
