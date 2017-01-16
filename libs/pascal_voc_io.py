@@ -23,7 +23,7 @@ class PascalVocWriter:
         """
         rough_string = ElementTree.tostring(elem, 'utf8')
         root = etree.fromstring(rough_string)
-        return etree.tostring(root, pretty_print=True)
+        return etree.tostring(root, encoding='utf8', pretty_print=True)
 
     def genXML(self):
         """

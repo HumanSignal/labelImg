@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from xml.etree.ElementTree import Element
 
+import _init_path
 from pascal_voc_io import PascalVocWriter
 
 
