@@ -5,6 +5,7 @@ import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
+import codecs
 
 
 class PascalVocWriter:
@@ -100,9 +101,9 @@ class PascalVocWriter:
         self.appendObjects(root)
         out_file = None
         if targetFile is None:
-            out_file = open(self.filename + '.xml', 'w')
+            out_file = codecs.open(self.filename + '.xml', 'w', encoding='utf-8')
         else:
-            out_file = open(targetFile, 'w')
+            out_file = codecs.open(targetFile, 'w', encoding='utf-8')
 
         prettifyResult = self.prettify(root)
         out_file.write(prettifyResult.decode('utf8'))
