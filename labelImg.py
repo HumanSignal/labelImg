@@ -40,7 +40,6 @@ __appname__ = 'labelImg'
 
 ### Utility functions and classes.
 
-
 def u(x):
     '''py2/py3 unicode helper'''
     try:
@@ -213,8 +212,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 'Ctrl+L', 'color_line', u'Choose Box line color')
         color2 = action('Box &Fill Color', self.chooseColor2,
                 'Ctrl+Shift+L', 'color', u'Choose Box fill color')
-        color3 = action('Bakground Color', self.chooseColor3,
-                'Ctrl+Shift+B', 'color', u'Choose background color')
 
         createMode = action('Create\nRectBox', self.setCreateMode,
                 'Ctrl+N', 'new', u'Start drawing Boxs', enabled=False)
@@ -297,7 +294,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Store actions for further handling.
         self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
-                lineColor=color1, fillColor=color2, backgroundColor=color3,
+                lineColor=color1, fillColor=color2,
                 create=create, delete=delete, edit=edit, copy=copy,
                 createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                 shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
@@ -306,7 +303,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 zoomActions=zoomActions,
                 fileMenuActions=(open,opendir,save,saveAs,close,quit),
                 beginner=(), advanced=(),
-                editMenu=(edit, copy, delete, None, color1, color2, color3),
+                editMenu=(edit, copy, delete, None, color1, color2),
                 beginnerContext=(create, edit, copy, delete),
                 advancedContext=(createMode, editMode, edit, copy,
                     delete, shapeLineColor, shapeFillColor),
@@ -358,13 +355,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.maxRecent = 7
         self.lineColor = None
         self.fillColor = None
-        self.backgroundColor = None
         self.zoom_level = 100
         self.fit_window = False
 
         # XXX: Could be completely declarative.
         # Restore application settings.
-
         if have_qstring():
             types = {
                 'filename': QString,
@@ -374,7 +369,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 'window/geometry': QByteArray,
                 'line/color': QColor,
                 'fill/color': QColor,
-                'background/color': QColor,
                 'advanced': bool,
                 # Docks and toolbars:
                 'window/state': QByteArray,
@@ -390,7 +384,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 'window/geometry': QByteArray,
                 'line/color': QColor,
                 'fill/color': QColor,
-                'background/color': QColor,
                 'advanced': bool,
                 # Docks and toolbars:
                 'window/state': QByteArray,
@@ -416,7 +409,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.restoreState(settings.get('window/state', QByteArray()))
         self.lineColor = QColor(settings.get('line/color', Shape.line_color))
         self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
-        self.backgroundColor = QColor(settings.get('background/color', QColor(0, 0, 0, 0)))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
 
@@ -438,6 +430,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
 
         self.populateModeActions()
+
 
     ## Support Functions ##
 
@@ -860,7 +853,6 @@ class MainWindow(QMainWindow, WindowMixin):
         s['window/state'] = self.saveState()
         s['line/color'] = self.lineColor
         s['fill/color'] = self.fillColor
-        s['background/color'] = self.backgroundColor
         s['recentFiles'] = self.recentFiles
         s['advanced'] = not self._beginner
         if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
@@ -872,9 +864,6 @@ class MainWindow(QMainWindow, WindowMixin):
             s['lastOpenDir'] = str(self.lastOpenDir)
         else:
             s['lastOpenDir'] = ""
-
-        #ask the use for where to save the labels
-        #s['window/geometry'] = self.saveGeometry()
 
     ## User Dialogs ##
 
@@ -1093,16 +1082,6 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.update()
             self.setDirty()
 
-    def chooseColor3(self):
-       color = self.colorDialog.getColor(self.backgroundColor, u'Choose background color',
-                default=DEFAULT_FILL_COLOR)
-
-       if color:
-            self.backgroundColor = color
-            palette = QPalette(self)
-            palette.setColor(self.backgroundRole(), color)
-            self.setPalette(palette)
-
     def deleteSelectedShape(self):
         yes, no = QMessageBox.Yes, QMessageBox.No
         msg = u'You are about to permanently delete this Box, proceed anyway?'
@@ -1178,19 +1157,16 @@ class Settings(object):
 
     def _cast(self, key, value):
         # XXX: Very nasty way of converting types to QVariant methods :P
-        print('_cast', key, repr(value))
         t = self.types.get(key)
-        print('t', t)
         if t is not None and t != QVariant:
             if t is str:
                 return str(value)
             else:
-                # XXX: awful
                 try:
                     method = getattr(QVariant, re.sub('^Q', 'to', t.__name__, count=1))
                     return method(value)
                 except AttributeError as e:
-                    print(e)
+                    #print(e)
                     return value
         return value
 
