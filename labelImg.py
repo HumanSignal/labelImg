@@ -42,11 +42,14 @@ __appname__ = 'labelImg'
 
 def u(x):
     '''py2/py3 unicode helper'''
-    try:
-        return x.decode('utf8')  # py2
-    except AttributeError:
+    if sys.version_info < (3, 0, 0):
+        if type(x) == str:
+            return x.decode('utf-8')
+        if type(x) == QString:
+            return unicode(x)
+        return x
+    else:
         return x  # py3
-
 
 def have_qstring():
     '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
@@ -350,7 +353,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Application state.
         self.image = QImage()
-        self.filename = filename
+        self.filename = u(filename)
         self.recentFiles = []
         self.maxRecent = 7
         self.lineColor = None
@@ -581,7 +584,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
-        currIndex = self.mImgList.index(item.text())
+        currIndex = self.mImgList.index(u(item.text()))
         if currIndex  < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
@@ -647,12 +650,12 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add differrent annotation formats here
         try:
+            filename = u(filename)
             if self.usingPascalVocFormat is True:
-                print('savePascalVocFormat save to:' + filename)
-                lf.savePascalVocFormat(filename, shapes, str(self.filename), self.imageData,
+                lf.savePascalVocFormat(filename, shapes, filename, self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
-                lf.save(filename, shapes, str(self.filename), self.imageData,
+                lf.save(filename, shapes, filename, self.imageData,
                     self.lineColor.getRgb(), self.fillColor.getRgb())
                 self.labelFile = lf
                 self.filename = filename
@@ -758,6 +761,7 @@ class MainWindow(QMainWindow, WindowMixin):
             fileWidgetItem.setSelected(True)
 
         if filename and QFile.exists(filename):
+            filename = u(filename)
             if LabelFile.isLabelFile(filename):
                 try:
                     self.labelFile = LabelFile(filename)
@@ -782,9 +786,9 @@ class MainWindow(QMainWindow, WindowMixin):
                         u"<p>Make sure <i>%s</i> is a valid image file." % filename)
                 self.status("Error reading %s" % filename)
                 return False
-            self.status("Loaded %s" % os.path.basename(str(filename)))
+            self.status("Loaded %s" % os.path.basename(filename))
             self.image = image
-            self.filename = filename
+            self.filename = u(filename)
             self.canvas.loadPixmap(QPixmap.fromImage(image))
             if self.labelFile:
                 self.loadLabels(self.labelFile.shapes)
@@ -904,7 +908,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filename is None:
             return
 
-        path = os.path.dirname(str(self.filename))\
+        path = os.path.dirname(u(self.filename))\
                 if self.filename else '.'
         if self.usingPascalVocFormat:
             formats = ['*.%s' % str(fmt).lower()\
@@ -987,8 +991,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 for fmt in QImageReader.supportedImageFormats()]
         filters = "Image & Label files (%s)" % \
                 ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename = str(QFileDialog.getOpenFileName(self,
-            '%s - Choose Image or Label file' % __appname__, path, filters))
+        filename = QFileDialog.getOpenFileName(self,
+            '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
             self.loadFile(filename)
 
@@ -1061,7 +1065,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 '<p><b>%s</b></p>%s' % (title, message))
 
     def currentPath(self):
-        return os.path.dirname(str(self.filename)) if self.filename else '.'
+        return os.path.dirname(self.filename) if self.filename else '.'
 
     def chooseColor1(self):
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
