@@ -7,6 +7,7 @@ from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
 import codecs
 
+XML_EXT = '.xml'
 
 class PascalVocWriter:
 
@@ -101,7 +102,7 @@ class PascalVocWriter:
         self.appendObjects(root)
         out_file = None
         if targetFile is None:
-            out_file = codecs.open(self.filename + '.xml', 'w', encoding='utf-8')
+            out_file = codecs.open(self.filename + XML_EXT, 'w', encoding='utf-8')
         else:
             out_file = codecs.open(targetFile, 'w', encoding='utf-8')
 
