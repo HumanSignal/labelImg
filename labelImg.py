@@ -807,6 +807,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 xmlPath = os.path.join(self.defaultSaveDir, basename)
                 self.loadPascalXMLByFilename(xmlPath)
 
+            self.canvas.setFocus()
             return True
         return False
 
