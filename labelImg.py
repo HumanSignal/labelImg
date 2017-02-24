@@ -120,6 +120,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList = QListWidget()
         self.itemsToShapes = {}
         self.shapesToItems = {}
+        self.prevLabelText = ''
 
         self.labelList.itemActivated.connect(self.labelSelectionChanged)
         self.labelList.itemSelectionChanged.connect(self.labelSelectionChanged)
@@ -652,9 +653,8 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add differrent annotation formats here
         try:
-            annotationFilePath = u(annotationFilePath)
             if self.usingPascalVocFormat is True:
-                print ('Img: ' + self.filePath + ' Xml: ' + annotationFilePath)
+                print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
                 lf.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                        self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
@@ -696,8 +696,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if len(self.labelHist) > 0:
             self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
 
-        text = self.labelDialog.popUp()
+        text = self.labelDialog.popUp(text=self.prevLabelText)
         if text is not None:
+            self.prevLabelText = text
             self.addLabel(self.canvas.setLastLabel(text))
             if self.beginner(): # Switch to edit mode.
                 self.canvas.setEditing(True)
@@ -1004,7 +1005,7 @@ class MainWindow(QMainWindow, WindowMixin):
         assert not self.image.isNull(), "cannot save empty image"
         if self.hasLabels():
             if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
-                print('handle the image:' + self.filePath)
+                # print('handle the image:' + self.filePath)
                 imgFileName = os.path.basename(self.filePath)
                 savedFileName = os.path.splitext(imgFileName)[0] + LabelFile.suffix
                 savedPath = os.path.join(str(self.defaultSaveDir), savedFileName)
