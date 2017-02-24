@@ -638,7 +638,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.fill_color = QColor(*fill_color)
         self.canvas.loadShapes(s)
 
-    def saveLabels(self, filePath):
+    def saveLabels(self, annotationFilePath):
+        annotationFilePath = u(annotationFilePath)
         lf = LabelFile()
         def format_shape(s):
             return dict(label=s.label,
@@ -651,15 +652,15 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add differrent annotation formats here
         try:
-            unicodeFilePath = u(filePath)
+            annotationFilePath = u(annotationFilePath)
             if self.usingPascalVocFormat is True:
-                lf.savePascalVocFormat(unicodeFilePath, shapes, unicodeFilePath, self.imageData,
+                print ('Img: ' + self.filePath + ' Xml: ' + annotationFilePath)
+                lf.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                        self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
-                lf.save(unicodeFilePath, shapes, unicodeFilePath, self.imageData,
+                lf.save(annotationFilePath, shapes, self.filePath, self.imageData,
                         self.lineColor.getRgb(), self.fillColor.getRgb())
                 self.labelFile = lf
-                self.filePath = unicodeFilePath
             return True
         except LabelFileError as e:
             self.errorMessage(u'Error saving label data',
