@@ -18,13 +18,14 @@ DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
 
+
 class Shape(object):
     P_SQUARE, P_ROUND = range(2)
 
     MOVE_VERTEX, NEAR_VERTEX = range(2)
 
-    ## The following class variables influence the drawing
-    ## of _all_ shape objects.
+    # The following class variables influence the drawing
+    # of _all_ shape objects.
     line_color = DEFAULT_LINE_COLOR
     fill_color = DEFAULT_FILL_COLOR
     select_line_color = DEFAULT_SELECT_LINE_COLOR
@@ -46,7 +47,7 @@ class Shape(object):
         self._highlightSettings = {
             self.NEAR_VERTEX: (4, self.P_ROUND),
             self.MOVE_VERTEX: (1.5, self.P_SQUARE),
-            }
+        }
 
         self._closed = False
 
@@ -61,7 +62,7 @@ class Shape(object):
         self._closed = True
 
     def reachMaxPoints(self):
-        if len(self.points) >=4:
+        if len(self.points) >= 4:
             return True
         return False
 
@@ -124,9 +125,9 @@ class Shape(object):
         else:
             self.vertex_fill_color = Shape.vertex_fill_color
         if shape == self.P_SQUARE:
-            path.addRect(point.x() - d/2, point.y() - d/2, d, d)
+            path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
-            path.addEllipse(point, d/2.0, d/2.0)
+            path.addEllipse(point, d / 2.0, d / 2.0)
         else:
             assert False, "unsupported vertex shape"
 
@@ -162,8 +163,8 @@ class Shape(object):
         self._highlightIndex = None
 
     def copy(self):
-        shape = Shape("Copy of %s" % self.label )
-        shape.points= [p for p in self.points]
+        shape = Shape("Copy of %s" % self.label)
+        shape.points = [p for p in self.points]
         shape.fill = self.fill
         shape.selected = self.selected
         shape._closed = self._closed
@@ -181,4 +182,3 @@ class Shape(object):
 
     def __setitem__(self, key, value):
         self.points[key] = value
-
