@@ -986,7 +986,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def openNextImg(self, _value=False):
         # Proceding next image without dialog if having any label
         if self.autoSaving is True and self.defaultSaveDir is not None:
-            if self.dirty is True and self.hasLabels():
+            if self.dirty is True:
                 self.saveFile()
 
         if not self.mayContinue():
@@ -1021,24 +1021,21 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
-        assert not self.image.isNull(), "cannot save empty image"
-        if self.hasLabels():
-            if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
-                # print('handle the image:' + self.filePath)
-                imgFileName = os.path.basename(self.filePath)
-                savedFileName = os.path.splitext(
-                    imgFileName)[0] + LabelFile.suffix
-                savedPath = os.path.join(
-                    str(self.defaultSaveDir), savedFileName)
-                self._saveFile(savedPath)
-            else:
-                self._saveFile(self.filePath if self.labelFile
-                               else self.saveFileDialog())
+        if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
+            # print('handle the image:' + self.filePath)
+            imgFileName = os.path.basename(self.filePath)
+            savedFileName = os.path.splitext(
+                imgFileName)[0] + LabelFile.suffix
+            savedPath = os.path.join(
+                str(self.defaultSaveDir), savedFileName)
+            self._saveFile(savedPath)
+        else:
+            self._saveFile(self.filePath if self.labelFile
+                            else self.saveFileDialog())
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
-        if self.hasLabels():
-            self._saveFile(self.saveFileDialog())
+        self._saveFile(self.saveFileDialog())
 
     def saveFileDialog(self):
         caption = '%s - Choose File' % __appname__
@@ -1068,14 +1065,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.toggleActions(False)
         self.canvas.setEnabled(False)
         self.actions.saveAs.setEnabled(False)
-
-    # Message Dialogs. #
-    def hasLabels(self):
-        if not self.itemsToShapes:
-            self.errorMessage(u'No objects labeled',
-                              u'You must label at least one object to save the file.')
-            return False
-        return True
 
     def mayContinue(self):
         return not (self.dirty and not self.discardChangesDialog())

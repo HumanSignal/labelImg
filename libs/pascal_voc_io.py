@@ -35,8 +35,7 @@ class PascalVocWriter:
         # Check conditions
         if self.filename is None or \
                 self.foldername is None or \
-                self.imgSize is None or \
-                len(self.boxlist) <= 0:
+                self.imgSize is None:
             return None
 
         top = Element('annotation')
