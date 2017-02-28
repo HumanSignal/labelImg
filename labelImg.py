@@ -1101,14 +1101,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.setDirty()
 
     def deleteSelectedShape(self):
-        yes, no = QMessageBox.Yes, QMessageBox.No
-        msg = u'You are about to permanently delete this Box, proceed anyway?'
-        if yes == QMessageBox.warning(self, u'Attention', msg, yes | no):
-            self.remLabel(self.canvas.deleteSelected())
-            self.setDirty()
-            if self.noShapes():
-                for action in self.actions.onShapesPresent:
-                    action.setEnabled(False)
+        self.remLabel(self.canvas.deleteSelected())
+        self.setDirty()
+        if self.noShapes():
+            for action in self.actions.onShapesPresent:
+                action.setEnabled(False)
 
     def chshapeLineColor(self):
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
