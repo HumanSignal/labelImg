@@ -11,8 +11,10 @@ from pascal_voc_io import PascalVocWriter
 import os.path
 import sys
 
+
 class LabelFileError(Exception):
     pass
+
 
 class LabelFile(object):
     # It might be changed as window creates
@@ -26,7 +28,7 @@ class LabelFile(object):
             self.load(filename)
 
     def savePascalVocFormat(self, filename, shapes, imagePath, imageData,
-            lineColor=None, fillColor=None, databaseSrc=None):
+                            lineColor=None, fillColor=None, databaseSrc=None):
         imgFolderPath = os.path.dirname(imagePath)
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
@@ -35,8 +37,9 @@ class LabelFile(object):
         # Pascal format
         image = QImage()
         image.load(imagePath)
-        imageShape = [image.height(), image.width(), 1 if image.isGrayscale() else 3]
-        writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,\
+        imageShape = [image.height(), image.width(),
+                      1 if image.isGrayscale() else 3]
+        writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,
                                  imageShape, localImgPath=imagePath)
         bSave = False
         for shape in shapes:
@@ -47,7 +50,7 @@ class LabelFile(object):
             bSave = True
 
         if bSave:
-            writer.save(targetFile = filename)
+            writer.save(targetFile=filename)
         return
 
     @staticmethod
@@ -64,10 +67,10 @@ class LabelFile(object):
         for p in points:
             x = p[0]
             y = p[1]
-            xmin = min(x,xmin)
-            ymin = min(y,ymin)
-            xmax = max(x,xmax)
-            ymax = max(y,ymax)
+            xmin = min(x, xmin)
+            ymin = min(y, ymin)
+            xmax = max(x, xmax)
+            ymax = max(y, ymax)
 
         # Martin Kersner, 2015/11/12
         # 0-valued coordinates of BB caused an error while
