@@ -225,6 +225,29 @@ class Canvas(QWidget):
                 self.repaint()
         elif ev.button() == Qt.LeftButton and self.selectedShape:
             self.overrideCursor(CURSOR_GRAB)
+        elif ev.button() == Qt.LeftButton:
+            if self.drawing():
+                if self.current and self.current.reachMaxPoints() is False:
+                    initPos = self.current[0]
+                    minX = initPos.x()
+                    minY = initPos.y()
+                    targetPos = self.line[1]
+                    maxX = targetPos.x()
+                    maxY = targetPos.y()
+                    self.current.addPoint(QPointF(maxX, minY))
+                    self.current.addPoint(targetPos)
+                    self.current.addPoint(QPointF(minX, maxY))
+                    self.current.addPoint(initPos)
+                    self.line[0] = self.current[-1]
+                    if self.current.isClosed():
+                        self.finalise()
+                elif not self.outOfPixmap(pos):
+                    self.current = Shape()
+                    self.current.addPoint(pos)
+                    self.line.points = [pos, pos]
+                    self.setHiding()
+                    self.drawingPolygon.emit(True)
+                    self.update()
 
     def endMove(self, copy=False):
         assert self.selectedShape and self.selectedShapeCopy
