@@ -41,16 +41,13 @@ class LabelFile(object):
                       1 if image.isGrayscale() else 3]
         writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,
                                  imageShape, localImgPath=imagePath)
-        bSave = False
         for shape in shapes:
             points = shape['points']
             label = shape['label']
             bndbox = LabelFile.convertPoints2BndBox(points)
             writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label)
-            bSave = True
 
-        if bSave:
-            writer.save(targetFile=filename)
+        writer.save(targetFile=filename)
         return
 
     @staticmethod
