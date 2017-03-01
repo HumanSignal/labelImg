@@ -18,4 +18,3 @@ class TestMainWindow(TestCase):
 
     def test_noop(self):
         pass
-
