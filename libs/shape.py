@@ -58,7 +58,6 @@ class Shape(object):
             self.line_color = line_color
 
     def close(self):
-        assert len(self.points) > 2
         self._closed = True
 
     def reachMaxPoints(self):
@@ -163,7 +162,7 @@ class Shape(object):
         self._highlightIndex = None
 
     def copy(self):
-        shape = Shape("Copy of %s" % self.label)
+        shape = Shape("%s" % self.label)
         shape.points = [p for p in self.points]
         shape.fill = self.fill
         shape.selected = self.selected
