@@ -633,6 +633,9 @@ class MainWindow(QMainWindow, WindowMixin):
             action.setEnabled(True)
 
     def remLabel(self, shape):
+        if shape is None:
+            # print('rm empty label')
+            return
         item = self.shapesToItems[shape]
         self.labelList.takeItem(self.labelList.row(item))
         del self.shapesToItems[shape]

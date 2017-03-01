@@ -64,8 +64,12 @@ Open cmd and go to [labelImg]
 2. Click 'Change default saved annotation folder' in Menu/File
 3. Click 'Open Dir'
 4. Click 'Create RectBox'
+5. Click and release left mouse to select a region to annotate the rect box
+6. You can use right mouse to drag the rect box to copy or move it
 
 The annotation will be saved to the folder you specify.
+
+You can refer to the below hotkeys to speed up your workflow.
 
 ### Create pre-defined classes
 
@@ -75,11 +79,16 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 
 |          |                                          |
 |----------|------------------------------------------|
+| Ctrl + u | Load all of the images from a directory  |
 | Ctrl + r | Change the default annotation target dir |
 | Ctrl + s | Save                                     |
-| w        | Create a bounding box                    |
+| Ctrl + d | Copy the current label and rect box      |
+| w        | Create a rect box                        |
 | d        | Next image                               |
 | a        | Previous image                           |
+| del      | Delete the selected rect box             |
+| Ctrl++   | Zoom in                                  |
+| Ctrl--   | Zoom out                                 |
 
 ### How to contribute
 Send a pull request
