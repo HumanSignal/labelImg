@@ -12,6 +12,7 @@ except ImportError:
 def newIcon(icon):
     return QIcon(':/' + icon)
 
+
 def newButton(text, icon=None, slot=None):
     b = QPushButton(text)
     if icon is not None:
@@ -20,8 +21,9 @@ def newButton(text, icon=None, slot=None):
         b.clicked.connect(slot)
     return b
 
+
 def newAction(parent, text, slot=None, shortcut=None, icon=None,
-        tip=None, checkable=False, enabled=True):
+              tip=None, checkable=False, enabled=True):
     """Create a new action and assign callbacks, shortcuts, etc."""
     a = QAction(text, parent)
     if icon is not None:
@@ -51,18 +53,21 @@ def addActions(widget, actions):
         else:
             widget.addAction(action)
 
+
 def labelValidator():
     return QRegExpValidator(QRegExp(r'^[^ \t].+'), None)
 
 
 class struct(object):
+
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
 
 def distance(p):
     return sqrt(p.x() * p.x() + p.y() * p.y())
 
+
 def fmtShortcut(text):
     mod, key = text.split('+', 1)
     return '<b>%s</b>+<b>%s</b>' % (mod, key)
-

@@ -9,6 +9,7 @@ import codecs
 
 XML_EXT = '.xml'
 
+
 class PascalVocWriter:
 
     def __init__(self, foldername, filename, imgSize, databaseSrc='Unknown', localImgPath=None):
@@ -34,8 +35,7 @@ class PascalVocWriter:
         # Check conditions
         if self.filename is None or \
                 self.foldername is None or \
-                self.imgSize is None or \
-                len(self.boxlist) <= 0:
+                self.imgSize is None:
             return None
 
         top = Element('annotation')
@@ -102,7 +102,8 @@ class PascalVocWriter:
         self.appendObjects(root)
         out_file = None
         if targetFile is None:
-            out_file = codecs.open(self.filename + XML_EXT, 'w', encoding='utf-8')
+            out_file = codecs.open(
+                self.filename + XML_EXT, 'w', encoding='utf-8')
         else:
             out_file = codecs.open(targetFile, 'w', encoding='utf-8')
 
