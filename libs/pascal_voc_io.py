@@ -145,7 +145,7 @@ class PascalVocReader:
             verified = xmltree.attrib['verified']
             if verified == 'yes':
                 self.verified = True
-        except AttributeError:
+        except KeyError:
             self.verified = False
 
         for object_iter in xmltree.findall('object'):
