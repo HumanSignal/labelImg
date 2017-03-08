@@ -212,6 +212,9 @@ class MainWindow(QMainWindow, WindowMixin):
         openPrevImg = action('&Prev Image', self.openPrevImg,
                              'a', 'prev', u'Open Prev')
 
+        verify = action('&Verify Image', self.verifyImg,
+                        'space', 'verify', u'Verify Image')
+
         save = action('&Save', self.saveFile,
                       'Ctrl+S', 'save', u'Save labels to file', enabled=False)
         saveAs = action('&Save As', self.saveFileAs,
@@ -353,7 +356,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, openPrevImg, save, None, create, copy, delete, None,
+            open, opendir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
@@ -658,7 +661,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def saveLabels(self, annotationFilePath):
         annotationFilePath = u(annotationFilePath)
-        lf = LabelFile()
+        if self.labelFile is None:
+            self.labelFile = LabelFile()
+            self.labelFile.verified = self.canvas.verified
 
         def format_shape(s):
             return dict(label=s.label,
@@ -674,12 +679,11 @@ class MainWindow(QMainWindow, WindowMixin):
             if self.usingPascalVocFormat is True:
                 print ('Img: ' + self.filePath +
                        ' -> Its xml: ' + annotationFilePath)
-                lf.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
-                                       self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
+                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
-                lf.save(annotationFilePath, shapes, self.filePath, self.imageData,
-                        self.lineColor.getRgb(), self.fillColor.getRgb())
-                self.labelFile = lf
+                self.labelFile.save(annotationFilePath, shapes, self.filePath, self.imageData,
+                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             return True
         except LabelFileError as e:
             self.errorMessage(u'Error saving label data',
@@ -829,7 +833,9 @@ class MainWindow(QMainWindow, WindowMixin):
                 xmlPath = os.path.join(self.defaultSaveDir, basename)
                 self.loadPascalXMLByFilename(xmlPath)
 
-            self.canvas.setFocus()
+            self.setWindowTitle('{} - {}'.format(__appname__, filePath))
+
+            self.canvas.setFocus(True)
             return True
         return False
 
@@ -970,6 +976,21 @@ class MainWindow(QMainWindow, WindowMixin):
             item = QListWidgetItem(imgPath)
             self.fileListWidget.addItem(item)
 
+    def verifyImg(self, _value=False):
+        # Proceding next image without dialog if having any label
+         if self.filePath is not None:
+            try:
+                self.labelFile.toggleVerify()
+            except AttributeError:
+                # If the labelling file does not exist yet, create if and
+                # re-save it with the verified attribute.
+                self.saveFile()
+                self.labelFile.toggleVerify()
+
+            self.canvas.verified = self.labelFile.verified
+            self.paintCanvas()
+            self.saveFile()
+
     def openPrevImg(self, _value=False):
         if not self.mayContinue():
             return
@@ -1034,7 +1055,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self._saveFile(savedPath)
         else:
             self._saveFile(self.filePath if self.labelFile
-                            else self.saveFileDialog())
+                           else self.saveFileDialog())
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
@@ -1156,6 +1177,7 @@ class MainWindow(QMainWindow, WindowMixin):
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
+        self.canvas.verified = tVocParseReader.verified
 
 
 class Settings(object):
