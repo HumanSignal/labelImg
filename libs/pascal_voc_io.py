@@ -19,6 +19,7 @@ class PascalVocWriter:
         self.imgSize = imgSize
         self.boxlist = []
         self.localImgPath = localImgPath
+        self.verified = False
 
     def prettify(self, elem):
         """
@@ -39,6 +40,8 @@ class PascalVocWriter:
             return None
 
         top = Element('annotation')
+        top.set('verified', 'yes' if self.verified else 'no')
+
         folder = SubElement(top, 'folder')
         folder.text = self.foldername
 
@@ -119,6 +122,7 @@ class PascalVocReader:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color]
         self.shapes = []
         self.filepath = filepath
+        self.verified = False
         self.parseXML()
 
     def getShapes(self):
@@ -137,6 +141,12 @@ class PascalVocReader:
         parser = etree.XMLParser(encoding='utf-8')
         xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
+        try:
+            verified = xmltree.attrib['verified']
+            if verified == 'yes':
+                self.verified = True
+        except AttributeError:
+            self.verified = False
 
         for object_iter in xmltree.findall('object'):
             bndbox = object_iter.find("bndbox")
