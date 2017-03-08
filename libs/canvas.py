@@ -512,16 +512,29 @@ class Canvas(QWidget):
         return super(Canvas, self).minimumSizeHint()
 
     def wheelEvent(self, ev):
-        if ev.orientation() == Qt.Vertical:
+        qt_version = 4 if hasattr(ev, "delta") else 5
+        if qt_version == 4:
+            if ev.orientation() == Qt.Vertical:
+                v_delta = ev.delta()
+                h_delta = 0
+            else:
+                h_delta = ev.delta()
+                v_delta = 0
+        else:
+            delta = ev.angleDelta()
+            h_delta = delta.x()
+            v_delta = delta.y()
+
+        if v_delta:
             mods = ev.modifiers()
             if Qt.ControlModifier == int(mods):
-                self.zoomRequest.emit(ev.delta())
+                self.zoomRequest.emit(v_delta)
             else:
-                self.scrollRequest.emit(ev.delta(),
+                self.scrollRequest.emit(v_delta,
                                         Qt.Horizontal if (Qt.ShiftModifier == int(mods))
                                         else Qt.Vertical)
         else:
-            self.scrollRequest.emit(ev.delta(), Qt.Horizontal)
+            self.scrollRequest.emit(h_delta, Qt.Horizontal)
         ev.accept()
 
     def keyPressEvent(self, ev):
