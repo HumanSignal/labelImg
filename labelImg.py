@@ -204,7 +204,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
         openAnnotation = action('&Open Annotation', self.openAnnotation,
-                                'Ctrl+q', 'openAnnotation', u'Open Annotation')
+                                'Ctrl+Shift+O', 'openAnnotation', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
                              'd', 'next', u'Open Next')
