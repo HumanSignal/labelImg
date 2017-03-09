@@ -204,7 +204,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
         openAnnotation = action('&Open Annotation', self.openAnnotation,
-                                'Ctrl+q', 'openAnnotation', u'Open Annotation')
+                                'Ctrl+Shift+O', 'openAnnotation', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
                              'd', 'next', u'Open Next')
@@ -445,7 +445,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.updateFileMenu()
         # Since loading the file may take some time, make sure it runs in the
         # background.
-        self.queueEvent(partial(self.loadFile, self.filePath))
+        self.queueEvent(partial(self.loadFile, self.filePath or ""))
 
         # Callbacks:
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
@@ -1035,13 +1035,14 @@ class MainWindow(QMainWindow, WindowMixin):
             return
         path = os.path.dirname(str(self.filePath))\
             if self.filePath else '.'
-        formats = ['*.%s' % str(fmt).lower()
-                   for fmt in QImageReader.supportedImageFormats()]
+        formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
         filters = "Image & Label files (%s)" % \
             ' '.join(formats + ['*%s' % LabelFile.suffix])
         filename = QFileDialog.getOpenFileName(self,
                                                '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
+            if isinstance(filename, (tuple,list)):
+                filename=filename[0]
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
