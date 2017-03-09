@@ -1033,16 +1033,13 @@ class MainWindow(QMainWindow, WindowMixin):
     def openFile(self, _value=False):
         if not self.mayContinue():
             return
-        path = os.path.dirname(str(self.filePath))\
-            if self.filePath else '.'
+        path = os.path.dirname(u(self.filePath)) if self.filePath else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
-        filters = "Image & Label files (%s)" % \
-            ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename = QFileDialog.getOpenFileName(self,
-                                               '%s - Choose Image or Label file' % __appname__, path, filters)
+        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
+        filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
-            if isinstance(filename, (tuple,list)):
-                filename=filename[0]
+            if isinstance(filename, (tuple, list)):
+                filename = filename[0]
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
