@@ -83,6 +83,7 @@ You can edit the [data/predefined_classes.txt](https://github.com/tzutalin/label
 | Ctrl + r | Change the default annotation target dir |
 | Ctrl + s | Save                                     |
 | Ctrl + d | Copy the current label and rect box      |
+| Space    | Flag the current image as verified       |
 | w        | Create a rect box                        |
 | d        | Next image                               |
 | a        | Previous image                           |
