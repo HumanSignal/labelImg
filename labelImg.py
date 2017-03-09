@@ -833,7 +833,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 xmlPath = os.path.join(self.defaultSaveDir, basename)
                 self.loadPascalXMLByFilename(xmlPath)
 
-            self.setWindowTitle('{} - {}'.format(__appname__, filePath))
+            self.setWindowTitle(__appname__ + ' ' + filePath)
 
             self.canvas.setFocus(True)
             return True
