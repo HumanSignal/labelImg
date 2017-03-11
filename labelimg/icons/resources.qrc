@@ -1,0 +1,31 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file alias="help">help.png</file>
+        <file alias="app">expert2.png</file>
+        <file alias="expert">expert2.png</file>
+        <file alias="done">done.png</file>
+        <file alias="file">file.png</file>
+        <file alias="labels">labels.png</file>
+        <file alias="new">objects.png</file>
+        <file alias="close">close.png</file>
+        <file alias="fit-width">fit-width.png</file>
+        <file alias="fit-window">fit-window.png</file>
+        <file alias="undo">undo.png</file>
+        <file alias="hide">eye.png</file>
+        <file alias="quit">quit.png</file>
+        <file alias="copy">copy.png</file>
+        <file alias="edit">edit.png</file>
+        <file alias="open">open.png</file>
+        <file alias="save">save.png</file>
+        <file alias="save-as">save-as.png</file>
+        <file alias="color">color.png</file>
+        <file alias="color_line">color_line.png</file>
+        <file alias="zoom">zoom.png</file>
+        <file alias="zoom-in">zoom-in.png</file>
+        <file alias="zoom-out">zoom-out.png</file>
+        <file alias="delete">cancel.png</file>
+        <file alias="next">next.png</file>
+        <file alias="prev">prev.png</file>
+    </qresource>
+</RCC>
