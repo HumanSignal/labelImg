@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import _init_path
 import codecs
 import os.path
 import re
@@ -25,18 +24,18 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
+import labelimg.resources
 
-from lib import struct, newAction, newIcon, addActions, fmtShortcut
-from shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from canvas import Canvas
-from zoomWidget import ZoomWidget
-from labelDialog import LabelDialog
-from colorDialog import ColorDialog
-from labelFile import LabelFile, LabelFileError
-from toolBar import ToolBar
-from pascal_voc_io import PascalVocReader
-from pascal_voc_io import XML_EXT
+from labelimg.lib import struct, newAction, newIcon, addActions, fmtShortcut
+from labelimg.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+from labelimg.canvas import Canvas
+from labelimg.zoomWidget import ZoomWidget
+from labelimg.labelDialog import LabelDialog
+from labelimg.colorDialog import ColorDialog
+from labelimg.labelFile import LabelFile, LabelFileError
+from labelimg.toolBar import ToolBar
+from labelimg.pascal_voc_io import PascalVocReader
+from labelimg.pascal_voc_io import XML_EXT
 
 __appname__ = 'labelImg'
 
