@@ -10,7 +10,6 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'Click>=6.0',
     # TODO: put package requirements here
 ]
 
@@ -33,7 +32,7 @@ setup(
                  'labelimg'},
     entry_points={
         'console_scripts': [
-            'labelimg=labelimg.cli:main'
+            'labelimg=labelimg:main'
         ]
     },
     include_package_data=True,
