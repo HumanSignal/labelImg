@@ -34,11 +34,11 @@ except ImportError:
 from labelimg.lib import struct, newAction, newIcon, addActions, fmtShortcut
 from labelimg.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from labelimg.canvas import Canvas
-from labelimg.zoomWidget import ZoomWidget
-from labelimg.labelDialog import LabelDialog
-from labelimg.colorDialog import ColorDialog
-from labelimg.labelFile import LabelFile, LabelFileError
-from labelimg.toolBar import ToolBar
+from labelimg.zoom_widget import ZoomWidget
+from labelimg.label_dialog import LabelDialog
+from labelimg.color_dialog import ColorDialog
+from labelimg.label_file import LabelFile, LabelFileError
+from labelimg.toolbar import ToolBar
 from labelimg.pascal_voc_io import PascalVocReader, XML_EXT
 
 import labelimg.resources
