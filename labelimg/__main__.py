@@ -190,11 +190,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Actions
         action = partial(newAction, self)
-        quit = action('&Quit', self.close,
-                      'Ctrl+Q', 'quit', u'Quit application')
+        quitAction = action('&Quit', self.close,
+                            'Ctrl+Q', 'quit', u'Quit application')
 
-        open = action('&Open', self.openFile,
-                      'Ctrl+O', 'open', u'Open image or label file')
+        openAction = action('&Open', self.openFile,
+                            'Ctrl+O', 'open', u'Open image or label file')
 
         opendir = action('&Open Dir', self.openDir,
                          'Ctrl+u', 'open', u'Open Dir')
@@ -203,7 +203,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
         openAnnotation = action('&Open Annotation', self.openAnnotation,
-                                'Ctrl+Shift+O', 'openAnnotation', u'Open Annotation')
+                                'Ctrl+Shift+O', 'open', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
                              'd', 'next', u'Open Next')
@@ -250,8 +250,8 @@ class MainWindow(QMainWindow, WindowMixin):
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
 
-        help = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
-                      u'Show demos')
+        helpAction = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
+                            u'Show demos')
 
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
@@ -308,7 +308,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(save=save, saveAs=saveAs, open=openAction, close=close,
                               lineColor=color1, fillColor=color2,
                               create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
@@ -317,7 +317,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               fitWindow=fitWindow, fitWidth=fitWidth,
                               zoomActions=zoomActions,
                               fileMenuActions=(
-                                  open, opendir, save, saveAs, close, quit),
+                                  openAction, opendir, save, saveAs, close, quitAction),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
                                         None, color1, color2),
@@ -337,8 +337,8 @@ class MainWindow(QMainWindow, WindowMixin):
             labelList=labelMenu)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quit))
-        addActions(self.menus.help, (help,))
+                   (openAction, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quitAction))
+        addActions(self.menus.help, (helpAction,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
             hideAll, showAll, None,
@@ -355,11 +355,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
+            openAction, opendir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, save, None,
+            openAction, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -977,7 +977,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def verifyImg(self, _value=False):
         # Proceding next image without dialog if having any label
-         if self.filePath is not None:
+        if self.filePath is not None:
             try:
                 self.labelFile.toggleVerify()
             except AttributeError:
@@ -1033,9 +1033,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
         path = os.path.dirname(u(self.filePath)) if self.filePath else '.'
-        formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
-        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
+        formats = ['*.%s' % fmt.data().decode("ascii").lower()
+                   for fmt in QImageReader.supportedImageFormats()]
+        filters = "Image & Label files (%s)" % ' '.join(
+            formats + ['*%s' % LabelFile.suffix])
+        filename = QFileDialog.getOpenFileName(
+            self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
