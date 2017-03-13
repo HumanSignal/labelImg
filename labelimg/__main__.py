@@ -1,13 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import codecs
+import logging
 import os.path
 import re
-import sys
 import subprocess
-
-from functools import partial
+import sys
 from collections import defaultdict
+from functools import partial
 
 try:
     from PyQt5.QtGui import *
@@ -20,24 +26,34 @@ except ImportError:
     # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
     if sys.version_info.major >= 3:
         import sip
+
         sip.setapi('QVariant', 2)
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
-
-import labelimg.resources
 
 from labelimg.lib import struct, newAction, newIcon, addActions, fmtShortcut
 from labelimg.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from labelimg.canvas import Canvas
 from labelimg.zoomWidget import ZoomWidget
-from labelimg.labelDialog import LabelDialog
-from labelimg.colorDialog import ColorDialog
+from labelimg.labelDialog import LabelDialog, ColorDialog
 from labelimg.labelFile import LabelFile, LabelFileError
 from labelimg.toolBar import ToolBar
-from labelimg.pascal_voc_io import PascalVocReader
-from labelimg.pascal_voc_io import XML_EXT
+from labelimg.pascal_voc_io import PascalVocReader, XML_EXT
+
+import labelimg.resources
+
+__author__ = 'Thibaut Mattio <tmattio@patsnap.com>'
+__copyrights__ = 'Copyright 2017 PatSnap Pte Ltd'
+__license__ = 'none'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 __appname__ = 'labelImg'
+
 
 # Utility functions and classes.
 
@@ -55,7 +71,7 @@ def u(x):
 
 
 def have_qstring():
-    '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
+    """ p3/qt5 get rid of QString wrapper as py3 has native unicode str type """
     return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
 
 
@@ -184,7 +200,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
         # Tzutalin 20160906 : Add file list and dock to move faster
         self.addDockWidget(Qt.RightDockWidgetArea, self.filedock)
-        self.dockFeatures = QDockWidget.DockWidgetClosable\
+        self.dockFeatures = QDockWidget.DockWidgetClosable \
             | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
@@ -337,7 +353,8 @@ class MainWindow(QMainWindow, WindowMixin):
             labelList=labelMenu)
 
         addActions(self.menus.file,
-                   (openAction, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quitAction))
+                   (openAction, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close,
+                    None, quitAction))
         addActions(self.menus.help, (helpAction,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
@@ -478,7 +495,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.menus[0].clear()
         addActions(self.canvas.menus[0], menu)
         self.menus.edit.clear()
-        actions = (self.actions.create,) if self.beginner()\
+        actions = (self.actions.create,) if self.beginner() \
             else (self.actions.createMode, self.actions.editMode)
         addActions(self.menus.edit, actions + self.actions.editMenu)
 
@@ -577,6 +594,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         def exists(filename):
             return os.path.exists(filename)
+
         menu = self.menus.recentFiles
         menu.clear()
         files = [f for f in self.recentFiles if f !=
@@ -676,8 +694,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                print ('Img: ' + self.filePath +
-                       ' -> Its xml: ' + annotationFilePath)
+                print('Img: ' + self.filePath +
+                      ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
@@ -839,8 +857,8 @@ class MainWindow(QMainWindow, WindowMixin):
         return False
 
     def resizeEvent(self, event):
-        if self.canvas and not self.image.isNull()\
-           and self.zoomMode != self.MANUAL_ZOOM:
+        if self.canvas and not self.image.isNull() \
+                and self.zoomMode != self.MANUAL_ZOOM:
             self.adjustScale()
         super(MainWindow, self).resizeEvent(event)
 
@@ -924,7 +942,8 @@ class MainWindow(QMainWindow, WindowMixin):
             path = '.'
 
         dirpath = str(QFileDialog.getExistingDirectory(self,
-                                                       '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+                                                       '%s - Save to the directory' % __appname__, path,
+                                                       QFileDialog.ShowDirsOnly
                                                        | QFileDialog.DontResolveSymlinks))
 
         if dirpath is not None and len(dirpath) > 1:
@@ -938,13 +957,13 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filePath is None:
             return
 
-        path = os.path.dirname(u(self.filePath))\
+        path = os.path.dirname(u(self.filePath)) \
             if self.filePath else '.'
         if self.usingPascalVocFormat:
             formats = ['*.%s' % str(fmt).lower()
                        for fmt in QImageReader.supportedImageFormats()]
             filters = "Open Annotation XML file (%s)" % \
-                ' '.join(formats + ['*.xml'])
+                      ' '.join(formats + ['*.xml'])
             filename = str(QFileDialog.getOpenFileName(self,
                                                        '%s - Choose a xml file' % __appname__, path, filters))
             self.loadPascalXMLByFilename(filename)
@@ -953,14 +972,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
 
-        path = os.path.dirname(self.filePath)\
+        path = os.path.dirname(self.filePath) \
             if self.filePath else '.'
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
             path = self.lastOpenDir
 
         dirpath = u(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+                                                     '%s - Open Directory' % __appname__, path, QFileDialog.ShowDirsOnly
                                                      | QFileDialog.DontResolveSymlinks))
 
         if dirpath is not None and len(dirpath) > 1:
@@ -1244,6 +1263,7 @@ def main(argv):
     '''construct main app and run it'''
     app, _win = get_main_app(argv)
     return app.exec_()
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

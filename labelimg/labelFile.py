@@ -1,15 +1,31 @@
-# Copyright (c) 2016 Tzutalin
-# Create by TzuTaLin <tzu.ta.lin@gmail.com>
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import logging
+import sys
 
 try:
     from PyQt5.QtGui import QImage
 except ImportError:
     from PyQt4.QtGui import QImage
 
-from base64 import b64encode, b64decode
-from pascal_voc_io import PascalVocWriter
+from labelimg.pascal_voc_io import PascalVocWriter
 import os.path
-import sys
+
+__author__ = 'TzuTa Lin <tzu.ta.lin@gmail.com>'
+__copyrights__ = 'Copyright 2017 TzuTa Lin'
+__license__ = 'MIT'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 
 class LabelFileError(Exception):
