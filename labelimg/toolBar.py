@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import logging
+import sys
+
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -5,6 +16,16 @@ try:
 except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
+
+__author__ = 'TzuTa Lin <tzu.ta.lin@gmail.com>'
+__copyrights__ = 'Copyright 2017 TzuTa Lin'
+__license__ = 'MIT'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 
 class ToolBar(QToolBar):

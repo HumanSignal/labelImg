@@ -1,0 +1,2 @@
+PyQt5
+lxml

@@ -1,6 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
 
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import logging
+import sys
 
 try:
     from PyQt5.QtGui import *
@@ -9,7 +16,17 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from lib import distance
+from labelimg.lib import distance
+
+__author__ = 'TzuTa Lin <tzu.ta.lin@gmail.com>'
+__copyrights__ = 'Copyright 2017 TzuTa Lin'
+__license__ = 'MIT'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
 DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
@@ -97,7 +114,7 @@ class Shape(object):
             # Uncommenting the following line will draw 2 paths
             # for the 1st vertex, and make it non-filled, which
             # may be desirable.
-            #self.drawVertex(vrtx_path, 0)
+            # self.drawVertex(vrtx_path, 0)
 
             for i, p in enumerate(self.points):
                 line_path.lineTo(p)

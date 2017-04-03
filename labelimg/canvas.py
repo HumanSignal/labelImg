@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import logging
+import sys
 
 try:
     from PyQt5.QtGui import *
@@ -7,16 +17,25 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-#from PyQt4.QtOpenGL import *
+from labelimg.shape import Shape
+from labelimg.lib import distance
 
-from shape import Shape
-from lib import distance
+__author__ = 'TzuTa Lin <tzu.ta.lin@gmail.com>'
+__copyrights__ = 'Copyright 2017 TzuTa Lin'
+__license__ = 'MIT'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 CURSOR_DEFAULT = Qt.ArrowCursor
 CURSOR_POINT = Qt.PointingHandCursor
 CURSOR_DRAW = Qt.CrossCursor
 CURSOR_MOVE = Qt.ClosedHandCursor
 CURSOR_GRAB = Qt.OpenHandCursor
+
 
 # class Canvas(QGLWidget):
 
@@ -199,8 +218,8 @@ class Canvas(QWidget):
         if ev.button() == Qt.RightButton:
             menu = self.menus[bool(self.selectedShapeCopy)]
             self.restoreCursor()
-            if not menu.exec_(self.mapToGlobal(ev.pos()))\
-               and self.selectedShapeCopy:
+            if not menu.exec_(self.mapToGlobal(ev.pos())) \
+                    and self.selectedShapeCopy:
                 # Cancel the move by deleting the shadow copy.
                 self.selectedShapeCopy = None
                 self.repaint()
@@ -214,8 +233,8 @@ class Canvas(QWidget):
     def endMove(self, copy=False):
         assert self.selectedShape and self.selectedShapeCopy
         shape = self.selectedShapeCopy
-        #del shape.fill_color
-        #del shape.line_color
+        # del shape.fill_color
+        # del shape.line_color
         if copy:
             self.shapes.append(shape)
             self.selectedShape.selected = False
@@ -339,7 +358,7 @@ class Canvas(QWidget):
         # relative to the shape, but also results in making it
         # a bit "shaky" when nearing the border and allows it to
         # go outside of the shape's area for some reason. XXX
-        #self.calculateOffsets(self.selectedShape, pos)
+        # self.calculateOffsets(self.selectedShape, pos)
         dp = pos - self.prevPoint
         if dp:
             shape.moveBy(dp)
@@ -459,8 +478,8 @@ class Canvas(QWidget):
         self.update()
 
     def closeEnough(self, p1, p2):
-        #d = distance(p1 - p2)
-        #m = (p1-p2).manhattanLength()
+        # d = distance(p1 - p2)
+        # m = (p1-p2).manhattanLength()
         # print "d %.2f, m %d, %.2f" % (d, m, d - m)
         return distance(p1 - p2) < self.epsilon
 

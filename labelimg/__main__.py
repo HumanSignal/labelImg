@@ -1,14 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
-import _init_path
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import codecs
+import logging
 import os.path
 import re
-import sys
 import subprocess
-
-from functools import partial
+import sys
 from collections import defaultdict
+from functools import partial
 
 try:
     from PyQt5.QtGui import *
@@ -21,24 +26,35 @@ except ImportError:
     # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
     if sys.version_info.major >= 3:
         import sip
+
         sip.setapi('QVariant', 2)
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
+from labelimg.lib import struct, newAction, newIcon, addActions, fmtShortcut
+from labelimg.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+from labelimg.canvas import Canvas
+from labelimg.zoom_widget import ZoomWidget
+from labelimg.label_dialog import LabelDialog
+from labelimg.color_dialog import ColorDialog
+from labelimg.label_file import LabelFile, LabelFileError
+from labelimg.toolbar import ToolBar
+from labelimg.pascal_voc_io import PascalVocReader, XML_EXT
 
-from lib import struct, newAction, newIcon, addActions, fmtShortcut
-from shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from canvas import Canvas
-from zoomWidget import ZoomWidget
-from labelDialog import LabelDialog
-from colorDialog import ColorDialog
-from labelFile import LabelFile, LabelFileError
-from toolBar import ToolBar
-from pascal_voc_io import PascalVocReader
-from pascal_voc_io import XML_EXT
+import labelimg.resources
+
+__author__ = 'Thibaut Mattio <tmattio@patsnap.com>'
+__copyrights__ = 'Copyright 2017 PatSnap Pte Ltd'
+__license__ = 'none'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 __appname__ = 'labelImg'
+
 
 # Utility functions and classes.
 
@@ -56,7 +72,7 @@ def u(x):
 
 
 def have_qstring():
-    '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
+    """ p3/qt5 get rid of QString wrapper as py3 has native unicode str type """
     return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
 
 
@@ -185,17 +201,17 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
         # Tzutalin 20160906 : Add file list and dock to move faster
         self.addDockWidget(Qt.RightDockWidgetArea, self.filedock)
-        self.dockFeatures = QDockWidget.DockWidgetClosable\
+        self.dockFeatures = QDockWidget.DockWidgetClosable \
             | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
         # Actions
         action = partial(newAction, self)
-        quit = action('&Quit', self.close,
-                      'Ctrl+Q', 'quit', u'Quit application')
+        quitAction = action('&Quit', self.close,
+                            'Ctrl+Q', 'quit', u'Quit application')
 
-        open = action('&Open', self.openFile,
-                      'Ctrl+O', 'open', u'Open image or label file')
+        openAction = action('&Open', self.openFile,
+                            'Ctrl+O', 'open', u'Open image or label file')
 
         opendir = action('&Open Dir', self.openDir,
                          'Ctrl+u', 'open', u'Open Dir')
@@ -204,7 +220,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
         openAnnotation = action('&Open Annotation', self.openAnnotation,
-                                'Ctrl+Shift+O', 'openAnnotation', u'Open Annotation')
+                                'Ctrl+Shift+O', 'open', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
                              'd', 'next', u'Open Next')
@@ -251,8 +267,8 @@ class MainWindow(QMainWindow, WindowMixin):
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
 
-        help = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
-                      u'Show demos')
+        helpAction = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
+                            u'Show demos')
 
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
@@ -309,7 +325,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(save=save, saveAs=saveAs, open=openAction, close=close,
                               lineColor=color1, fillColor=color2,
                               create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
@@ -318,7 +334,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               fitWindow=fitWindow, fitWidth=fitWidth,
                               zoomActions=zoomActions,
                               fileMenuActions=(
-                                  open, opendir, save, saveAs, close, quit),
+                                  openAction, opendir, save, saveAs, close, quitAction),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
                                         None, color1, color2),
@@ -338,8 +354,9 @@ class MainWindow(QMainWindow, WindowMixin):
             labelList=labelMenu)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quit))
-        addActions(self.menus.help, (help,))
+                   (openAction, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close,
+                    None, quitAction))
+        addActions(self.menus.help, (helpAction,))
         addActions(self.menus.view, (
             labels, advancedMode, None,
             hideAll, showAll, None,
@@ -356,11 +373,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
+            openAction, opendir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, save, None,
+            openAction, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -479,7 +496,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.menus[0].clear()
         addActions(self.canvas.menus[0], menu)
         self.menus.edit.clear()
-        actions = (self.actions.create,) if self.beginner()\
+        actions = (self.actions.create,) if self.beginner() \
             else (self.actions.createMode, self.actions.editMode)
         addActions(self.menus.edit, actions + self.actions.editMenu)
 
@@ -578,6 +595,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         def exists(filename):
             return os.path.exists(filename)
+
         menu = self.menus.recentFiles
         menu.clear()
         files = [f for f in self.recentFiles if f !=
@@ -677,8 +695,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                print ('Img: ' + self.filePath +
-                       ' -> Its xml: ' + annotationFilePath)
+                print('Img: ' + self.filePath +
+                      ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
@@ -840,8 +858,8 @@ class MainWindow(QMainWindow, WindowMixin):
         return False
 
     def resizeEvent(self, event):
-        if self.canvas and not self.image.isNull()\
-           and self.zoomMode != self.MANUAL_ZOOM:
+        if self.canvas and not self.image.isNull() \
+                and self.zoomMode != self.MANUAL_ZOOM:
             self.adjustScale()
         super(MainWindow, self).resizeEvent(event)
 
@@ -925,7 +943,8 @@ class MainWindow(QMainWindow, WindowMixin):
             path = '.'
 
         dirpath = str(QFileDialog.getExistingDirectory(self,
-                                                       '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+                                                       '%s - Save to the directory' % __appname__, path,
+                                                       QFileDialog.ShowDirsOnly
                                                        | QFileDialog.DontResolveSymlinks))
 
         if dirpath is not None and len(dirpath) > 1:
@@ -939,13 +958,13 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filePath is None:
             return
 
-        path = os.path.dirname(u(self.filePath))\
+        path = os.path.dirname(u(self.filePath)) \
             if self.filePath else '.'
         if self.usingPascalVocFormat:
             formats = ['*.%s' % str(fmt).lower()
                        for fmt in QImageReader.supportedImageFormats()]
             filters = "Open Annotation XML file (%s)" % \
-                ' '.join(formats + ['*.xml'])
+                      ' '.join(formats + ['*.xml'])
             filename = str(QFileDialog.getOpenFileName(self,
                                                        '%s - Choose a xml file' % __appname__, path, filters))
             self.loadPascalXMLByFilename(filename)
@@ -954,14 +973,14 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
 
-        path = os.path.dirname(self.filePath)\
+        path = os.path.dirname(self.filePath) \
             if self.filePath else '.'
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
             path = self.lastOpenDir
 
         dirpath = u(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+                                                     '%s - Open Directory' % __appname__, path, QFileDialog.ShowDirsOnly
                                                      | QFileDialog.DontResolveSymlinks))
 
         if dirpath is not None and len(dirpath) > 1:
@@ -978,7 +997,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def verifyImg(self, _value=False):
         # Proceding next image without dialog if having any label
-         if self.filePath is not None:
+        if self.filePath is not None:
             try:
                 self.labelFile.toggleVerify()
             except AttributeError:
@@ -1034,9 +1053,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue():
             return
         path = os.path.dirname(u(self.filePath)) if self.filePath else '.'
-        formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
-        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
-        filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
+        formats = ['*.%s' % fmt.data().decode("ascii").lower()
+                   for fmt in QImageReader.supportedImageFormats()]
+        filters = "Image & Label files (%s)" % ' '.join(
+            formats + ['*%s' % LabelFile.suffix])
+        filename = QFileDialog.getOpenFileName(
+            self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
@@ -1242,6 +1264,7 @@ def main(argv):
     '''construct main app and run it'''
     app, _win = get_main_app(argv)
     return app.exec_()
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

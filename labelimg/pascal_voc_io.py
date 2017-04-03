@@ -1,11 +1,28 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
-import _init_path
+# -*- coding: utf-8 -*-
+""" TODO: Complete documentation
+"""
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import codecs
+import logging
 import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
+
 from lxml import etree
-import codecs
+
+__author__ = 'TzuTa Lin <tzu.ta.lin@gmail.com>'
+__copyrights__ = 'Copyright 2017 TzuTa Lin'
+__license__ = 'MIT'
+
+logging.basicConfig(level=logging.INFO,
+                    stream=sys.stdout,
+                    format='[%(asctime)s] %(levelname)s: %(message)s',
+                    datefmt="%Y-%m-%d %H:%M:%S")
+_logger = logging.getLogger(__name__)
 
 XML_EXT = '.xml'
 
