@@ -196,7 +196,7 @@ matrix:
 
     # OS X 10.12 Python 3 + QT5
     - os: osx
-      osx_image: xcode8.2  # OS X 10.12
+      osx_image: xcode8.3  # OS X 10.12
       sudo: required
       language: generic
       python: "3.6"
