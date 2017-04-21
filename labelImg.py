@@ -826,12 +826,16 @@ class MainWindow(QMainWindow, WindowMixin):
             self.toggleActions(True)
 
             # Label xml file and show bound box according to its filename
-            if self.usingPascalVocFormat is True and \
-                    self.defaultSaveDir is not None:
-                basename = os.path.basename(
-                    os.path.splitext(self.filePath)[0]) + XML_EXT
-                xmlPath = os.path.join(self.defaultSaveDir, basename)
-                self.loadPascalXMLByFilename(xmlPath)
+            if self.usingPascalVocFormat is True:
+                if self.defaultSaveDir is not None:
+                    basename = os.path.basename(
+                        os.path.splitext(self.filePath)[0]) + XML_EXT
+                    xmlPath = os.path.join(self.defaultSaveDir, basename)
+                    self.loadPascalXMLByFilename(xmlPath)
+                else:
+                    xmlPath = filePath.split(".")[0] + XML_EXT
+                    if os.path.isfile(xmlPath):
+                        self.loadPascalXMLByFilename(xmlPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -942,12 +946,12 @@ class MainWindow(QMainWindow, WindowMixin):
         path = os.path.dirname(u(self.filePath))\
             if self.filePath else '.'
         if self.usingPascalVocFormat:
-            formats = ['*.%s' % str(fmt).lower()
-                       for fmt in QImageReader.supportedImageFormats()]
             filters = "Open Annotation XML file (%s)" % \
-                ' '.join(formats + ['*.xml'])
-            filename = str(QFileDialog.getOpenFileName(self,
-                                                       '%s - Choose a xml file' % __appname__, path, filters))
+                      ' '.join(['*.xml'])
+            filename = QFileDialog.getOpenFileName(self,'%s - Choose a xml file' % __appname__, path, filters)
+            if filename:
+                if isinstance(filename, (tuple, list)):
+                    filename = filename[0]
             self.loadPascalXMLByFilename(filename)
 
     def openDir(self, _value=False):
