@@ -744,6 +744,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if item and self.canvas.editing():
             self._noSelectionSlot = True
             self.canvas.selectShape(self.itemsToShapes[item])
+            shape = self.itemsToShapes[item]
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
 
