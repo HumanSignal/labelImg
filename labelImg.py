@@ -148,9 +148,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelListContainer = QWidget()
         self.labelListContainer.setLayout(listLayout)
         listLayout.addWidget(self.editButton)  # , 0, Qt.AlignCenter)
-        listLayout.addWidget(self.labelList)
         # Add chris 
         listLayout.addWidget(self.diffcButton) 
+        listLayout.addWidget(self.labelList)
+        
 
         self.dock = QDockWidget(u'Box Labels', self)
         self.dock.setObjectName(u'Labels')
