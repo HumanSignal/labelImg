@@ -139,10 +139,18 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.labelList)
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        
+        # Add chris 
+        self.diffcButton = QCheckBox("Difficult")
+        self.diffcButton.setChecked(False) 
+        self.diffcButton.stateChanged.connect(self.btnstate)
+        
         self.labelListContainer = QWidget()
         self.labelListContainer.setLayout(listLayout)
         listLayout.addWidget(self.editButton)  # , 0, Qt.AlignCenter)
         listLayout.addWidget(self.labelList)
+        # Add chris 
+        listLayout.addWidget(self.diffcButton) 
 
         self.dock = QDockWidget(u'Box Labels', self)
         self.dock.setObjectName(u'Labels')
@@ -376,6 +384,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fillColor = None
         self.zoom_level = 100
         self.fit_window = False
+        # Add Chris
+        self.difficult = False 
 
         # XXX: Could be completely declarative.
         # Restore application settings.
@@ -431,6 +441,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
+        # Add chris 
+        Shape.Difficult = self.difficult
 
         def xbool(x):
             if isinstance(x, QVariant):
@@ -608,6 +620,33 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[currIndex]
             if filename:
                 self.loadFile(filename)
+     
+    # Add chris       
+    def btnstate(self, item= None):
+        """ Function to handle difficult examples 
+        Update on each object """
+        if not self.canvas.editing():
+            return
+         
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one 
+            item = self.labelList.item(self.labelList.count()-1)
+
+        difficult = self.diffcButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update 
+        try:
+            if difficult != shape.difficult:
+                shape.difficult = difficult
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
 
     # React to canvas signals.
     def shapeSelectionChanged(self, selected=False):
@@ -646,17 +685,20 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color in shapes:
+        for label, points, line_color, fill_color, difficult in shapes:
             shape = Shape(label=label)
             for x, y in points:
                 shape.addPoint(QPointF(x, y))
+            shape.difficult = difficult
             shape.close()
             s.append(shape)
             self.addLabel(shape)
+            
             if line_color:
                 shape.line_color = QColor(*line_color)
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
+                
         self.canvas.loadShapes(s)
 
     def saveLabels(self, annotationFilePath):
@@ -671,7 +713,9 @@ class MainWindow(QMainWindow, WindowMixin):
                         if s.line_color != self.lineColor else None,
                         fill_color=s.fill_color.getRgb()
                         if s.fill_color != self.fillColor else None,
-                        points=[(p.x(), p.y()) for p in s.points])
+                        points=[(p.x(), p.y()) for p in s.points],
+                       # add chris
+                        difficult = s.difficult)
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add differrent annotation formats here
@@ -700,6 +744,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if item and self.canvas.editing():
             self._noSelectionSlot = True
             self.canvas.selectShape(self.itemsToShapes[item])
+            # Add Chris
+            self.diffcButton.setChecked(shape.difficult)
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
@@ -721,6 +767,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 parent=self, listItem=self.labelHist)
 
         text = self.labelDialog.popUp(text=self.prevLabelText)
+        # Add Chris
+        self.diffcButton.setChecked(False)
         if text is not None:
             self.prevLabelText = text
             self.addLabel(self.canvas.setLastLabel(text))
