@@ -418,7 +418,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.move(position)
         saveDir = ustr(settings.get('savedir', None))
         self.lastOpenDir = ustr(settings.get('lastOpenDir', None))
-        if os.path.exists(saveDir):
+        if saveDir is not None and os.path.exists(saveDir):
             self.defaultSaveDir = saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
                                          (__appname__, self.defaultSaveDir))
