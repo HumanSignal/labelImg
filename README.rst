@@ -16,8 +16,7 @@ Annotations are saved as XML files in PASCAL VOC format, the format used by [Ima
 
 ### Download prebuilt binaries
 
-* Windows &  Linux
- * [http://tzutalin.github.io/labelImg/](http://tzutalin.github.io/labelImg/)
+* [Windows & Linux](http://tzutalin.github.io/labelImg/)
 
 * OS X
  * Binaries for OS X are not yet available. Help would be appreciated. At present it must be [built from source](#os-x).

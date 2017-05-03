@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import _init_path
 import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
