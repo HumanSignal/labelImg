@@ -21,7 +21,7 @@ test_requirements = [
 
 setup(
     name='labelImg',
-    version='1.2.3',
+    version='1.2.4',
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
