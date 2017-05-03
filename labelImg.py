@@ -26,7 +26,8 @@ except ImportError:
     from PyQt4.QtCore import *
 
 import resources
-
+# Add internal libs
+sys.path.insert(0, 'libs')
 from lib import struct, newAction, newIcon, addActions, fmtShortcut
 from shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from canvas import Canvas
@@ -1285,7 +1286,7 @@ def get_main_app(argv=[]):
     return app, win
 
 
-def main(argv):
+def main(argv=[]):
     '''construct main app and run it'''
     app, _win = get_main_app(argv)
     return app.exec_()
