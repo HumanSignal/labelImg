@@ -74,7 +74,7 @@ class PascalVocWriter:
     def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
-        bndbox['difficult'] = difficult  
+        bndbox['difficult'] = difficult
         self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
@@ -89,12 +89,10 @@ class PascalVocWriter:
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
-            # max == height or min 
             if int(each_object['ymax']) == int(self.imgSize[0]) or (int(each_object['ymin'])== 1):
-		        truncated.text = "1"
-            # max == width or min 
+                truncated.text = "1" # max == height or min
             elif (int(each_object['xmax'])==int(self.imgSize[1])) or (int(each_object['xmin'])== 1):
-                truncated.text = "1"
+                truncated.text = "1" # max == width or min
             else:
                 truncated.text = "0"
             difficult = SubElement(object_item, 'Difficult')
@@ -143,11 +141,10 @@ class PascalVocReader:
         xmax = int(bndbox.find('xmax').text)
         ymax = int(bndbox.find('ymax').text)
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        
         self.shapes.append((label, points, None, None, difficult))
 
     def parseXML(self):
-        assert self.filepath.endswith('.xml'), "Unsupport file format"
+        assert self.filepath.endswith(XML_EXT), "Unsupport file format"
         parser = etree.XMLParser(encoding='utf-8')
         xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
