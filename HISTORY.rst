@@ -2,6 +2,13 @@
 History
 =======
 
+1.3.0 (2017-04-22)
+------------------
+
+* Fix issues
+* Add difficult tag
+* Create new files for pypi
+
 1.2.3 (2017-04-22)
 ------------------
 
