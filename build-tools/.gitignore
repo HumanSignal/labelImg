@@ -8,3 +8,5 @@ virtual-wine
 venv_wine
 PyQt4-*
 lxml-*
+windows_v*
+linux_v*

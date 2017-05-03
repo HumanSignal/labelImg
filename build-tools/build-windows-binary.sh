@@ -14,7 +14,7 @@ wine c:/Python27/python.exe pyinstaller/pyinstaller.py --hidden-import=xml \
             --hidden-import=xml.etree \
             --hidden-import=xml.etree.ElementTree \
             --hidden-import=lxml.etree \
-             -D -F -n labelImg -c "../labelImg.py" -p ../libs
+             -D -F -n labelImg -c "../labelImg.py" -p ../libs -p ../
 
 FOLDER=$(git describe --abbrev=0 --tags)
 FOLDER="windows_"$FOLDER
