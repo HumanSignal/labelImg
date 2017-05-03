@@ -21,17 +21,16 @@ test_requirements = [
 
 setup(
     name='labelImg',
-    version='1.2.4',
+    version='1.3.0',
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
     packages=[
-        'labelImg',
+        'labelImg', 'labelImg.libs'
     ],
-    package_dir={'labelImg':
-                 '.'},
+    package_dir={'labelImg': '.'},
     entry_points={
         'console_scripts': [
             'labelImg=labelImg.labelImg:main'

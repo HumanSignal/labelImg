@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import _init_path
 import codecs
 import os.path
 import re
@@ -27,7 +26,9 @@ except ImportError:
 
 import resources
 # Add internal libs
-sys.path.insert(0, 'libs')
+dir_name = os.path.abspath(os.path.dirname(__file__))
+libs_path = os.path.join(dir_name, 'libs')
+sys.path.insert(0, libs_path)
 from lib import struct, newAction, newIcon, addActions, fmtShortcut
 from shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from canvas import Canvas
