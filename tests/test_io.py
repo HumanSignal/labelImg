@@ -1,7 +1,11 @@
-import _init_path
 
 from unittest import TestCase
 
+import sys
+import os
+dir_name = os.path.abspath(os.path.dirname(__file__))
+libs_path = os.path.join(dir_name, '..', 'libs')
+sys.path.insert(0, libs_path)
 from pascal_voc_io import PascalVocWriter
 from pascal_voc_io import PascalVocReader
 
