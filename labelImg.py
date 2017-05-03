@@ -16,8 +16,8 @@ try:
     from PyQt5.QtWidgets import *
 except ImportError:
     # needed for py3+qt4
-    # ref: http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-    # ref:
+    # Ref:
+    # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
     # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
     if sys.version_info.major >= 3:
         import sip
@@ -37,22 +37,11 @@ from labelFile import LabelFile, LabelFileError
 from toolBar import ToolBar
 from pascal_voc_io import PascalVocReader
 from pascal_voc_io import XML_EXT
+from ustr import ustr
 
 __appname__ = 'labelImg'
 
 # Utility functions and classes.
-
-
-def u(x):
-    '''py2/py3 unicode helper'''
-    if sys.version_info < (3, 0, 0):
-        if type(x) == str:
-            return x.decode('utf-8')
-        if type(x) == QString:
-            return unicode(x)
-        return x
-    else:
-        return x  # py3
 
 
 def have_qstring():
@@ -139,19 +128,19 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.labelList)
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        
-        # Add chris 
+
+        # Add chris
         self.diffcButton = QCheckBox("Difficult")
-        self.diffcButton.setChecked(False) 
+        self.diffcButton.setChecked(False)
         self.diffcButton.stateChanged.connect(self.btnstate)
-        
+
         self.labelListContainer = QWidget()
         self.labelListContainer.setLayout(listLayout)
         listLayout.addWidget(self.editButton)  # , 0, Qt.AlignCenter)
-        # Add chris 
-        listLayout.addWidget(self.diffcButton) 
+        # Add chris
+        listLayout.addWidget(self.diffcButton)
         listLayout.addWidget(self.labelList)
-        
+
 
         self.dock = QDockWidget(u'Box Labels', self)
         self.dock.setObjectName(u'Labels')
@@ -378,7 +367,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Application state.
         self.image = QImage()
-        self.filePath = u(defaultFilename)
+        self.filePath = ustr(defaultFilename)
         self.recentFiles = []
         self.maxRecent = 7
         self.lineColor = None
@@ -386,7 +375,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.zoom_level = 100
         self.fit_window = False
         # Add Chris
-        self.difficult = False 
+        self.difficult = False
 
         # XXX: Could be completely declarative.
         # Restore application settings.
@@ -427,8 +416,8 @@ class MainWindow(QMainWindow, WindowMixin):
         position = settings.get('window/position', QPoint(0, 0))
         self.resize(size)
         self.move(position)
-        saveDir = u(settings.get('savedir', None))
-        self.lastOpenDir = u(settings.get('lastOpenDir', None))
+        saveDir = ustr(settings.get('savedir', None))
+        self.lastOpenDir = ustr(settings.get('lastOpenDir', None))
         if os.path.exists(saveDir):
             self.defaultSaveDir = saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
@@ -442,7 +431,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
-        # Add chris 
+        # Add chris
         Shape.Difficult = self.difficult
 
         def xbool(x):
@@ -616,21 +605,21 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
-        currIndex = self.mImgList.index(u(item.text()))
+        currIndex = self.mImgList.index(ustr(item.text()))
         if currIndex < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
                 self.loadFile(filename)
-     
-    # Add chris       
+
+    # Add chris
     def btnstate(self, item= None):
-        """ Function to handle difficult examples 
+        """ Function to handle difficult examples
         Update on each object """
         if not self.canvas.editing():
             return
-         
+
         item = self.currentItem()
-        if not item: # If not selected Item, take the first one 
+        if not item: # If not selected Item, take the first one
             item = self.labelList.item(self.labelList.count()-1)
 
         difficult = self.diffcButton.isChecked()
@@ -639,7 +628,7 @@ class MainWindow(QMainWindow, WindowMixin):
             shape = self.itemsToShapes[item]
         except:
             pass
-        # Checked and Update 
+        # Checked and Update
         try:
             if difficult != shape.difficult:
                 shape.difficult = difficult
@@ -694,16 +683,16 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.close()
             s.append(shape)
             self.addLabel(shape)
-            
+
             if line_color:
                 shape.line_color = QColor(*line_color)
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
-                
+
         self.canvas.loadShapes(s)
 
     def saveLabels(self, annotationFilePath):
-        annotationFilePath = u(annotationFilePath)
+        annotationFilePath = ustr(annotationFilePath)
         if self.labelFile is None:
             self.labelFile = LabelFile()
             self.labelFile.verified = self.canvas.verified
@@ -829,7 +818,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if filePath is None:
             filePath = self.settings.get('filename')
 
-        unicodeFilePath = u(filePath)
+        unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
         if unicodeFilePath and self.fileListWidget.count() > 0:
@@ -888,12 +877,12 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.loadPascalXMLByFilename(xmlPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
-            
-            # Default : select last item if there is at least one item 
+
+            # Default : select last item if there is at least one item
             if self.labelList.count():
                 self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
                 self.labelList.setItemSelected(self.labelList.item(self.labelList.count()-1), True)
-            
+
             self.canvas.setFocus(True)
             return True
         return False
@@ -949,7 +938,7 @@ class MainWindow(QMainWindow, WindowMixin):
         s['recentFiles'] = self.recentFiles
         s['advanced'] = not self._beginner
         if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
-            s['savedir'] = str(self.defaultSaveDir)
+            s['savedir'] = ustr(self.defaultSaveDir)
         else:
             s['savedir'] = ""
 
@@ -972,18 +961,18 @@ class MainWindow(QMainWindow, WindowMixin):
             for file in files:
                 if file.lower().endswith(tuple(extensions)):
                     relatviePath = os.path.join(root, file)
-                    path = u(os.path.abspath(relatviePath))
+                    path = ustr(os.path.abspath(relatviePath))
                     images.append(path)
         images.sort(key=lambda x: x.lower())
         return images
 
     def changeSavedir(self, _value=False):
         if self.defaultSaveDir is not None:
-            path = str(self.defaultSaveDir)
+            path = ustr(self.defaultSaveDir)
         else:
             path = '.'
 
-        dirpath = str(QFileDialog.getExistingDirectory(self,
+        dirpath = ustr(QFileDialog.getExistingDirectory(self,
                                                        '%s - Save to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                        | QFileDialog.DontResolveSymlinks))
 
@@ -998,7 +987,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filePath is None:
             return
 
-        path = os.path.dirname(u(self.filePath))\
+        path = os.path.dirname(ustr(self.filePath))\
             if self.filePath else '.'
         if self.usingPascalVocFormat:
             filters = "Open Annotation XML file (%s)" % \
@@ -1019,7 +1008,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
             path = self.lastOpenDir
 
-        dirpath = u(QFileDialog.getExistingDirectory(self,
+        dirpath = ustr(QFileDialog.getExistingDirectory(self,
                                                      '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
                                                      | QFileDialog.DontResolveSymlinks))
 
@@ -1092,7 +1081,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def openFile(self, _value=False):
         if not self.mayContinue():
             return
-        path = os.path.dirname(u(self.filePath)) if self.filePath else '.'
+        path = os.path.dirname(ustr(self.filePath)) if self.filePath else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
         filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
         filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
@@ -1102,14 +1091,13 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
-        if self.defaultSaveDir is not None and len(str(self.defaultSaveDir)):
+        if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
             # print('handle the image:' + self.filePath)
-            imgFileName = os.path.basename(self.filePath)
-            savedFileName = os.path.splitext(
-                imgFileName)[0] + LabelFile.suffix
-            savedPath = os.path.join(
-                str(self.defaultSaveDir), savedFileName)
-            self._saveFile(savedPath)
+            if self.filePath:
+                imgFileName = os.path.basename(self.filePath)
+                savedFileName = os.path.splitext(imgFileName)[0] + LabelFile.suffix
+                savedPath = os.path.join(ustr(self.defaultSaveDir), savedFileName)
+                self._saveFile(savedPath)
         else:
             self._saveFile(self.filePath if self.labelFile
                            else self.saveFileDialog())
@@ -1260,7 +1248,7 @@ class Settings(object):
         t = self.types.get(key)
         if t is not None and t != QVariant:
             if t is str:
-                return str(value)
+                return ustr(value)
             else:
                 try:
                     method = getattr(QVariant, re.sub(
