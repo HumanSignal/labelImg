@@ -27,8 +27,7 @@ Download prebuilt binaries
 
 -  `Windows & Linux <http://tzutalin.github.io/labelImg/>`__
 
--  OS X
--  Binaries for OS X are not yet available. Help would be appreciated. At present, it must be `built from source <#os-x>`__.
+-  OS X. Binaries for OS X are not yet available. Help would be appreciated. At present, it must be `built from source <#os-x>`__.
 
 Build from source
 ~~~~~~~~~~~~~~~~~
@@ -36,6 +35,7 @@ Build from source
 Linux/Ubuntu/Mac requires at least `Python
 2.6 <http://www.python.org/getit/>`__ and has been tested with `PyQt
 4.8 <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`__.
+
 
 Ubuntu Linux
 ^^^^^^^^^^^^
@@ -71,6 +71,14 @@ Open cmd and go to `labelImg <#labelimg>`__ directory
 
     pyrcc4 -o resources.py resources.qrc
     python labelImg.py
+
+Get from PyPI
+~~~~~~~~~~~~~~~~~
+.. code::
+
+    pip install labelimg
+
+I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and windows
 
 Usage
 -----
