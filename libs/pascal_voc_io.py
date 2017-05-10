@@ -94,7 +94,7 @@ class PascalVocWriter:
                 truncated.text = "1" # max == width or min
             else:
                 truncated.text = "0"
-            difficult = SubElement(object_item, 'Difficult')
+            difficult = SubElement(object_item, 'difficult')
             difficult.text = str( bool(each_object['difficult']) & 1 )
             bndbox = SubElement(object_item, 'bndbox')
             xmin = SubElement(bndbox, 'xmin')
@@ -158,6 +158,6 @@ class PascalVocReader:
             bndbox = object_iter.find("bndbox")
             label = object_iter.find('name').text
             # Add chris
-            difficult = bool(int(object_iter.find('Difficult').text))
+            difficult = bool(int(object_iter.find('difficult').text))
             self.addShape(label, bndbox, difficult)
         return True
