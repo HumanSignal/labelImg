@@ -132,7 +132,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         # Add chris
-        self.diffcButton = QCheckBox("Difficult")
+        self.diffcButton = QCheckBox("difficult")
         self.diffcButton.setChecked(False)
         self.diffcButton.stateChanged.connect(self.btnstate)
 
@@ -434,7 +434,7 @@ class MainWindow(QMainWindow, WindowMixin):
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
         # Add chris
-        Shape.Difficult = self.difficult
+        Shape.difficult = self.difficult
 
         def xbool(x):
             if isinstance(x, QVariant):
