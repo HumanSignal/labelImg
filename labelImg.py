@@ -87,14 +87,12 @@ class HashableQListWidgetItem(QListWidgetItem):
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
-    def __init__(self, defaultFilename=None):
+    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
         # Save as Pascal voc xml
         self.defaultSaveDir = None
         self.usingPascalVocFormat = True
-        if self.usingPascalVocFormat:
-            LabelFile.suffix = '.xml'
         # For loading all image under a directory
         self.mImgList = []
         self.dirname = None
@@ -111,7 +109,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
-        self.loadPredefinedClasses()
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
         self.labelList = QListWidget()
@@ -379,6 +376,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.difficult = False
 
+        # Load predefined classes to the list
+        self.loadPredefinedClasses(defaultPrefdefClassFile)
         # XXX: Could be completely declarative.
         # Restore application settings.
         if have_qstring():
@@ -713,8 +712,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                print ('Img: ' + self.filePath +
-                       ' -> Its xml: ' + annotationFilePath)
+                print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
@@ -1203,11 +1201,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.endMove(copy=False)
         self.setDirty()
 
-    def loadPredefinedClasses(self):
-        predefined_classes_path = os.path.join(
-            'data', 'predefined_classes.txt')
-        if os.path.exists(predefined_classes_path) is True:
-            with codecs.open(predefined_classes_path, 'r', 'utf8') as f:
+    def loadPredefinedClasses(self, predefClassesFile):
+        if os.path.exists(predefClassesFile) is True:
+            with codecs.open(predefClassesFile, 'r', 'utf8') as f:
                 for line in f:
                     line = line.strip()
                     if self.labelHist is None:
@@ -1282,7 +1278,10 @@ def get_main_app(argv=[]):
     app = QApplication(argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("app"))
-    win = MainWindow(argv[1] if len(argv) == 2 else None)
+    # Tzutalin 201705+: Accept extra agruments to change predefined class file
+    # Usage : labelImg.py image predefClassFile
+    win = MainWindow(argv[1] if len(argv) >= 2 else None,
+                     argv[2] if len(argv) >= 3 else os.path.join('data', 'predefined_classes.txt'))
     win.show()
     return app, win
 
