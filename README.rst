@@ -46,6 +46,7 @@ Ubuntu Linux
     sudo pip install lxml
     make all
     ./labelImg.py
+    ./labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 OS X
 ^^^^
@@ -56,6 +57,7 @@ OS X
     brew install libxml2
     make all
     ./labelImg.py
+    ./labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Windows
 ^^^^^^^
@@ -71,12 +73,15 @@ Open cmd and go to `labelImg <#labelimg>`__ directory
 
     pyrcc4 -o resources.py resources.qrc
     python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Get from PyPI
 ~~~~~~~~~~~~~~~~~
 .. code::
 
-    pip install labelimg
+    pip install labelImg
+    labelImg
+    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and windows
 
