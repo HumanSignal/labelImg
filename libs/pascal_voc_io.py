@@ -158,6 +158,8 @@ class PascalVocReader:
             bndbox = object_iter.find("bndbox")
             label = object_iter.find('name').text
             # Add chris
-            difficult = bool(int(object_iter.find('difficult').text))
+            difficult = False
+            if object_iter.find('difficult') is not None:
+                difficult = bool(int(object_iter.find('difficult').text))
             self.addShape(label, bndbox, difficult)
         return True
