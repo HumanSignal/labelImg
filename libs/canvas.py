@@ -222,9 +222,7 @@ class Canvas(QWidget):
             self.selectedShape = shape
             self.repaint()
         else:
-            shape.label = self.selectedShape.label
-            self.deleteSelected()
-            self.shapes.append(shape)
+            self.selectedShape.points = [p for p in shape.points]
         self.selectedShapeCopy = None
 
     def hideBackroundShapes(self, value):
