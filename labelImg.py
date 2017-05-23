@@ -133,9 +133,17 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.setChecked(False)
         self.diffcButton.stateChanged.connect(self.btnstate)
 
+        #Add Use Default Checkbox
+        self.useDefautLabel = QCheckBox("use default label")
+        self.useDefautLabel.setChecked(False)
+        self.defaultLabel = QLineEdit()
+
         self.labelListContainer = QWidget()
         self.labelListContainer.setLayout(listLayout)
         listLayout.addWidget(self.editButton)  # , 0, Qt.AlignCenter)
+        listLayout.addWidget(self.useDefautLabel)
+        listLayout.addWidget(self.defaultLabel)
+
         # Add chris
         listLayout.addWidget(self.diffcButton)
         listLayout.addWidget(self.labelList)
@@ -753,11 +761,15 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if len(self.labelHist) > 0:
-            self.labelDialog = LabelDialog(
-                parent=self, listItem=self.labelHist)
+        if not self.useDefautLabel.isChecked() or not self.defaultLabel.text():
+            if len(self.labelHist) > 0:
+                self.labelDialog = LabelDialog(
+                    parent=self, listItem=self.labelHist)
 
-        text = self.labelDialog.popUp(text=self.prevLabelText)
+            text = self.labelDialog.popUp(text=self.prevLabelText)
+        else:
+            text = self.defaultLabel.text()
+
         # Add Chris
         self.diffcButton.setChecked(False)
         if text is not None:
