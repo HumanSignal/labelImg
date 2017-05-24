@@ -111,60 +111,62 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
-        self.labelList = QListWidget()
+        
         self.itemsToShapes = {}
         self.shapesToItems = {}
         self.prevLabelText = ''
 
+        listLayout = QVBoxLayout()
+        listLayout.setContentsMargins(0, 0, 0, 0)
+        
+        # Create a widget for using default label
+        self.useDefautLabelCheckbox = QCheckBox(u'Use default label')
+        self.useDefautLabelCheckbox.setChecked(False)
+        self.defaultLabelTextLine = QLineEdit()
+        useDefautLabelQHBoxLayout = QHBoxLayout()       
+        useDefautLabelQHBoxLayout.addWidget(self.useDefautLabelCheckbox)
+        useDefautLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
+        useDefautLabelContainer = QWidget()
+        useDefautLabelContainer.setLayout(useDefautLabelQHBoxLayout)
+
+        # Create a widget for edit and diffc button
+        self.diffcButton = QCheckBox(u'difficult')
+        self.diffcButton.setChecked(False)
+        self.diffcButton.stateChanged.connect(self.btnstate)
+        self.editButton = QToolButton()
+        self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        # Add some of widgets to listLayout 
+        listLayout.addWidget(self.editButton)
+        listLayout.addWidget(self.diffcButton)
+        listLayout.addWidget(useDefautLabelContainer)
+
+        # Create and add a widget for showing current label items
+        self.labelList = QListWidget()
+        labelListContainer = QWidget()
+        labelListContainer.setLayout(listLayout)
         self.labelList.itemActivated.connect(self.labelSelectionChanged)
         self.labelList.itemSelectionChanged.connect(self.labelSelectionChanged)
         self.labelList.itemDoubleClicked.connect(self.editLabel)
         # Connect to itemChanged to detect checkbox changes.
         self.labelList.itemChanged.connect(self.labelItemChanged)
-
-        listLayout = QVBoxLayout()
-        listLayout.setContentsMargins(0, 0, 0, 0)
         listLayout.addWidget(self.labelList)
-        self.editButton = QToolButton()
-        self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        # Add chris
-        self.diffcButton = QCheckBox("difficult")
-        self.diffcButton.setChecked(False)
-        self.diffcButton.stateChanged.connect(self.btnstate)
-
-        #Add Use Default Checkbox
-        self.useDefautLabel = QCheckBox("use default label")
-        self.useDefautLabel.setChecked(False)
-        self.defaultLabel = QLineEdit()
-
-        self.labelListContainer = QWidget()
-        self.labelListContainer.setLayout(listLayout)
-        listLayout.addWidget(self.editButton)  # , 0, Qt.AlignCenter)
-        listLayout.addWidget(self.useDefautLabel)
-        listLayout.addWidget(self.defaultLabel)
-
-        # Add chris
-        listLayout.addWidget(self.diffcButton)
-        listLayout.addWidget(self.labelList)
-
 
         self.dock = QDockWidget(u'Box Labels', self)
         self.dock.setObjectName(u'Labels')
-        self.dock.setWidget(self.labelListContainer)
+        self.dock.setWidget(labelListContainer)
 
         # Tzutalin 20160906 : Add file list and dock to move faster
         self.fileListWidget = QListWidget()
-        self.fileListWidget.itemDoubleClicked.connect(
-            self.fileitemDoubleClicked)
+        self.fileListWidget.itemDoubleClicked.connect(self.fileitemDoubleClicked)
         filelistLayout = QVBoxLayout()
         filelistLayout.setContentsMargins(0, 0, 0, 0)
         filelistLayout.addWidget(self.fileListWidget)
-        self.fileListContainer = QWidget()
-        self.fileListContainer.setLayout(filelistLayout)
+        fileListContainer = QWidget()
+        fileListContainer.setLayout(filelistLayout)
         self.filedock = QDockWidget(u'File List', self)
         self.filedock.setObjectName(u'Files')
-        self.filedock.setWidget(self.fileListContainer)
+        self.filedock.setWidget(fileListContainer)
 
         self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
@@ -761,14 +763,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if not self.useDefautLabel.isChecked() or not self.defaultLabel.text():
+        if not self.useDefautLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
             if len(self.labelHist) > 0:
                 self.labelDialog = LabelDialog(
                     parent=self, listItem=self.labelHist)
 
             text = self.labelDialog.popUp(text=self.prevLabelText)
         else:
-            text = self.defaultLabel.text()
+            text = self.defaultLabelTextLine.text()
 
         # Add Chris
         self.diffcButton.setChecked(False)
