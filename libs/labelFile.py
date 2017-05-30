@@ -18,7 +18,7 @@ class LabelFileError(Exception):
 
 class LabelFile(object):
     # It might be changed as window creates
-    suffix = '.lif'
+    suffix = '.xml'
 
     def __init__(self, filename=None):
         self.shapes = ()
