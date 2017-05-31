@@ -8,6 +8,7 @@ except ImportError:
 
 from base64 import b64encode, b64decode
 from pascal_voc_io import PascalVocWriter
+from pascal_voc_io import XML_EXT
 import os.path
 import sys
 
@@ -17,8 +18,9 @@ class LabelFileError(Exception):
 
 
 class LabelFile(object):
-    # It might be changed as window creates
-    suffix = '.xml'
+    # It might be changed as window creates. By default, using XML ext
+    # suffix = '.lif'
+    suffix = XML_EXT
 
     def __init__(self, filename=None):
         self.shapes = ()
@@ -45,7 +47,7 @@ class LabelFile(object):
         for shape in shapes:
             points = shape['points']
             label = shape['label']
-            # Add Chris 
+            # Add Chris
             difficult = int(shape['difficult'])
             bndbox = LabelFile.convertPoints2BndBox(points)
             writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
