@@ -85,6 +85,26 @@ Get from PyPI
 
 I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and windows
 
+Use Docker
+~~~~~~~~~~~~~~~~~
+.. code::
+
+    docker pull tzutalin/py2qt4
+
+    docker run -it \
+    --user $(id -u) \
+    -e DISPLAY=unix$DISPLAY \
+    --workdir=$(pwd) \
+    --volume="/home/$USER:/home/$USER" \
+    --volume="/etc/group:/etc/group:ro" \
+    --volume="/etc/passwd:/etc/passwd:ro" \
+    --volume="/etc/shadow:/etc/shadow:ro" \
+    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    tzutalin/py2qt4
+
+You can pull the image which has all of the installed and required dependencies.  
+
 Usage
 -----
 
@@ -154,6 +174,4 @@ Related
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
-
-.. |Build Status| image:: https://travis-ci.org/tzutalin/labelImg.png
-   :target: https://travis-ci.org/tzutalin/labelImg
+2. `Docker hub to run it <https://hub.docker.com/r/tzutalin/py2qt4>`__
