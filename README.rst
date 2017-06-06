@@ -17,7 +17,7 @@ by `ImageNet <http://www.image-net.org/>`__.
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
-`Watch a demo video by author tzutalin <https://youtu.be/p0nR2YsCY_U>`__
+`Watch a demo video <https://youtu.be/p0nR2YsCY_U>`__
 
 Installation
 ------------------
@@ -83,7 +83,7 @@ Get from PyPI
     labelImg
     labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and windows
+I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and Windows
 
 Use Docker
 ~~~~~~~~~~~~~~~~~
@@ -103,7 +103,8 @@ Use Docker
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     tzutalin/py2qt4
 
-You can pull the image which has all of the installed and required dependencies.  
+You can pull the image which has all of the installed and required dependencies. `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__  
+
 
 Usage
 -----
