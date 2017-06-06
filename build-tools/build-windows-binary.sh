@@ -1,5 +1,10 @@
 #!/bin/bash
 ### Window requires pyinstall v2.1
+wine msiexec -i python-2.7.8.msi
+wine pywin32-218.win32-py2.7.exe
+wine PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe
+wine lxml-3.7.3.win32-py2.7.exe
+
 THIS_SCRIPT_PATH=`readlink -f $0`
 THIS_SCRIPT_DIR=`dirname ${THIS_SCRIPT_PATH}`
 cd pyinstaller
