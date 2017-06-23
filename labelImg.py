@@ -826,26 +826,26 @@ class MainWindow(QMainWindow, WindowMixin):
         cursor_x = pos.x()
         cursor_y = pos.y()
 
-        w = self.canvas.width()
-        h = self.canvas.height()
-
         w = self.scrollArea.width()
         h = self.scrollArea.height()
 
-        print("current: ")
-        print(cursor_x, cursor_y)
-        print(w, h)
-        print()
-
+        # the scaling from 0 to 1 has some padding
+        # you don't have to hit the very leftmost pixel for a maximum-left movement
         margin = 0.1
         move_x = (cursor_x - margin * w) / (w - 2 * margin * w)
         move_y = (cursor_y - margin * h) / (h - 2 * margin * h)
+
+        # clamp the values form 0 to 1
+        move_x = min(max(move_x, 0), 1)
+        move_y = min(max(move_y, 0), 1)
 
         # zoom in
         units = delta / (8 * 15)
         scale = 10
         self.addZoom(scale * units)
 
+        # get the difference in scrollbar values
+        # this is how far we can move
         d_h_bar_max = h_bar.maximum() - h_bar_max
         d_v_bar_max = v_bar.maximum() - v_bar_max
 
