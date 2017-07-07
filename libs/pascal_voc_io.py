@@ -7,7 +7,7 @@ from lxml import etree
 import codecs
 
 XML_EXT = '.xml'
-
+ENCODE_METHOD = 'utf-8'
 
 class PascalVocWriter:
 
@@ -20,14 +20,16 @@ class PascalVocWriter:
         self.localImgPath = localImgPath
         self.verified = False
 
-
     def prettify(self, elem):
         """
             Return a pretty-printed XML string for the Element.
         """
         rough_string = ElementTree.tostring(elem, 'utf8')
         root = etree.fromstring(rough_string)
-        return etree.tostring(root, pretty_print=True)
+        return etree.tostring(root, pretty_print=True, encoding=ENCODE_METHOD).replace('  ', '\t')
+        # minidom does not support UTF-8
+        '''reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="\t", encoding=ENCODE_METHOD)'''
 
     def genXML(self):
         """
@@ -48,8 +50,9 @@ class PascalVocWriter:
         filename = SubElement(top, 'filename')
         filename.text = self.filename
 
-        localImgPath = SubElement(top, 'path')
-        localImgPath.text = self.localImgPath
+        if self.localImgPath is not None:
+            localImgPath = SubElement(top, 'path')
+            localImgPath.text = self.localImgPath
 
         source = SubElement(top, 'source')
         database = SubElement(source, 'database')
@@ -112,9 +115,9 @@ class PascalVocWriter:
         out_file = None
         if targetFile is None:
             out_file = codecs.open(
-                self.filename + XML_EXT, 'w', encoding='utf-8')
+                self.filename + XML_EXT, 'w', encoding=ENCODE_METHOD)
         else:
-            out_file = codecs.open(targetFile, 'w', encoding='utf-8')
+            out_file = codecs.open(targetFile, 'w', encoding=ENCODE_METHOD)
 
         prettifyResult = self.prettify(root)
         out_file.write(prettifyResult.decode('utf8'))
@@ -144,7 +147,7 @@ class PascalVocReader:
 
     def parseXML(self):
         assert self.filepath.endswith(XML_EXT), "Unsupport file format"
-        parser = etree.XMLParser(encoding='utf-8')
+        parser = etree.XMLParser(encoding=ENCODE_METHOD)
         xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
         try:

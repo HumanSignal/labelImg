@@ -33,14 +33,15 @@ class LabelFile(object):
         imgFolderPath = os.path.dirname(imagePath)
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
-        imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
+        print imgFileName
+        #imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
         image = QImage()
         image.load(imagePath)
         imageShape = [image.height(), image.width(),
                       1 if image.isGrayscale() else 3]
-        writer = PascalVocWriter(imgFolderName, imgFileNameWithoutExt,
+        writer = PascalVocWriter(imgFolderName, imgFileName,
                                  imageShape, localImgPath=imagePath)
         writer.verified = self.verified
 
