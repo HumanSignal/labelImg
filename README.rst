@@ -39,25 +39,38 @@ Linux/Ubuntu/Mac requires at least `Python
 
 Ubuntu Linux
 ^^^^^^^^^^^^
+Python 2 + Qt4
 
 .. code::
 
     sudo apt-get install pyqt4-dev-tools
     sudo pip install lxml
-    make all
-    ./labelImg.py
-    ./labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    make qt4py2
+    python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
+Python 3 + Qt5
+
+.. code::
+
+    sudo apt-get install pyqt5-dev-tools
+    sudo pip3 install lxml
+    make qt5py3
+    python3 labelImg.py
+    python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 OS X
 ^^^^
+Python 2 + Qt4
 
 .. code::
 
     brew install qt qt4
     brew install libxml2
-    make all
-    ./labelImg.py
-    ./labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    make qt4py2
+    python labelImg.py
+    python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
 
 Windows
 ^^^^^^^
@@ -101,7 +114,7 @@ Use Docker
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     tzutalin/py2qt4
 
-    make all;./labelImg.py
+    make qt4py2;./labelImg.py
 
 You can pull the image which has all of the installed and required dependencies. `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__
 
