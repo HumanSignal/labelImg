@@ -89,8 +89,6 @@ Use Docker
 ~~~~~~~~~~~~~~~~~
 .. code::
 
-    docker pull tzutalin/py2qt4
-
     docker run -it \
     --user $(id -u) \
     -e DISPLAY=unix$DISPLAY \
@@ -103,7 +101,9 @@ Use Docker
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     tzutalin/py2qt4
 
-You can pull the image which has all of the installed and required dependencies. `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__  
+    make all;./labelImg.py
+
+You can pull the image which has all of the installed and required dependencies. `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__
 
 
 Usage
