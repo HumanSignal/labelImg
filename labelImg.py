@@ -13,6 +13,9 @@ from collections import defaultdict
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
+from PyQt4 import QtCore
+QtCore.QCoreApplication.addLibraryPath("plugins/")
+
 import resources
 
 from lib import struct, newAction, newIcon, addActions, fmtShortcut
@@ -880,6 +883,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.fileListWidget.addItem(item)
 
     def openPrevImg(self, _value=False):
+        # Proceding prev image without dialog if having any label
+        if self.autoSaving is True and self.defaultSaveDir is not None:
+            if self.dirty is True and self.hasLabels():
+                self.saveFile()         
+                
         if not self.mayContinue():
             return
 
