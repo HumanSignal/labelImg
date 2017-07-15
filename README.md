@@ -1,5 +1,14 @@
 # LabelImg
 
+### Updates
+
+- Solve `jpg` supporting for `py2-qt4` branch in Windows by adding [`plugins`](https://github.com/GreenKing/labelImg/blob/py2-qt4/labelImg.py#L17).
+- Add `auto save` while toggle to previous image.
+- Add `Simgle Class Mode` to speed up annotation.
+- Add `openPrevImg` and `openNextImg` action to advanced mode.
+- Add `Change default save dir` to tool bar.
+- Fix crash bug while choosing a point to delete.
+
 [![Build Status](https://travis-ci.org/tzutalin/labelImg.png)](https://travis-ci.org/tzutalin/labelImg)
 
 LabelImg is a graphical image annotation tool.
