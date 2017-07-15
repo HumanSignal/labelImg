@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import _init_path
 import codecs
 import os.path
 import re
@@ -18,15 +17,16 @@ QtCore.QCoreApplication.addLibraryPath("plugins/")
 
 import resources
 
-from lib import struct, newAction, newIcon, addActions, fmtShortcut
-from shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from canvas import Canvas
-from zoomWidget import ZoomWidget
-from labelDialog import LabelDialog
-from colorDialog import ColorDialog
-from labelFile import LabelFile, LabelFileError
-from toolBar import ToolBar
-from pascal_voc_io import PascalVocReader
+
+from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
+from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+from libs.canvas import Canvas
+from libs.zoomWidget import ZoomWidget
+from libs.labelDialog import LabelDialog
+from libs.colorDialog import ColorDialog
+from libs.labelFile import LabelFile, LabelFileError
+from libs.toolBar import ToolBar
+from libs.pascal_voc_io import PascalVocReader
 
 __appname__ = 'labelImg'
 

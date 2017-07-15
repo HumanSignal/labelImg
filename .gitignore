@@ -14,3 +14,5 @@ cscope*
 .subvimrc
 
 old_icons/
+labelImg.exe
+labelImg.spec
