@@ -1,5 +1,1 @@
-dog
 person
-cat
-tv
-car
