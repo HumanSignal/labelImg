@@ -430,7 +430,7 @@ class MainWindow(QMainWindow, WindowMixin):
             }
 
         self.settings = settings = Settings(types)
-        self.recentFiles = list(settings.get('recentFiles', []))
+        self.recentFiles = settings.get('recentFiles') if settings.get('recentFiles') is not None else []
         size = settings.get('window/size', QSize(600, 500))
         position = settings.get('window/position', QPoint(0, 0))
         self.resize(size)
