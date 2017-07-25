@@ -945,7 +945,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     xmlPath = os.path.join(self.defaultSaveDir, basename)
                     self.loadPascalXMLByFilename(xmlPath)
                 else:
-                    xmlPath = filePath.split(".")[0] + XML_EXT
+                    xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                     if os.path.isfile(xmlPath):
                         self.loadPascalXMLByFilename(xmlPath)
 
