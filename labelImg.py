@@ -115,14 +115,14 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.setContentsMargins(0, 0, 0, 0)
 
         # Create a widget for using default label
-        self.useDefautLabelCheckbox = QCheckBox(u'Use default label')
-        self.useDefautLabelCheckbox.setChecked(False)
+        self.useDefaultLabelCheckbox = QCheckBox(u'Use default label')
+        self.useDefaultLabelCheckbox.setChecked(False)
         self.defaultLabelTextLine = QLineEdit()
-        useDefautLabelQHBoxLayout = QHBoxLayout()
-        useDefautLabelQHBoxLayout.addWidget(self.useDefautLabelCheckbox)
-        useDefautLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
-        useDefautLabelContainer = QWidget()
-        useDefautLabelContainer.setLayout(useDefautLabelQHBoxLayout)
+        useDefaultLabelQHBoxLayout = QHBoxLayout()
+        useDefaultLabelQHBoxLayout.addWidget(self.useDefaultLabelCheckbox)
+        useDefaultLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
+        useDefaultLabelContainer = QWidget()
+        useDefaultLabelContainer.setLayout(useDefaultLabelQHBoxLayout)
 
         # Create a widget for edit and diffc button
         self.diffcButton = QCheckBox(u'difficult')
@@ -134,7 +134,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
-        listLayout.addWidget(useDefautLabelContainer)
+        listLayout.addWidget(useDefaultLabelContainer)
 
         # Create and add a widget for showing current label items
         self.labelList = QListWidget()
@@ -771,7 +771,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if not self.useDefautLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
+        if not self.useDefaultLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
             if len(self.labelHist) > 0:
                 self.labelDialog = LabelDialog(
                     parent=self, listItem=self.labelHist)
@@ -1033,8 +1033,8 @@ class MainWindow(QMainWindow, WindowMixin):
         for root, dirs, files in os.walk(folderPath):
             for file in files:
                 if file.lower().endswith(tuple(extensions)):
-                    relatviePath = os.path.join(root, file)
-                    path = ustr(os.path.abspath(relatviePath))
+                    relativePath = os.path.join(root, file)
+                    path = ustr(os.path.abspath(relativePath))
                     images.append(path)
         images.sort(key=lambda x: x.lower())
         return images
