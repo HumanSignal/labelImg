@@ -551,9 +551,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def addRecentFile(self, filePath):
         if filePath in self.recentFiles:
-            self.recentFiles.remove(filePath)
+            self.recentFiles.removeAt(self.recentFiles.indexOf(filePath))
         elif len(self.recentFiles) >= self.maxRecent:
-            self.recentFiles.pop()
+            self.recentFiles.removeAt(self.recentFiles.count() - 1)
         self.recentFiles.insert(0, filePath)
 
     def beginner(self):
@@ -910,9 +910,20 @@ class MainWindow(QMainWindow, WindowMixin):
                                       % (e, unicodeFilePath))
                     self.status("Error reading %s" % unicodeFilePath)
                     return False
-                self.imageData = self.labelFile.imageData
-                self.lineColor = QColor(*self.labelFile.lineColor)
-                self.fillColor = QColor(*self.labelFile.fillColor)
+
+                # Label xml file and show bound box according to its filename
+                if self.usingPascalVocFormat is True:
+                    if self.defaultSaveDir is not None:
+                        basename = os.path.basename(
+                            os.path.splitext(self.filePath)[0]) + XML_EXT
+                        xmlPath = os.path.join(self.defaultSaveDir, basename)
+                        self.loadPascalXMLByFilename(xmlPath)
+                    else:
+                        xmlPath = os.path.splitext(str(filePath))[0] + XML_EXT
+
+                        if os.path.isfile(xmlPath):
+                            self.loadPascalXMLByFilename(xmlPath)
+                        unicodeFilePath = self.labelFile.imagePath
             else:
                 # Load image:
                 # read data first and store for saving into label file.
@@ -936,18 +947,6 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paintCanvas()
             self.addRecentFile(self.filePath)
             self.toggleActions(True)
-
-            # Label xml file and show bound box according to its filename
-            if self.usingPascalVocFormat is True:
-                if self.defaultSaveDir is not None:
-                    basename = os.path.basename(
-                        os.path.splitext(self.filePath)[0]) + XML_EXT
-                    xmlPath = os.path.join(self.defaultSaveDir, basename)
-                    self.loadPascalXMLByFilename(xmlPath)
-                else:
-                    xmlPath = os.path.splitext(filePath)[0] + XML_EXT
-                    if os.path.isfile(xmlPath):
-                        self.loadPascalXMLByFilename(xmlPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1170,7 +1169,9 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
-        if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
+        if self.labelFile is not None and self.labelFile.originalFileName is not None:
+            self._saveFile(self.labelFile.originalFileName)
+        elif self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
             if self.filePath:
                 imgFileName = os.path.basename(self.filePath)
                 savedFileName = os.path.splitext(imgFileName)[0] + XML_EXT
@@ -1294,14 +1295,15 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.labelHist.append(line)
 
     def loadPascalXMLByFilename(self, xmlPath):
-        if self.filePath is None:
-            return
         if os.path.isfile(xmlPath) is False:
             return
 
         tVocParseReader = PascalVocReader(xmlPath)
-        shapes = tVocParseReader.getShapes()
-        self.loadLabels(shapes)
+        self.filePath = tVocParseReader.imagepath
+        self.imageData = read(tVocParseReader.imagepath)
+        self.labelFile.originalFileName = tVocParseReader.filepath
+        self.labelFile.shapes = tVocParseReader.getShapes()
+        self.labelFile.imagePath = tVocParseReader.imagepath
         self.canvas.verified = tVocParseReader.verified
 
 

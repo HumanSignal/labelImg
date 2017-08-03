@@ -71,7 +71,7 @@ class Canvas(QWidget):
         self.restoreCursor()
 
     def isVisible(self, shape):
-        return self.visible.get(shape, True)
+        return shape in self.visible
 
     def drawing(self):
         return self.mode == self.CREATE
@@ -622,6 +622,7 @@ class Canvas(QWidget):
 
     def loadShapes(self, shapes):
         self.shapes = list(shapes)
+        self.visible = list(shapes)
         self.current = None
         self.repaint()
 

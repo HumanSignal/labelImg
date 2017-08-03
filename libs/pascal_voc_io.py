@@ -130,6 +130,7 @@ class PascalVocReader:
     def __init__(self, filepath):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
+        self.imagepath = None
         self.shapes = []
         self.filepath = filepath
         self.verified = False
@@ -151,6 +152,7 @@ class PascalVocReader:
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
         xmltree = ElementTree.parse(self.filepath, parser=parser).getroot()
         filename = xmltree.find('filename').text
+        self.imagepath = xmltree.find('path').text
         try:
             verified = xmltree.attrib['verified']
             if verified == 'yes':
