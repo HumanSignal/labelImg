@@ -27,10 +27,20 @@ def main():
     if not os.path.exists(folderName):
         os.makedirs(folderName)
 
+    fileCount = 0
     for blob in blobs:
         if folderName in blob.name:
+            fileCount += 1
+
+    index = 0
+    for blob in blobs:
+        if folderName in blob.name:
+            index += 1
+            print("Downloading image " + str(index) + " of " + str(fileCount) + "...")
             with open(folderName + '/' + blob.name, 'wb') as f:
                 blob.download_to_file(f)
+
+    print("Done")
 
     p = subprocess.call(['python', 'labelImg.py', folderName + '/'])
 
