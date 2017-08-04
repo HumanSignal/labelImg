@@ -560,9 +560,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def addRecentFile(self, filePath):
         if filePath in self.recentFiles:
-            self.recentFiles.removeAt(self.recentFiles.indexOf(filePath))
+            self.recentFiles.remove(filePath)
         elif len(self.recentFiles) >= self.maxRecent:
-            self.recentFiles.removeAt(self.recentFiles.count() - 1)
+            self.recentFiles.pop()
         self.recentFiles.insert(0, filePath)
 
     def beginner(self):
@@ -932,7 +932,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
                         if os.path.isfile(xmlPath):
                             self.loadPascalXMLByFilename(xmlPath)
-                        unicodeFilePath = self.labelFile.imagePath
+                else:
+                    self.lineColor = QColor(*self.labelFile.lineColor)
+                    self.fillColor = QColor(*self.labelFile.fillColor)
             else:
                 # Load image:
                 # read data first and store for saving into label file.
