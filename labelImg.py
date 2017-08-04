@@ -26,6 +26,7 @@ except ImportError:
 
 import resources
 # Add internal libs
+from libs.constants import *
 from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.canvas import Canvas
@@ -400,43 +401,51 @@ class MainWindow(QMainWindow, WindowMixin):
         # Restore application settings.
         if have_qstring():
             types = {
-                'filename': QString,
-                'recentFiles': QStringList,
-                'window/size': QSize,
-                'window/position': QPoint,
-                'window/geometry': QByteArray,
-                'line/color': QColor,
-                'fill/color': QColor,
-                'advanced': bool,
+                SETTING_FILENAME: QString,
+                SETTING_RECENT_FILES: QStringList,
+                SETTING_WIN_SIZE: QSize,
+                SETTING_WIN_POSE: QPoint,
+                SETTING_WIN_GEOMETRY: QByteArray,
+                SETTING_LINE_COLOR: QColor,
+                SETTING_FILL_COLOR: QColor,
+                SETTING_ADVANCE_MODE: bool,
                 # Docks and toolbars:
-                'window/state': QByteArray,
-                'savedir': QString,
-                'lastOpenDir': QString,
+                SETTING_WIN_STATE: QByteArray,
+                SETTING_SAVE_DIR: QString,
+                SETTING_LAST_OPEN_DIR: QString,
             }
         else:
             types = {
-                'filename': str,
-                'recentFiles': list,
-                'window/size': QSize,
-                'window/position': QPoint,
-                'window/geometry': QByteArray,
-                'line/color': QColor,
-                'fill/color': QColor,
-                'advanced': bool,
+                SETTING_FILENAME: str,
+                SETTING_RECENT_FILES: list,
+                SETTING_WIN_SIZE: QSize,
+                SETTING_WIN_POSE: QPoint,
+                SETTING_WIN_GEOMETRY: QByteArray,
+                SETTING_LINE_COLOR: QColor,
+                SETTING_FILL_COLOR: QColor,
+                SETTING_ADVANCE_MODE: bool,
                 # Docks and toolbars:
-                'window/state': QByteArray,
-                'savedir': str,
-                'lastOpenDir': str,
+                SETTING_WIN_STATE: QByteArray,
+                SETTING_SAVE_DIR: str,
+                SETTING_LAST_OPEN_DIR: str,
             }
 
         self.settings = settings = Settings(types)
-        self.recentFiles = settings.get('recentFiles') if settings.get('recentFiles') is not None else []
-        size = settings.get('window/size', QSize(600, 500))
-        position = settings.get('window/position', QPoint(0, 0))
+
+        ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
+        if settings.get(SETTING_RECENT_FILES):
+            if have_qstring():
+                recentFileQStringList = settings.get(SETTING_RECENT_FILES)
+                self.recentFiles = [ustr(i) for i in recentFileQStringList]
+            else:
+                self.recentFiles = recentFileQStringList = settings.get(SETTING_RECENT_FILES)
+
+        size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
+        position = settings.get(SETTING_WIN_POSE, QPoint(0, 0))
         self.resize(size)
         self.move(position)
-        saveDir = ustr(settings.get('savedir', None))
-        self.lastOpenDir = ustr(settings.get('lastOpenDir', None))
+        saveDir = ustr(settings.get(SETTING_SAVE_DIR, None))
+        self.lastOpenDir = ustr(settings.get(SETTING_LAST_OPEN_DIR, None))
         if saveDir is not None and os.path.exists(saveDir):
             self.defaultSaveDir = saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
@@ -444,10 +453,10 @@ class MainWindow(QMainWindow, WindowMixin):
             self.statusBar().show()
 
         # or simply:
-        # self.restoreGeometry(settings['window/geometry']
-        self.restoreState(settings.get('window/state', QByteArray()))
-        self.lineColor = QColor(settings.get('line/color', Shape.line_color))
-        self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
+        # self.restoreGeometry(settings[SETTING_WIN_GEOMETRY]
+        self.restoreState(settings.get(SETTING_WIN_STATE, QByteArray()))
+        self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, Shape.line_color))
+        self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, Shape.fill_color))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
         # Add chris
@@ -458,7 +467,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 return x.toBool()
             return bool(x)
 
-        if xbool(settings.get('advanced', False)):
+        if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
             self.actions.advancedMode.setChecked(True)
             self.toggleAdvancedMode()
 
@@ -889,7 +898,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
-            filePath = self.settings.get('filename')
+            filePath = self.settings.get(SETTING_FILENAME)
 
         unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
@@ -999,26 +1008,26 @@ class MainWindow(QMainWindow, WindowMixin):
         s = self.settings
         # If it loads images from dir, don't load it at the begining
         if self.dirname is None:
-            s['filename'] = self.filePath if self.filePath else ''
+            s[SETTING_FILENAME] = self.filePath if self.filePath else ''
         else:
-            s['filename'] = ''
+            s[SETTING_FILENAME] = ''
 
-        s['window/size'] = self.size()
-        s['window/position'] = self.pos()
-        s['window/state'] = self.saveState()
-        s['line/color'] = self.lineColor
-        s['fill/color'] = self.fillColor
-        s['recentFiles'] = self.recentFiles
-        s['advanced'] = not self._beginner
+        s[SETTING_WIN_SIZE] = self.size()
+        s[SETTING_WIN_POSE] = self.pos()
+        s[SETTING_WIN_STATE] = self.saveState()
+        s[SETTING_LINE_COLOR] = self.lineColor
+        s[SETTING_FILL_COLOR] = self.fillColor
+        s[SETTING_RECENT_FILES] = self.recentFiles
+        s[SETTING_ADVANCE_MODE] = not self._beginner
         if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
-            s['savedir'] = ustr(self.defaultSaveDir)
+            s[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
         else:
-            s['savedir'] = ""
+            s[SETTING_SAVE_DIR] = ""
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
-            s['lastOpenDir'] = self.lastOpenDir
+            s[SETTING_LAST_OPEN_DIR] = self.lastOpenDir
         else:
-            s['lastOpenDir'] = ""
+            s[SETTING_LAST_OPEN_DIR] = ""
 
     ## User Dialogs ##
 
