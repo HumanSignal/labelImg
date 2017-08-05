@@ -1372,7 +1372,9 @@ def get_main_app(argv=[]):
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
     # Usage : labelImg.py image predefClassFile
     win = MainWindow(argv[1] if len(argv) >= 2 else None,
-                     argv[2] if len(argv) >= 3 else os.path.join('data', 'predefined_classes.txt'))
+                     argv[2] if len(argv) >= 3 else os.path.join(
+                         os.path.dirname(sys.argv[0]),
+                         'data', 'predefined_classes.txt'))
     win.show()
     return app, win
 
