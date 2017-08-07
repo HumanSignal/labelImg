@@ -16,3 +16,4 @@ cscope*
 .ycm_extra_conf.py
 .subvimrc
 .vscode
+*.pkl

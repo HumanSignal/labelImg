@@ -28,6 +28,7 @@ import resources
 # Add internal libs
 from libs.constants import *
 from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
+from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.canvas import Canvas
 from libs.zoomWidget import ZoomWidget
@@ -397,40 +398,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Load predefined classes to the list
         self.loadPredefinedClasses(defaultPrefdefClassFile)
-        # XXX: Could be completely declarative.
-        # Restore application settings.
-        if have_qstring():
-            types = {
-                SETTING_FILENAME: QString,
-                SETTING_RECENT_FILES: QStringList,
-                SETTING_WIN_SIZE: QSize,
-                SETTING_WIN_POSE: QPoint,
-                SETTING_WIN_GEOMETRY: QByteArray,
-                SETTING_LINE_COLOR: QColor,
-                SETTING_FILL_COLOR: QColor,
-                SETTING_ADVANCE_MODE: bool,
-                # Docks and toolbars:
-                SETTING_WIN_STATE: QByteArray,
-                SETTING_SAVE_DIR: QString,
-                SETTING_LAST_OPEN_DIR: QString,
-            }
-        else:
-            types = {
-                SETTING_FILENAME: str,
-                SETTING_RECENT_FILES: list,
-                SETTING_WIN_SIZE: QSize,
-                SETTING_WIN_POSE: QPoint,
-                SETTING_WIN_GEOMETRY: QByteArray,
-                SETTING_LINE_COLOR: QColor,
-                SETTING_FILL_COLOR: QColor,
-                SETTING_ADVANCE_MODE: bool,
-                # Docks and toolbars:
-                SETTING_WIN_STATE: QByteArray,
-                SETTING_SAVE_DIR: str,
-                SETTING_LAST_OPEN_DIR: str,
-            }
 
-        self.settings = settings = Settings(types)
+        self.settings = Settings()
+        self.settings.load()
+        settings = self.settings
 
         ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
         if settings.get(SETTING_RECENT_FILES):
@@ -1005,30 +976,31 @@ class MainWindow(QMainWindow, WindowMixin):
     def closeEvent(self, event):
         if not self.mayContinue():
             event.ignore()
-        s = self.settings
+        settings = self.settings
         # If it loads images from dir, don't load it at the begining
         if self.dirname is None:
-            s[SETTING_FILENAME] = self.filePath if self.filePath else ''
+            settings[SETTING_FILENAME] = self.filePath if self.filePath else ''
         else:
-            s[SETTING_FILENAME] = ''
+            settings[SETTING_FILENAME] = ''
 
-        s[SETTING_WIN_SIZE] = self.size()
-        s[SETTING_WIN_POSE] = self.pos()
-        s[SETTING_WIN_STATE] = self.saveState()
-        s[SETTING_LINE_COLOR] = self.lineColor
-        s[SETTING_FILL_COLOR] = self.fillColor
-        s[SETTING_RECENT_FILES] = self.recentFiles
-        s[SETTING_ADVANCE_MODE] = not self._beginner
+        settings[SETTING_WIN_SIZE] = self.size()
+        settings[SETTING_WIN_POSE] = self.pos()
+        settings[SETTING_WIN_STATE] = self.saveState()
+        settings[SETTING_LINE_COLOR] = self.lineColor
+        settings[SETTING_FILL_COLOR] = self.fillColor
+        settings[SETTING_RECENT_FILES] = self.recentFiles
+        settings[SETTING_ADVANCE_MODE] = not self._beginner
         if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
-            s[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
+            settings[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
         else:
-            s[SETTING_SAVE_DIR] = ""
+            settings[SETTING_SAVE_DIR] = ""
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
-            s[SETTING_LAST_OPEN_DIR] = self.lastOpenDir
+            settings[SETTING_LAST_OPEN_DIR] = self.lastOpenDir
         else:
-            s[SETTING_LAST_OPEN_DIR] = ""
+            settings[SETTING_LAST_OPEN_DIR] = ""
 
+        settings.save()
     ## User Dialogs ##
 
     def loadRecent(self, filename):
@@ -1312,41 +1284,6 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
-
-
-class Settings(object):
-    """Convenience dict-like wrapper around QSettings."""
-
-    def __init__(self, types=None):
-        self.data = QSettings()
-        self.types = defaultdict(lambda: QVariant, types if types else {})
-
-    def __setitem__(self, key, value):
-        t = self.types[key]
-        self.data.setValue(key,
-                           t(value) if not isinstance(value, t) else value)
-
-    def __getitem__(self, key):
-        return self._cast(key, self.data.value(key))
-
-    def get(self, key, default=None):
-        return self._cast(key, self.data.value(key, default))
-
-    def _cast(self, key, value):
-        # XXX: Very nasty way of converting types to QVariant methods :P
-        t = self.types.get(key)
-        if t is not None and t != QVariant:
-            if t is str:
-                return ustr(value)
-            else:
-                try:
-                    method = getattr(QVariant, re.sub(
-                        '^Q', 'to', t.__name__, count=1))
-                    return method(value)
-                except AttributeError as e:
-                    # print(e)
-                    return value
-        return value
 
 
 def inverted(color):
