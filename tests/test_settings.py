@@ -12,24 +12,13 @@ from settings import Settings
 
 class TestSettings(TestCase):
 
-    def test_write(self):
+    def test_basic(self):
         wSetting = Settings()
         wSetting['test0'] = 'hello'
         wSetting['test1'] = 10
         wSetting['test2'] = [0, 2, 3]
-        # asyc call ?
-        wSetting.save()
-        time.sleep(1)
-        self.assertEqual(os.path.exists('.settings.pkl'), True)
-
-    def test_read(self):
-        rSetting = Settings()
-        rSetting.load()
-
-        self.assertEqual(rSetting.get('test0'), 'hello')
-        self.assertEqual(rSetting.get('test1'), 10)
-        self.assertEqual(rSetting.get('test2'), [0, 2, 3])
-        self.assertEqual(rSetting.get('test3', 3), 3)
+        self.assertEqual(wSetting.get('test3', 3), 3)
+        self.assertEqual(wSetting.save(), True)
 
 
 if __name__ == '__main__':

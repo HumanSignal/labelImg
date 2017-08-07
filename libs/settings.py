@@ -1,4 +1,5 @@
 import pickle
+import os
 
 class Settings(object):
     def __init__(self):
@@ -23,8 +24,9 @@ class Settings(object):
         return False
 
     def load(self):
-        with open(self.path, 'rb') as f:
-           self.data = pickle.load(f)
-           return True
+        if os.path.exists(self.path):
+            with open(self.path, 'rb') as f:
+                self.data = pickle.load(f)
+                return True
         return False
 
