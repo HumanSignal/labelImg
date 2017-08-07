@@ -27,14 +27,15 @@ def main():
     if not os.path.exists(folderName):
         os.makedirs(folderName)
 
+    fileList = os.listdir(folderName)
     fileCount = 0
     for blob in blobs:
-        if folderName in blob.name:
+        if folderName in blob.name and blob.name not in fileList:
             fileCount += 1
 
     index = 0
     for blob in blobs:
-        if folderName in blob.name:
+        if folderName in blob.name and blob.name not in fileList:
             index += 1
             print("Downloading image " + str(index) + " of " + str(fileCount) + "...")
             with open(folderName + '/' + blob.name, 'wb') as f:
