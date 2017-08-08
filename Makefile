@@ -23,4 +23,7 @@ qt4py3:
 qt5py3:
 	pyrcc5 -o resources.py resources.qrc
 
+clean:
+	rm -f .settings.pkl resources.pyc
+
 .PHONY: test
