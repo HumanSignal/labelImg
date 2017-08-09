@@ -189,3 +189,12 @@ Related
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
 2. `Docker hub to run it <https://hub.docker.com/r/tzutalin/py2qt4>`__
+
+
+Attempt to use the tool for other Nets(By Jiancun Wang)
+~~~~~~~
+1. Added some attributes to the object, such as the IMG created time.
+2. Added a new method to identify the subclass. Such as identifying the suv from cars through the form of 'car:suv'
+3. A new script to convert '.xml' file to '.txt' file and pick up the usefull information. Additionally, a detail information could also be extracted.
+4. Modified files are 'labelImg.py' 'labelFile.py' 'pascal_voc_io.py'. New files are 'xml2txt.py' and 'xml2txtDetailed.py'
+
