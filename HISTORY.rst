@@ -1,14 +1,22 @@
 =======
 History
 =======
-1.4.0 (2017-0-7)
+
+1.4.3 (2017-08-09)
+------------------
+
+* Refactor setting
+* Fix the issues
+
+
+1.4.0 (2017-07-07)
 ------------------
 
 * Add feature: auto saving
 * Add feature: single class mode
 * Fix the issues
 
-1.3.4 (2017-07-7)
+1.3.4 (2017-07-07)
 ------------------
 
 * Fix issues and improve zoom-in
