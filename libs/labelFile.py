@@ -11,6 +11,7 @@ from libs.pascal_voc_io import PascalVocWriter
 from libs.pascal_voc_io import XML_EXT
 import os.path
 import sys
+#import datetime
 
 
 class LabelFileError(Exception):
@@ -28,7 +29,7 @@ class LabelFile(object):
         self.imageData = None
         self.verified = False
 
-    def savePascalVocFormat(self, filename, shapes, imagePath, imageData,
+    def savePascalVocFormat(self, filename, shapes, imagePath, imageData,d,
                             lineColor=None, fillColor=None, databaseSrc=None):
         imgFolderPath = os.path.dirname(imagePath)
         imgFolderName = os.path.split(imgFolderPath)[-1]
@@ -50,7 +51,13 @@ class LabelFile(object):
             # Add Chris
             difficult = int(shape['difficult'])
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+#            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            try:
+                print(d.strftime("%Y-%m-%d")+' Ok')
+            except Exception as error:
+                print(error)
+#            print(d.strftime("%Y-%m-%d"))
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult,d)
 
         writer.save(targetFile=filename)
         return
