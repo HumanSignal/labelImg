@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- coding: utf8 -*-
 import codecs
 import os.path
 import re
 import sys
 import subprocess
+import datetime
 
 from functools import partial
 from collections import defaultdict
@@ -24,11 +25,9 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
+#import resources
 # Add internal libs
-from libs.constants import *
 from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
-from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.canvas import Canvas
 from libs.zoomWidget import ZoomWidget
@@ -97,6 +96,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dirname = None
         self.labelHist = []
         self.lastOpenDir = None
+        self.d=''
 
         # Whether we need to save or not.
         self.dirty = False
@@ -117,14 +117,14 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.setContentsMargins(0, 0, 0, 0)
 
         # Create a widget for using default label
-        self.useDefaultLabelCheckbox = QCheckBox(u'Use default label')
-        self.useDefaultLabelCheckbox.setChecked(False)
+        self.useDefautLabelCheckbox = QCheckBox(u'Use default label')
+        self.useDefautLabelCheckbox.setChecked(False)
         self.defaultLabelTextLine = QLineEdit()
-        useDefaultLabelQHBoxLayout = QHBoxLayout()
-        useDefaultLabelQHBoxLayout.addWidget(self.useDefaultLabelCheckbox)
-        useDefaultLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
-        useDefaultLabelContainer = QWidget()
-        useDefaultLabelContainer.setLayout(useDefaultLabelQHBoxLayout)
+        useDefautLabelQHBoxLayout = QHBoxLayout()
+        useDefautLabelQHBoxLayout.addWidget(self.useDefautLabelCheckbox)
+        useDefautLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
+        useDefautLabelContainer = QWidget()
+        useDefautLabelContainer.setLayout(useDefautLabelQHBoxLayout)
 
         # Create a widget for edit and diffc button
         self.diffcButton = QCheckBox(u'difficult')
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
-        listLayout.addWidget(useDefaultLabelContainer)
+        listLayout.addWidget(useDefautLabelContainer)
 
         # Create and add a widget for showing current label items
         self.labelList = QListWidget()
@@ -398,25 +398,47 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Load predefined classes to the list
         self.loadPredefinedClasses(defaultPrefdefClassFile)
+        # XXX: Could be completely declarative.
+        # Restore application settings.
+        if have_qstring():
+            types = {
+                'filename': QString,
+                'recentFiles': QStringList,
+                'window/size': QSize,
+                'window/position': QPoint,
+                'window/geometry': QByteArray,
+                'line/color': QColor,
+                'fill/color': QColor,
+                'advanced': bool,
+                # Docks and toolbars:
+                'window/state': QByteArray,
+                'savedir': QString,
+                'lastOpenDir': QString,
+            }
+        else:
+            types = {
+                'filename': str,
+                'recentFiles': list,
+                'window/size': QSize,
+                'window/position': QPoint,
+                'window/geometry': QByteArray,
+                'line/color': QColor,
+                'fill/color': QColor,
+                'advanced': bool,
+                # Docks and toolbars:
+                'window/state': QByteArray,
+                'savedir': str,
+                'lastOpenDir': str,
+            }
 
-        self.settings = Settings()
-        self.settings.load()
-        settings = self.settings
-
-        ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
-        if settings.get(SETTING_RECENT_FILES):
-            if have_qstring():
-                recentFileQStringList = settings.get(SETTING_RECENT_FILES)
-                self.recentFiles = [ustr(i) for i in recentFileQStringList]
-            else:
-                self.recentFiles = recentFileQStringList = settings.get(SETTING_RECENT_FILES)
-
-        size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
-        position = settings.get(SETTING_WIN_POSE, QPoint(0, 0))
+        self.settings = settings = Settings(types)
+        self.recentFiles = settings.get('recentFiles') if settings.get('recentFiles') is not None else []
+        size = settings.get('window/size', QSize(600, 500))
+        position = settings.get('window/position', QPoint(0, 0))
         self.resize(size)
         self.move(position)
-        saveDir = ustr(settings.get(SETTING_SAVE_DIR, None))
-        self.lastOpenDir = ustr(settings.get(SETTING_LAST_OPEN_DIR, None))
+        saveDir = ustr(settings.get('savedir', None))
+        self.lastOpenDir = ustr(settings.get('lastOpenDir', None))
         if saveDir is not None and os.path.exists(saveDir):
             self.defaultSaveDir = saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
@@ -424,10 +446,10 @@ class MainWindow(QMainWindow, WindowMixin):
             self.statusBar().show()
 
         # or simply:
-        # self.restoreGeometry(settings[SETTING_WIN_GEOMETRY]
-        self.restoreState(settings.get(SETTING_WIN_STATE, QByteArray()))
-        self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, Shape.line_color))
-        self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, Shape.fill_color))
+        # self.restoreGeometry(settings['window/geometry']
+        self.restoreState(settings.get('window/state', QByteArray()))
+        self.lineColor = QColor(settings.get('line/color', Shape.line_color))
+        self.fillColor = QColor(settings.get('fill/color', Shape.fill_color))
         Shape.line_color = self.lineColor
         Shape.fill_color = self.fillColor
         # Add chris
@@ -438,7 +460,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 return x.toBool()
             return bool(x)
 
-        if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
+        if xbool(settings.get('advanced', False)):
             self.actions.advancedMode.setChecked(True)
             self.toggleAdvancedMode()
 
@@ -711,7 +733,9 @@ class MainWindow(QMainWindow, WindowMixin):
         try:
             if self.usingPascalVocFormat is True:
                 print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
-                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
+#                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
+#                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,self.d,
                                                    self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
                 self.labelFile.save(annotationFilePath, shapes, self.filePath, self.imageData,
@@ -751,7 +775,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if not self.useDefaultLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
+        if not self.useDefautLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
             if len(self.labelHist) > 0:
                 self.labelDialog = LabelDialog(
                     parent=self, listItem=self.labelHist)
@@ -869,7 +893,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
-            filePath = self.settings.get(SETTING_FILENAME)
+            filePath = self.settings.get('filename')
 
         unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
@@ -880,6 +904,8 @@ class MainWindow(QMainWindow, WindowMixin):
             fileWidgetItem.setSelected(True)
 
         if unicodeFilePath and os.path.exists(unicodeFilePath):
+            self.d=datetime.datetime.fromtimestamp(os.path.getmtime(unicodeFilePath))
+#            print(self.d.strftime("%Y-%m-%d"))
             if LabelFile.isLabelFile(unicodeFilePath):
                 try:
                     self.labelFile = LabelFile(unicodeFilePath)
@@ -976,31 +1002,30 @@ class MainWindow(QMainWindow, WindowMixin):
     def closeEvent(self, event):
         if not self.mayContinue():
             event.ignore()
-        settings = self.settings
+        s = self.settings
         # If it loads images from dir, don't load it at the begining
         if self.dirname is None:
-            settings[SETTING_FILENAME] = self.filePath if self.filePath else ''
+            s['filename'] = self.filePath if self.filePath else ''
         else:
-            settings[SETTING_FILENAME] = ''
+            s['filename'] = ''
 
-        settings[SETTING_WIN_SIZE] = self.size()
-        settings[SETTING_WIN_POSE] = self.pos()
-        settings[SETTING_WIN_STATE] = self.saveState()
-        settings[SETTING_LINE_COLOR] = self.lineColor
-        settings[SETTING_FILL_COLOR] = self.fillColor
-        settings[SETTING_RECENT_FILES] = self.recentFiles
-        settings[SETTING_ADVANCE_MODE] = not self._beginner
+        s['window/size'] = self.size()
+        s['window/position'] = self.pos()
+        s['window/state'] = self.saveState()
+        s['line/color'] = self.lineColor
+        s['fill/color'] = self.fillColor
+        s['recentFiles'] = self.recentFiles
+        s['advanced'] = not self._beginner
         if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
-            settings[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
+            s['savedir'] = ustr(self.defaultSaveDir)
         else:
-            settings[SETTING_SAVE_DIR] = ""
+            s['savedir'] = ""
 
         if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
-            settings[SETTING_LAST_OPEN_DIR] = self.lastOpenDir
+            s['lastOpenDir'] = self.lastOpenDir
         else:
-            settings[SETTING_LAST_OPEN_DIR] = ""
+            s['lastOpenDir'] = ""
 
-        settings.save()
     ## User Dialogs ##
 
     def loadRecent(self, filename):
@@ -1014,8 +1039,8 @@ class MainWindow(QMainWindow, WindowMixin):
         for root, dirs, files in os.walk(folderPath):
             for file in files:
                 if file.lower().endswith(tuple(extensions)):
-                    relativePath = os.path.join(root, file)
-                    path = ustr(os.path.abspath(relativePath))
+                    relatviePath = os.path.join(root, file)
+                    path = ustr(os.path.abspath(relatviePath))
                     images.append(path)
         images.sort(key=lambda x: x.lower())
         return images
@@ -1286,6 +1311,41 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.verified = tVocParseReader.verified
 
 
+class Settings(object):
+    """Convenience dict-like wrapper around QSettings."""
+
+    def __init__(self, types=None):
+        self.data = QSettings()
+        self.types = defaultdict(lambda: QVariant, types if types else {})
+
+    def __setitem__(self, key, value):
+        t = self.types[key]
+        self.data.setValue(key,
+                           t(value) if not isinstance(value, t) else value)
+
+    def __getitem__(self, key):
+        return self._cast(key, self.data.value(key))
+
+    def get(self, key, default=None):
+        return self._cast(key, self.data.value(key, default))
+
+    def _cast(self, key, value):
+        # XXX: Very nasty way of converting types to QVariant methods :P
+        t = self.types.get(key)
+        if t is not None and t != QVariant:
+            if t is str:
+                return ustr(value)
+            else:
+                try:
+                    method = getattr(QVariant, re.sub(
+                        '^Q', 'to', t.__name__, count=1))
+                    return method(value)
+                except AttributeError as e:
+                    # print(e)
+                    return value
+        return value
+
+
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
 
@@ -1309,9 +1369,7 @@ def get_main_app(argv=[]):
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
     # Usage : labelImg.py image predefClassFile
     win = MainWindow(argv[1] if len(argv) >= 2 else None,
-                     argv[2] if len(argv) >= 3 else os.path.join(
-                         os.path.dirname(sys.argv[0]),
-                         'data', 'predefined_classes.txt'))
+                     argv[2] if len(argv) >= 3 else os.path.join('data', 'predefined_classes.txt'))
     win.show()
     return app, win
 
@@ -1323,3 +1381,4 @@ def main(argv=[]):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
+
