@@ -1,10 +1,11 @@
 import pickle
 import os
+import sys
 
 class Settings(object):
     def __init__(self):
         self.data = {}
-        self.path = '.settings.pkl'
+        self.path = os.path.join(os.path.dirname(sys.argv[0]), '.settings.pkl')
 
     def __setitem__(self, key, value):
         self.data[key] = value
