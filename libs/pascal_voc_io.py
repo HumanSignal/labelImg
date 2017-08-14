@@ -133,7 +133,10 @@ class PascalVocReader:
         self.shapes = []
         self.filepath = filepath
         self.verified = False
-        self.parseXML()
+        try:
+            self.parseXML()
+        except:
+            pass
 
     def getShapes(self):
         return self.shapes
