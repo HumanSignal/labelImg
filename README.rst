@@ -182,6 +182,7 @@ License
 ~~~~~~~
 `Free software: MIT license <https://github.com/tzutalin/labelImg/blob/master/LICENSE>`_
 
+Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
 
 Related
 ~~~~~~~
