@@ -1,3 +1,8 @@
+'''
+For this script to work, you must have your application default credentials
+set up in the Google Cloud utility (in terminal). Then, just run 'python ImageDownloader.py'.
+'''
+
 from google.cloud import storage
 import os
 import subprocess
@@ -10,6 +15,7 @@ def main():
     blobs = []
     idx = 0
 
+    # gather all the folder names in the blob store
     for blob in bucket.list_blobs():
         blobs.append(blob)
         split = blob.name.split('-')
@@ -22,17 +28,21 @@ def main():
         print("no sets of images found")
         return
 
+    # ask the user which folder they would like to download and label
     folderIndex = int(raw_input("Which set of images would you like to download? "))    
     folderName = folders[folderIndex]
     if not os.path.exists(folderName):
         os.makedirs(folderName)
 
+    # count how many images we have to download
     fileList = os.listdir(folderName)
     fileCount = 0
     for blob in blobs:
         if folderName in blob.name and blob.name not in fileList:
             fileCount += 1
 
+
+    # download each image
     index = 0
     for blob in blobs:
         if folderName in blob.name and blob.name not in fileList:
@@ -41,8 +51,8 @@ def main():
             with open(folderName + '/' + blob.name, 'wb') as f:
                 blob.download_to_file(f)
 
+    # call the image labeling script
     print("Done")
-
     p = subprocess.call(['python', 'labelImg.py', folderName + '/'])
 
 if __name__ == "__main__":
