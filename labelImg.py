@@ -382,6 +382,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
 
+        if defaultFilename is not None and (defaultFilename[-1] == '/' or defaultFilename[-1] == '\\'):
+            # If filename is actually a directory
+            defaultDir = defaultFilename
+            defaultFilename = None
+        else:
+            defaultDir = None
+
         # Application state.
         self.image = QImage()
         self.filePath = ustr(defaultFilename)
@@ -473,6 +480,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.populateModeActions()
 
+        if defaultDir != None and os.path.exists(defaultDir):
+            self.openDir(dirpath=defaultDir)
+
     ## Support Functions ##
 
     def noShapes(self):
@@ -550,11 +560,13 @@ class MainWindow(QMainWindow, WindowMixin):
         return None
 
     def addRecentFile(self, filePath):
+        '''
         if filePath in self.recentFiles:
             self.recentFiles.remove(filePath)
         elif len(self.recentFiles) >= self.maxRecent:
             self.recentFiles.pop()
         self.recentFiles.insert(0, filePath)
+        '''
 
     def beginner(self):
         return self._beginner
@@ -1072,19 +1084,20 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             self.loadPascalXMLByFilename(filename)
 
-    def openDir(self, _value=False):
+    def openDir(self, _value=False, dirpath=None):
         if not self.mayContinue():
             return
 
-        path = os.path.dirname(self.filePath)\
-            if self.filePath else '.'
+        if dirpath is None:
+            path = os.path.dirname(self.filePath)\
+                if self.filePath else '.'
 
-        if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
-            path = self.lastOpenDir
+            if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
+                path = self.lastOpenDir
 
-        dirpath = ustr(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
-                                                     | QFileDialog.DontResolveSymlinks))
+            dirpath = ustr(QFileDialog.getExistingDirectory(self,
+                                                         '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+                                                         | QFileDialog.DontResolveSymlinks))
 
         if dirpath is not None and len(dirpath) > 1:
             self.lastOpenDir = dirpath
