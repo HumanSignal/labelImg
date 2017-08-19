@@ -6,7 +6,7 @@ Precursor: Image Training
 
 To train a new food, you use Level's existing apps in training mode.
 
-1. Make sure the device has the latest master version of [Oxide](https://github.com/markovcorp/cawfee/tree/master/oxide) on it.
+1. Make sure the device has the latest master version of Oxide (at <https://github.com/markovcorp/cawfee/tree/master/oxide>) on it.
 2. Open Nickel
 3. Go to Settings > Level Settings > Training
 4. Turn on Training Mode and enter a name for your training set (usually the food name you're training, such as "ribs").
