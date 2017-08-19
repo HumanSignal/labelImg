@@ -20,13 +20,13 @@ Using LabelImg
 ------------------
 
 1. Get the latest version of master for this repo on a computer that Parth can access remotely (like the Linux laptop between B2 and B3).
-2. Run the downloader script: ``python ImageDownloder.py``. This will download the images from Google Cloud Storage to the local device.
+2. Run the downloader script: ``python ImageDownloder.py``. This will download the images from Google Cloud Storage to the local device. Please don't commit the new images to the repo.
 3. Select the number of the training name that you had set in Nickel ("9: ribs"). This will open up all of your training images in the LabelImg program.
 4. Make the program full window and zoom in (it will make labeling easier!)
 5. Click 'Next Image' or type ``d``
 6. Click 'Create RectBox' or type ``w``
 7. Draw a bounding box by clicking and dragging.
-8. A selection box will appear for you to label the food. Select the food that you're tagging ("ribs"). If it's not available, you can edit the file under data > predefined-classes.txt.
+8. A selection box will appear for you to label the food. Select the food that you're tagging ("ribs"). If it's not available, you can edit the file under data > predefined-classes.txt (and commit the change to our repo).
 9. Finalize the bounding box. It should be the smallest box that contains the entire food.
 10. Click 'Save' or type ``Ctrl`` + ``s``.
 11. Repeat steps 5-10 until you have gone through all images in the directory.
