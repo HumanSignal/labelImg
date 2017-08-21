@@ -1,4 +1,45 @@
-LabelImg
+LabelImg README for Markov
+========
+
+Precursor: Image Training
+------------------
+
+To train a new food, you use Level's existing apps in training mode.
+
+1. Make sure the device has the latest master version of Oxide (at <https://github.com/markovcorp/cawfee/tree/master/oxide>) on it.
+2. Open Nickel
+3. Go to Settings > Level Settings > Training
+4. Turn on Training Mode and enter a name for your training set (usually the food name you're training, such as "ribs").
+5. Tap the back button twice to get to the main Nickel flow.
+6. Place the food in Level and close the door. After recognition, you should see a toast confirming that an image was saved with your training name.
+7. Take about 200 images of the food in various positions, rotations, and containers.
+8. Oxide will automatically sync the images to Google Cloud Storage.
+
+
+Using LabelImg
+------------------
+
+1. Get the latest version of master for this repo on a computer that Parth can access remotely (like the Linux laptop between B2 and B3).
+2. Run the downloader script: ``python ImageDownloder.py``. This will download the images from Google Cloud Storage to the local device. Please don't commit the new images to the repo.
+3. Select the number of the training name that you had set in Nickel ("9: ribs"). This will open up all of your training images in the LabelImg program.
+4. Make the program full window and zoom in (it will make labeling easier!)
+5. Click 'Next Image' or type ``d``
+6. Click 'Create RectBox' or type ``w``
+7. Draw a bounding box by clicking and dragging.
+8. A selection box will appear for you to label the food. Select the food that you're tagging ("ribs"). If it's not available, you can edit the file under data > predefined-classes.txt (and commit the change to our repo).
+9. Finalize the bounding box. It should be the smallest box that contains the entire food.
+10. Click 'Save' or type ``Ctrl`` + ``s``.
+11. Repeat steps 5-10 until you have gone through all images in the directory.
+12. When you're done labeling all images, double check that they have the proper label ("ribs") in the top right of the program. You can click 'Edit Label' to bring up the selection box again.
+13. Exit out of the program.
+14. Tell Parth that you have trained and label every image. He'll retrieve the images from the computer.
+
+
+
+----------
+
+
+Original LabelImg README
 ========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
