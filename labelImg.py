@@ -573,6 +573,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def setEditMode(self):
         assert self.advanced()
         self.toggleDrawMode(True)
+        self.labelSelectionChanged()
 
     def updateFileMenu(self):
         currFilePath = self.filePath
