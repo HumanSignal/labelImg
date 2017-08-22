@@ -245,9 +245,9 @@ class Canvas(QWidget):
             self.current.addPoint(targetPos)
             self.current.addPoint(QPointF(minX, maxY))
             self.current.addPoint(initPos)
+            self.current.close()
             self.line[0] = self.current[-1]
-            if self.current.isClosed():
-                self.finalise()
+            self.finalise()
         elif not self.outOfPixmap(pos):
             self.current = Shape()
             self.current.addPoint(pos)
