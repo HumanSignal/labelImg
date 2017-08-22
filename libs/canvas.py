@@ -244,9 +244,6 @@ class Canvas(QWidget):
             self.current.addPoint(QPointF(maxX, minY))
             self.current.addPoint(targetPos)
             self.current.addPoint(QPointF(minX, maxY))
-            self.current.addPoint(initPos)
-            self.current.close()
-            self.line[0] = self.current[-1]
             self.finalise()
         elif not self.outOfPixmap(pos):
             self.current = Shape()
@@ -449,6 +446,12 @@ class Canvas(QWidget):
 
     def finalise(self):
         assert self.current
+        if self.current.points[0] == self.current.points[-1]:
+            self.current = None
+            self.drawingPolygon.emit(False)
+            self.update()
+            return
+
         self.current.close()
         self.shapes.append(self.current)
         self.current = None
