@@ -283,14 +283,12 @@ class Canvas(QWidget):
         if self.selectedVertex():  # A vertex is marked for selection.
             index, shape = self.hVertex, self.hShape
             shape.highlightVertex(index, shape.MOVE_VERTEX)
+            self.selectShape(shape)
             return
         for shape in reversed(self.shapes):
             if self.isVisible(shape) and shape.containsPoint(point):
-                shape.selected = True
-                self.selectedShape = shape
+                self.selectShape(shape)
                 self.calculateOffsets(shape, point)
-                self.setHiding()
-                self.selectionChanged.emit(True)
                 return
 
     def calculateOffsets(self, shape, point):
