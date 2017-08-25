@@ -67,9 +67,7 @@ class Shape(object):
         return False
 
     def addPoint(self, point):
-        if self.points and point == self.points[0]:
-            self.close()
-        else:
+        if not self.reachMaxPoints():
             self.points.append(point)
 
     def popPoint(self):
