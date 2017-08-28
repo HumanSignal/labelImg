@@ -920,6 +920,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.status("Error reading %s" % unicodeFilePath)
                     return False
 
+                self.addRecentFile(unicodeFilePath)
                 # Label xml file and show bound box according to its filename
                 if self.usingPascalVocFormat is True:
                     if self.defaultSaveDir is not None:
@@ -932,6 +933,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
                         if os.path.isfile(xmlPath):
                             self.loadPascalXMLByFilename(xmlPath)
+                    unicodeFilePath = self.labelFile.imagePath
                 else:
                     self.lineColor = QColor(*self.labelFile.lineColor)
                     self.fillColor = QColor(*self.labelFile.fillColor)
@@ -940,6 +942,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 # read data first and store for saving into label file.
                 self.imageData = read(unicodeFilePath, None)
                 self.labelFile = None
+                self.addRecentFile(unicodeFilePath)
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
@@ -956,7 +959,6 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.setEnabled(True)
             self.adjustScale(initial=True)
             self.paintCanvas()
-            self.addRecentFile(self.filePath)
             self.toggleActions(True)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)

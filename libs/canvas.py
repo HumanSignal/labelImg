@@ -71,7 +71,7 @@ class Canvas(QWidget):
         self.restoreCursor()
 
     def isVisible(self, shape):
-        return shape in self.visible and self.visible[shape]
+        return shape not in self.visible or self.visible[shape]
 
     def drawing(self):
         return self.mode == self.CREATE
