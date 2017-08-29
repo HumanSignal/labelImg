@@ -815,9 +815,10 @@ class MainWindow(QMainWindow, WindowMixin):
         # up and down analogous
         cursor = QCursor()
         pos = cursor.pos()
+        relative_pos = QWidget.mapFromGlobal(self, pos)
 
-        cursor_x = pos.x()
-        cursor_y = pos.y()
+        cursor_x = relative_pos.x()
+        cursor_y = relative_pos.y()
 
         w = self.scrollArea.width()
         h = self.scrollArea.height()
@@ -828,7 +829,7 @@ class MainWindow(QMainWindow, WindowMixin):
         move_x = (cursor_x - margin * w) / (w - 2 * margin * w)
         move_y = (cursor_y - margin * h) / (h - 2 * margin * h)
 
-        # clamp the values form 0 to 1
+        # clamp the values from 0 to 1
         move_x = min(max(move_x, 0), 1)
         move_y = min(max(move_y, 0), 1)
 
