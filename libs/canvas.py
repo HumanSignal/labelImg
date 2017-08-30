@@ -84,6 +84,8 @@ class Canvas(QWidget):
         if not value:  # Create
             self.unHighlight()
             self.deSelectShape()
+        self.prevPoint = QPointF()
+        self.repaint()
 
     def unHighlight(self):
         if self.hShape:
@@ -117,8 +119,11 @@ class Canvas(QWidget):
                     self.current.highlightVertex(0, Shape.NEAR_VERTEX)
                 self.line[1] = pos
                 self.line.line_color = color
-                self.repaint()
+                self.prevPoint = QPointF()
                 self.current.highlightClear()
+            else:
+                self.prevPoint = pos
+            self.repaint()
             return
 
         # Polygon copy moving.
@@ -412,6 +417,11 @@ class Canvas(QWidget):
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
             p.drawRect(leftTop.x(), leftTop.y(), rectWidth, rectHeight)
+
+        if self.drawing() and not self.prevPoint.isNull() and not self.outOfPixmap(self.prevPoint):
+            p.setPen(QColor(0, 0, 0))
+            p.drawLine(self.prevPoint.x(), 0, self.prevPoint.x(), self.pixmap.height())
+            p.drawLine(0, self.prevPoint.y(), self.pixmap.width(), self.prevPoint.y())
 
         self.setAutoFillBackground(True)
         if self.verified:
