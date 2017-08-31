@@ -14,7 +14,8 @@ To train a new food, you use Level's existing apps in training mode.
 6. Place the food in Level and close the door. After recognition, you should see a toast confirming that an image was saved with your training name.
 7. Take about 200 images of the food in various positions, rotations, and containers.
 8. Make sure to turn off training mode when you're done.
-9. Oxide will automatically sync the images to Google Cloud Storage.
+9. Oxide will automatically sync the images to Google Cloud Storage. If it doesn't...
+
 -  If Oxide isn't installed or the device isn't associated yet, follow these instructions: <https://github.com/markovcorp/cawfee/tree/master/oxide#associating-your-device>.
 -  If your images aren't downloading in the ImageDownloader script below:
 	-  See if the images made it to Google Cloud: https://console.cloud.google.com/storage/browser/blobstoreforimages.appspot.com?project=blobstoreforimages (type in your label name in the prefix search)
