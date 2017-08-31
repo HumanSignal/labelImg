@@ -16,12 +16,13 @@ To train a new food, you use Level's existing apps in training mode.
 8. Make sure to turn off training mode when you're done.
 9. Oxide will automatically sync the images to Google Cloud Storage. If it doesn't...
 
--  If Oxide isn't installed or the device isn't associated yet, follow these instructions: <https://github.com/markovcorp/cawfee/tree/master/oxide#associating-your-device>.
--  If your images aren't downloading in the ImageDownloader script below:
-	-  See if the images made it to Google Cloud: https://console.cloud.google.com/storage/browser/blobstoreforimages.appspot.com?project=blobstoreforimages (type in your label name in the prefix search)
-	-  Check that the images were actually saving to Android under Settings > Storage & USB > Explore > Pictures > FoodRecognition
-	-  Check the latest sync date of your Level Setup account under Settings > Accounts > Level (and toggle the Cooking Session data toggle)
-	-  Tokens expire regularly for that account, so you may need to delete the Level account and create a new one in Settings > Accounts.
+	-  If Oxide isn't installed or the device isn't associated yet, follow these instructions: <https://github.com/markovcorp/cawfee/tree/master/oxide#associating-your-device>.
+
+	-  If your images aren't downloading in the ImageDownloader script below:
+		-  See if the images made it to Google Cloud: https://console.cloud.google.com/storage/browser/blobstoreforimages.appspot.com?project=blobstoreforimages (type in your label name in the prefix search)
+		-  Check that the images were actually saving to Android under Settings > Storage & USB > Explore > Pictures > FoodRecognition
+		-  Check the latest sync date of your Level Setup account under Settings > Accounts > Level (and toggle the Cooking Session data toggle)
+		-  Tokens expire regularly for that account, so you may need to delete the Level account and create a new one in Settings > Accounts.
 
 
 Using LabelImg
