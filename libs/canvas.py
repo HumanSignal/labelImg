@@ -11,6 +11,7 @@ except ImportError:
 
 from libs.shape import Shape
 from libs.lib import distance
+from libs import segmentation
 
 CURSOR_DEFAULT = Qt.ArrowCursor
 CURSOR_POINT = Qt.PointingHandCursor
@@ -60,6 +61,9 @@ class Canvas(QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
+        self.segmentation = segmentation.SegmentationObject()
+        self.is_segmenting = False
+        self.include_segmentation = False
 
     def enterEvent(self, ev):
         self.overrideCursor(self._cursor)
@@ -102,6 +106,12 @@ class Canvas(QWidget):
         # Polygon drawing.
         if self.drawing():
             self.overrideCursor(CURSOR_DRAW)
+            if self.is_segmenting is True and (ev.buttons() & Qt.LeftButton):
+                self.segmentation.draw_fgmask(pos.x(), pos.y())
+                return
+            if self.is_segmenting is True and (ev.buttons() & Qt.RightButton):
+                self.segmentation.draw_bgmask(pos.x(), pos.y())
+                return
             if self.current:
                 color = self.lineColor
                 if self.outOfPixmap(pos):
@@ -189,7 +199,8 @@ class Canvas(QWidget):
 
         if ev.button() == Qt.LeftButton:
             if self.drawing():
-                self.handleDrawing(pos)
+                if self.is_segmenting is False:
+                    self.handleDrawing(pos)
             else:
                 self.selectShapePoint(pos)
                 self.prevPoint = pos
@@ -201,6 +212,11 @@ class Canvas(QWidget):
 
     def mouseReleaseEvent(self, ev):
         if ev.button() == Qt.RightButton:
+            if self.drawing() and self.is_segmenting is True:
+                self.segmentation.create_mask()
+                self.repaint()
+                return
+
             menu = self.menus[bool(self.selectedShapeCopy)]
             self.restoreCursor()
             if not menu.exec_(self.mapToGlobal(ev.pos()))\
@@ -216,7 +232,12 @@ class Canvas(QWidget):
         elif ev.button() == Qt.LeftButton:
             pos = self.transformPos(ev.pos())
             if self.drawing():
-                self.handleDrawing(pos)
+                if self.is_segmenting is False:
+                    self.handleDrawing(pos)
+                    return
+                if self.include_segmentation and self.is_segmenting is True:
+                    self.segmentation.create_mask()
+                    self.repaint()
 
     def endMove(self, copy=False):
         assert self.selectedShape and self.selectedShapeCopy
@@ -425,6 +446,24 @@ class Canvas(QWidget):
             p.drawLine(self.prevPoint.x(), 0, self.prevPoint.x(), self.pixmap.height())
             p.drawLine(0, self.prevPoint.y(), self.pixmap.width(), self.prevPoint.y())
 
+        current_segment = self.segmentation.get_current_segment()
+        if current_segment is not None:
+            p.setPen(QColor(0, 0, 255))
+            for segment in current_segment:
+                for point in segment:
+                    x, y = point[0]
+                    p.drawPoint(x,y)
+
+        if self.include_segmentation:
+            all_segments = self.segmentation.get_all_segments()
+            if all_segments is not None:
+                p.setPen(QColor(255, 0, 0))
+                for _, segment in all_segments.items():
+                    for contour in segment:
+                        for point in contour:
+                            x, y = point[0]
+                            p.drawPoint(x,y)
+
         self.setAutoFillBackground(True)
         if self.verified:
             pal = self.palette()
@@ -455,6 +494,20 @@ class Canvas(QWidget):
         return not (0 <= p.x() <= w and 0 <= p.y() <= h)
 
     def finalise(self):
+        def start_segmenting():
+            if self.current is not None:
+                xi, yi = self.current[0].x(), self.current[0].y()
+                xj, yj = self.current[2].x(), self.current[2].y()
+                minX, minY = min(xi,xj), min(yi, yj)
+                maxX, maxY = max(xi,xj), max(yi, yj)
+
+                rect = (int(minX),
+                        int(minY),
+                        int(maxX - minX),
+                        int(maxY - minY))
+                self.segmentation.create_mask(rect=rect, init_with_rect=True)
+                self.is_segmenting = True
+
         assert self.current
         if self.current.points[0] == self.current.points[-1]:
             self.current = None
@@ -464,9 +517,11 @@ class Canvas(QWidget):
 
         self.current.close()
         self.shapes.append(self.current)
-        self.current = None
         self.setHiding(False)
         self.newShape.emit()
+        if self.include_segmentation and self.is_segmenting is False:
+            start_segmenting()
+        self.current = None
         self.update()
 
     def closeEnough(self, p1, p2):
@@ -611,6 +666,15 @@ class Canvas(QWidget):
         self.shapes[-1].label = text
         return self.shapes[-1]
 
+    def endSegmenting(self, label=None):
+        if self.is_segmenting:
+            self.segmentation.freeze_segment(label)
+            self.setClean()
+            self.repaint()
+
+    def setClean(self):
+        self.is_segmenting = False
+
     def undoLastLine(self):
         assert self.shapes
         self.current = self.shapes.pop()
@@ -629,9 +693,19 @@ class Canvas(QWidget):
         self.update()
 
     def loadPixmap(self, pixmap):
+        self.segmentation.update(pixmap)
         self.pixmap = pixmap
         self.shapes = []
         self.repaint()
+
+    def load_seg(self, seg_path, label_path=None):
+        self.segmentation.load_seg(seg_path)
+        self.segmentation.load_seg_label(label_path)
+
+    def save_seg(self, seg_path):
+        if self.include_segmentation:
+            self.setClean()
+            self.segmentation.save_seg(seg_path)
 
     def loadShapes(self, shapes):
         self.shapes = list(shapes)

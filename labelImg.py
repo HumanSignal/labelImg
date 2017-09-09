@@ -133,9 +133,14 @@ class MainWindow(QMainWindow, WindowMixin):
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
+        self.segmentation_button = QCheckBox('Segmentation')
+        self.segmentation_button.setChecked(False)
+        self.segmentation_button.stateChanged.connect(self.btnstate)
+
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
+        listLayout.addWidget(self.segmentation_button)
         listLayout.addWidget(useDefaultLabelContainer)
 
         # Create and add a widget for showing current label items
@@ -219,7 +224,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         verify = action('&Verify Image', self.verifyImg,
                         'space', 'verify', u'Verify Image')
-
+        endSegmentation = action('&End Segmenting', self.endSegmenting,
+                        's', 'end_segmenting', u'End Segmenting')
         save = action('&Save', self.saveFile,
                       'Ctrl+S', 'save', u'Save labels to file', enabled=False)
         saveAs = action('&Save As', self.saveFileAs,
@@ -373,11 +379,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, endSegmentation, save, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, endSegmentation, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -498,6 +504,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def setClean(self):
         self.dirty = False
+        self.canvas.setClean()
         self.actions.save.setEnabled(False)
         self.actions.create.setEnabled(True)
 
@@ -613,8 +620,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Add chris
     def btnstate(self, item= None):
-        """ Function to handle difficult examples
-        Update on each object """
+        """ Function to handle checkbox buttons in listLayout"""
+        self.canvas.include_segmentation = self.segmentation_button.isChecked()
+        self.canvas.update()
+
         if not self.canvas.editing():
             return
 
@@ -922,14 +931,25 @@ class MainWindow(QMainWindow, WindowMixin):
             # Label xml file and show bound box according to its filename
             if self.usingPascalVocFormat is True:
                 if self.defaultSaveDir is not None:
-                    basename = os.path.basename(
-                        os.path.splitext(self.filePath)[0]) + XML_EXT
-                    xmlPath = os.path.join(self.defaultSaveDir, basename)
+                    basename = os.path.basename(os.path.splitext(self.filePath)[0])
+                    xml_filename = basename + XML_EXT
+                    xmlPath = os.path.join(self.defaultSaveDir, xml_filename)
                     self.loadPascalXMLByFilename(xmlPath)
+
+                    seg_filename = basename + '_seg' + '.png'
+                    seg_labels_filename = 'labels.txt'
+                    segPath = os.path.join(self.defaultSaveDir, seg_filename)
+                    segLabelPath = os.path.join(self.lastOpenDir, seg_labels_filename)
+                    if os.path.isfile(segPath):
+                        self.canvas.load_seg(segPath, segLabelPath)
                 else:
                     xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                     if os.path.isfile(xmlPath):
                         self.loadPascalXMLByFilename(xmlPath)
+
+                    segPath = os.path.splitext(filePath)[0] + '_seg' + '.png'
+                    if os.path.isfile(segPath):
+                        self.canvas.load_seg(segPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1096,6 +1116,9 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paintCanvas()
             self.saveFile()
 
+    def endSegmenting(self):
+        self.canvas.endSegmenting(self.prevLabelText)
+
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label
         if self.autoSaving.isChecked() and self.defaultSaveDir is not None:
@@ -1159,6 +1182,10 @@ class MainWindow(QMainWindow, WindowMixin):
                 savedFileName = os.path.splitext(imgFileName)[0] + XML_EXT
                 savedPath = os.path.join(ustr(self.defaultSaveDir), savedFileName)
                 self._saveFile(savedPath)
+
+                segFilename = os.path.splitext(imgFileName)[0] + '_seg' + '.png'
+                segPath = os.path.join(ustr(self.defaultSaveDir), segFilename)
+                self.canvas.save_seg(segPath)
         else:
             imgFileDir = os.path.dirname(self.filePath)
             imgFileName = os.path.basename(self.filePath)
