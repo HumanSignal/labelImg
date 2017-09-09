@@ -34,6 +34,8 @@ matrix:
         - source activate labelImg-py2qt4
         - conda install -y pyqt=4
         - conda install -y lxml
+        - conda install -y opencv
+        - conda install -y pillow
         - make qt4py2
         - xvfb-run make testpy2
 
@@ -63,6 +65,8 @@ matrix:
         - source activate labelImg-py3qt5
         - conda install -y pyqt=5
         - conda install -y lxml
+        - conda install -y opencv=3
+        - conda install -y pillow
         - make qt5py3
         - xvfb-run make testpy3
 
