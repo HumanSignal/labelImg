@@ -4,6 +4,7 @@ import PIL.Image as Image
 try:
     from PyQt5.QtGui import *
 except ImportError:
+    import sys
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
