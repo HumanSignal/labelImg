@@ -2,6 +2,13 @@
 History
 =======
 
+1.5.0 (2017-9-14)
+------------------
+
+* Fix the issues
+* Add feature: Draw a box easier
+
+
 1.4.3 (2017-08-09)
 ------------------
 
