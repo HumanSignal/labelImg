@@ -13,6 +13,9 @@ requirements = [
     # TODO: Different OS have different requirements
 ]
 
+required_packages = find_packages()
+required_packages.append('labelImg')
+
 setup(
     name='labelImg',
     version='1.5.1',
@@ -21,7 +24,8 @@ setup(
     author="TzuTa Lin",
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
-    packages=find_packages(),
+    package_dir={'labelImg': '.'},
+    packages=required_packages,
     entry_points={
         'console_scripts': [
             'labelImg=labelImg.labelImg:main'
@@ -46,4 +50,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
+    package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']}
 )
