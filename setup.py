@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -10,13 +10,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
-]
-
-test_requirements = [
-    'qt',
-    'qt4',
-    'libxml2'
+    # TODO: Different OS have different requirements
 ]
 
 setup(
@@ -27,10 +21,7 @@ setup(
     author="TzuTa Lin",
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
-    packages=[
-        'labelImg', 'labelImg.libs'
-    ],
-    package_dir={'labelImg': '.'},
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'labelImg=labelImg.labelImg:main'
@@ -40,9 +31,9 @@ setup(
     install_requires=requirements,
     license="MIT license",
     zip_safe=False,
-    keywords='labelImg',
+    keywords='labelImg labelTool development annotation deeplearning',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -55,6 +46,4 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    test_suite='tests',
-    tests_require=test_requirements
 )
