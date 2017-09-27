@@ -74,23 +74,35 @@ class PascalVocWriter:
         segmented.text = '0'
         return top
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
+#    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult,d):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
         bndbox['difficult'] = difficult
+        bndbox['date']=d.strftime("%Y-%m-%d")
+#        print(d.strftime("%Y-%m-%d")+'get')
+#        print('come to addbndbox')
         self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
         for each_object in self.boxlist:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
+            nameAll=['','0']
             try:
-                name.text = unicode(each_object['name'])
+                if each_object['name'].find(':')>0:
+                    nameAll=each_object['name'].split(':')
+                    name.text=nameAll[0]
+                else:
+                    name.text = unicode(each_object['name'])
+                    
             except NameError:
                 # Py3: NameError: name 'unicode' is not defined
                 name.text = each_object['name']
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
+           
+#            d.text="ah"
             truncated = SubElement(object_item, 'truncated')
             if int(each_object['ymax']) == int(self.imgSize[0]) or (int(each_object['ymin'])== 1):
                 truncated.text = "1" # max == height or min
@@ -109,6 +121,11 @@ class PascalVocWriter:
             xmax.text = str(each_object['xmax'])
             ymax = SubElement(bndbox, 'ymax')
             ymax.text = str(each_object['ymax'])
+            d = SubElement(object_item, 'date')
+            d.text = each_object['date']
+            subClass=SubElement(object_item, 'subClass')
+            subClass.text = nameAll[1]
+
 
     def save(self, targetFile=None):
         root = self.genXML()
@@ -117,8 +134,10 @@ class PascalVocWriter:
         if targetFile is None:
             out_file = codecs.open(
                 self.filename + XML_EXT, 'w', encoding=ENCODE_METHOD)
+#            print('save xml')
         else:
             out_file = codecs.open(targetFile, 'w', encoding=ENCODE_METHOD)
+#            print('save other file')
 
         prettifyResult = self.prettify(root)
         out_file.write(prettifyResult.decode('utf8'))
