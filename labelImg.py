@@ -106,6 +106,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.screencastViewer = "firefox"
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
+        # Load predefined classes to the list
+        self.loadPredefinedClasses(defaultPrefdefClassFile)
+
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
 
@@ -395,9 +398,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fit_window = False
         # Add Chris
         self.difficult = False
-
-        # Load predefined classes to the list
-        self.loadPredefinedClasses(defaultPrefdefClassFile)
 
         self.settings = Settings()
         self.settings.load()
