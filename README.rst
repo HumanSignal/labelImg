@@ -29,7 +29,7 @@ Using LabelImg
 ------------------
 
 1. Get the latest version of master for this repo on a computer that Parth can access remotely (like the Linux laptop between B2 and B3).
-2. Run the downloader script: ``python ImageDownloder.py``. This will download the images from Google Cloud Storage to the local device. Please don't commit the new images to the repo.
+2. Run the downloader script: ``python ImageDownloader.py``. This will download the images from Google Cloud Storage to the local device. Please don't commit the new images to the repo.
 3. Select the number of the training name that you had set in Nickel ("9: ribs"). This will open up all of your training images in the LabelImg program.
 4. Make the program full window and zoom in (it will make labeling easier!)
 5. Click 'Next Image' or type ``d``
