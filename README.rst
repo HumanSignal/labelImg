@@ -17,6 +17,9 @@ by `ImageNet <http://www.image-net.org/>`__.
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
+.. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
+     :alt: Demo Image
+
 `Watch a demo video <https://youtu.be/p0nR2YsCY_U>`__
 
 Installation
@@ -189,4 +192,5 @@ Related
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
-2. `Docker hub to run it <https://hub.docker.com/r/tzutalin/py2qt4>`__
+2. `Use Docker to run labelImg <https://hub.docker.com/r/tzutalin/py2qt4>`__
+3. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
