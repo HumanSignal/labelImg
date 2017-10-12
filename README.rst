@@ -28,7 +28,7 @@ Installation
 Download prebuilt binaries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  `Windows & Linux <http://tzutalin.github.io/labelImg/>`__
+-  `Windows & Linux <https://tzutalin.github.io/labelImg/>`__
 
 -  macOS. Binaries for macOS are not yet available. Help would be appreciated. At present, it must be `built from source <#macos>`__.
 
@@ -36,8 +36,8 @@ Build from source
 ~~~~~~~~~~~~~~~~~
 
 Linux/Ubuntu/Mac requires at least `Python
-2.6 <http://www.python.org/getit/>`__ and has been tested with `PyQt
-4.8 <http://www.riverbankcomputing.co.uk/software/pyqt/intro>`__.
+2.6 <https://www.python.org/getit/>`__ and has been tested with `PyQt
+4.8 <https://www.riverbankcomputing.com/software/pyqt/intro>`__.
 
 
 Ubuntu Linux
@@ -99,7 +99,7 @@ Get from PyPI
     labelImg
     labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-I tested pip on Ubuntu14.04 and 16.04. However, I didn't test pip on MacOS and Windows
+I tested pip on Ubuntu 14.04 and 16.04. However, I didn't test pip on macOS and Windows
 
 Use Docker
 ~~~~~~~~~~~~~~~~~
