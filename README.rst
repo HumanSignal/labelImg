@@ -30,7 +30,7 @@ Download prebuilt binaries
 
 -  `Windows & Linux <http://tzutalin.github.io/labelImg/>`__
 
--  OS X. Binaries for OS X are not yet available. Help would be appreciated. At present, it must be `built from source <#os-x>`__.
+-  macOS. Binaries for macOS are not yet available. Help would be appreciated. At present, it must be `built from source <#macos>`__.
 
 Build from source
 ~~~~~~~~~~~~~~~~~
@@ -62,7 +62,7 @@ Python 3 + Qt5
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-OS X
+macOS
 ^^^^
 Python 2 + Qt4
 
