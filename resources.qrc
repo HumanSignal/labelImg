@@ -27,6 +27,7 @@
 <file alias="delete">icons/cancel.png</file>
 <file alias="next">icons/next.png</file>
 <file alias="prev">icons/prev.png</file>
+<file alias="resetall">icons/resetall.png</file>
 
 </qresource>
 </RCC>

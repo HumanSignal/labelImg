@@ -44,11 +44,9 @@ __appname__ = 'labelImg'
 
 # Utility functions and classes.
 
-
 def have_qstring():
     '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
     return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
-
 
 def util_qt_strlistclass():
     return QStringList if have_qstring() else list
@@ -225,11 +223,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
         save = action('&Save', self.saveFile,
                       'Ctrl+S', 'save', u'Save labels to file', enabled=False)
+
         saveAs = action('&Save As', self.saveFileAs,
-                        'Ctrl+Shift+S', 'save-as', u'Save labels to a different file',
-                        enabled=False)
-        close = action('&Close', self.closeFile,
-                       'Ctrl+W', 'close', u'Close current file')
+                        'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
+
+        close = action('&Close', self.closeFile, 'Ctrl+W', 'close', u'Close current file')
+        
+        resetAll = action('&ResetAll', self.resetAll, None, 'resetall', u'Reset all')
+
         color1 = action('Box &Line Color', self.chooseColor1,
                         'Ctrl+L', 'color_line', u'Choose Box line color')
         color2 = action('Box &Fill Color', self.chooseColor2,
@@ -317,7 +318,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close,
+        self.actions = struct(save=save, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, fillColor=color2,
                               create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
@@ -326,7 +327,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               fitWindow=fitWindow, fitWidth=fitWidth,
                               zoomActions=zoomActions,
                               fileMenuActions=(
-                                  open, opendir, save, saveAs, close, quit),
+                                  open, opendir, save, saveAs, close, resetAll, quit),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
                                         None, color1, color2),
@@ -356,7 +357,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.lastLabel = None
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, None, quit))
+                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help,))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -1207,6 +1208,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.toggleActions(False)
         self.canvas.setEnabled(False)
         self.actions.saveAs.setEnabled(False)
+
+    def resetAll(self):
+        self.settings.reset()
+        self.close()
+        proc = QProcess()
+        proc.startDetached(os.path.abspath(__file__))
 
     def mayContinue(self):
         return not (self.dirty and not self.discardChangesDialog())
