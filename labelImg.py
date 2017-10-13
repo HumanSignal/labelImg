@@ -87,6 +87,12 @@ class MainWindow(QMainWindow, WindowMixin):
     def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
+
+        # Load setting in the main thread
+        self.settings = Settings()
+        self.settings.load()
+        settings = self.settings
+
         # Save as Pascal voc xml
         self.defaultSaveDir = None
         self.usingPascalVocFormat = True
@@ -349,11 +355,12 @@ class MainWindow(QMainWindow, WindowMixin):
         # Auto saving : Enable auto saving if pressing next
         self.autoSaving = QAction("Auto Saving", self)
         self.autoSaving.setCheckable(True)
-
+        self.autoSaving.setChecked(settings.get(SETTING_AUTO_SAVE, False))
         # Sync single class mode from PR#106
         self.singleClassMode = QAction("Single Class Mode", self)
         self.singleClassMode.setShortcut("Ctrl+Shift+S")
         self.singleClassMode.setCheckable(True)
+        self.singleClassMode.setChecked(settings.get(SETTING_SINGLE_CLASS, False))
         self.lastLabel = None
 
         addActions(self.menus.file,
@@ -399,10 +406,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fit_window = False
         # Add Chris
         self.difficult = False
-
-        self.settings = Settings()
-        self.settings.load()
-        settings = self.settings
 
         ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
         if settings.get(SETTING_RECENT_FILES):
@@ -1003,6 +1006,8 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             settings[SETTING_LAST_OPEN_DIR] = ""
 
+        settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
+        settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings.save()
     ## User Dialogs ##
 
