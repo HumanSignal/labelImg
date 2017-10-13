@@ -21,9 +21,10 @@ class Settings(object):
         return default
 
     def save(self):
-        with open(self.path, 'wb') as f:
-            pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
-            return True
+        if self.path:
+            with open(self.path, 'wb') as f:
+                pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
+                return True
         return False
 
     def load(self):
@@ -33,3 +34,9 @@ class Settings(object):
                 return True
         return False
 
+    def reset(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
+            print ('Remove setting pkl file ${0}'.format(self.path))
+        self.data = {}
+        self.path = None
