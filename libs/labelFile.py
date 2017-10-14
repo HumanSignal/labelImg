@@ -24,6 +24,7 @@ class LabelFile(object):
 
     def __init__(self, filename=None):
         self.shapes = ()
+        self.originalFileName = None
         self.imagePath = None
         self.imageData = None
         self.verified = False
