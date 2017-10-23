@@ -1,5 +1,5 @@
 from math import sqrt
-
+import hashlib
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -71,3 +71,23 @@ def distance(p):
 def fmtShortcut(text):
     mod, key = text.split('+', 1)
     return '<b>%s</b>+<b>%s</b>' % (mod, key)
+
+
+def generateColorByText(text):
+    color_table = []
+    color_table.append(QColor(0, 0, 50))
+    color_table.append(QColor(0, 0, 255))
+    color_table.append(QColor(0, 50, 0))
+    color_table.append(QColor(0, 255, 0))
+    color_table.append(QColor(50, 0, 0))
+    color_table.append(QColor(255, 0, 0))
+    color_table.append(QColor(0, 50, 50))
+    color_table.append(QColor(0, 255, 255))
+    color_table.append(QColor(50, 50, 0))
+    color_table.append(QColor(255, 255, 0))
+    color_table.append(QColor(50, 0, 50))
+    color_table.append(QColor(255, 0, 255))
+    color_table.append(QColor(50, 50, 50))
+    color_table.append(QColor(255, 255, 255))
+    colorInd = int(hashlib.sha1(text.encode('utf-8')).hexdigest(), 16) % len(color_table)
+    return color_table[colorInd]
