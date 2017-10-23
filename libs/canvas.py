@@ -41,8 +41,9 @@ class Canvas(QWidget):
         self.current = None
         self.selectedShape = None  # save the selected shape here
         self.selectedShapeCopy = None
-        self.lineColor = QColor(0, 0, 255)
-        self.line = Shape(line_color=self.lineColor)
+        self.drawingLineColor = QColor(0, 0, 255)
+        self.drawingRectColor = QColor(0, 0, 255) 
+        self.line = Shape(line_color=self.drawingLineColor)
         self.prevPoint = QPointF()
         self.offsets = QPointF(), QPointF()
         self.scale = 1.0
@@ -60,6 +61,10 @@ class Canvas(QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
+
+    def setDrawingColor(self, qColor):
+        self.drawingLineColor = qColor
+        self.drawingRectColor = qColor
 
     def enterEvent(self, ev):
         self.overrideCursor(self._cursor)
@@ -103,7 +108,7 @@ class Canvas(QWidget):
         if self.drawing():
             self.overrideCursor(CURSOR_DRAW)
             if self.current:
-                color = self.lineColor
+                color = self.drawingLineColor
                 if self.outOfPixmap(pos):
                     # Don't allow the user to draw outside the pixmap.
                     # Project the point to the pixmap's edges.
@@ -414,8 +419,7 @@ class Canvas(QWidget):
             rightBottom = self.line[1]
             rectWidth = rightBottom.x() - leftTop.x()
             rectHeight = rightBottom.y() - leftTop.y()
-            color = QColor(0, 220, 0)
-            p.setPen(color)
+            p.setPen(self.drawingRectColor)
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
             p.drawRect(leftTop.x(), leftTop.y(), rectWidth, rectHeight)
@@ -606,9 +610,15 @@ class Canvas(QWidget):
         points = [p1+p2 for p1, p2 in zip(self.selectedShape.points, [step]*4)]
         return True in map(self.outOfPixmap, points)
 
-    def setLastLabel(self, text):
+    def setLastLabel(self, text, line_color  = None, fill_color = None):
         assert text
         self.shapes[-1].label = text
+        if line_color:
+            self.shapes[-1].line_color = line_color
+        
+        if fill_color:
+            self.shapes[-1].fill_color = fill_color
+
         return self.shapes[-1]
 
     def undoLastLine(self):
