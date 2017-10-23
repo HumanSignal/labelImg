@@ -58,6 +58,35 @@ class LabelFile(object):
     def toggleVerify(self):
         self.verified = not self.verified
 
+    ''' ttf is disable
+    def load(self, filename):
+        import json
+        with open(filename, 'rb') as f:
+                data = json.load(f)
+                imagePath = data['imagePath']
+                imageData = b64decode(data['imageData'])
+                lineColor = data['lineColor']
+                fillColor = data['fillColor']
+                shapes = ((s['label'], s['points'], s['line_color'], s['fill_color'])\
+                        for s in data['shapes'])
+                # Only replace data after everything is loaded.
+                self.shapes = shapes
+                self.imagePath = imagePath
+                self.imageData = imageData
+                self.lineColor = lineColor
+                self.fillColor = fillColor
+
+    def save(self, filename, shapes, imagePath, imageData, lineColor=None, fillColor=None):
+        import json
+        with open(filename, 'wb') as f:
+                json.dump(dict(
+                    shapes=shapes,
+                    lineColor=lineColor, fillColor=fillColor,
+                    imagePath=imagePath,
+                    imageData=b64encode(imageData)),
+                    f, ensure_ascii=True, indent=2)
+    '''
+
     @staticmethod
     def isLabelFile(filename):
         fileSuffix = os.path.splitext(filename)[1].lower()

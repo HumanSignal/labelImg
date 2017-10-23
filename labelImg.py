@@ -27,7 +27,7 @@ except ImportError:
 import resources
 # Add internal libs
 from libs.constants import *
-from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
+from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.canvas import Canvas
@@ -209,13 +209,13 @@ class MainWindow(QMainWindow, WindowMixin):
         open = action('&Open', self.openFile,
                       'Ctrl+O', 'open', u'Open image or label file')
 
-        opendir = action('&Open Dir', self.openDir,
+        opendir = action('&Open Dir', self.openDirDialog,
                          'Ctrl+u', 'open', u'Open Dir')
 
-        changeSavedir = action('&Change Save Dir', self.changeSavedir,
+        changeSavedir = action('&Change Save Dir', self.changeSavedirDialog,
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
 
-        openAnnotation = action('&Open Annotation', self.openAnnotation,
+        openAnnotation = action('&Open Annotation', self.openAnnotationDialog,
                                 'Ctrl+Shift+O', 'open', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
@@ -243,7 +243,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         'Ctrl+Shift+L', 'color', u'Choose Box fill color')
 
         createMode = action('Create\nRectBox', self.setCreateMode,
-                            'Ctrl+N', 'new', u'Start drawing Boxs', enabled=False)
+                            'w', 'new', u'Start drawing Boxs', enabled=False)
         editMode = action('&Edit\nRectBox', self.setEditMode,
                           'Ctrl+J', 'edit', u'Move and edit Boxs', enabled=False)
 
@@ -427,13 +427,10 @@ class MainWindow(QMainWindow, WindowMixin):
                                          (__appname__, self.defaultSaveDir))
             self.statusBar().show()
 
-        # or simply:
-        # self.restoreGeometry(settings[SETTING_WIN_GEOMETRY]
         self.restoreState(settings.get(SETTING_WIN_STATE, QByteArray()))
-        self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, Shape.line_color))
-        self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, Shape.fill_color))
-        Shape.line_color = self.lineColor
-        Shape.fill_color = self.fillColor
+        Shape.line_color = self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, DEFAULT_LINE_COLOR))
+        Shape.fill_color = self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, DEFAULT_FILL_COLOR))
+        self.canvas.setDrawingColor(self.lineColor)
         # Add chris
         Shape.difficult = self.difficult
 
@@ -448,9 +445,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Populate the File menu dynamically.
         self.updateFileMenu()
-        # Since loading the file may take some time, make sure it runs in the
-        # background.
-        self.queueEvent(partial(self.loadFile, self.filePath or ""))
+
+        # Since loading the file may take some time, make sure it runs in the background.
+        if self.filePath and os.path.isdir(self.filePath):
+            self.queueEvent(partial(self.importDirImages, self.filePath or ""))
+        elif self.filePath:
+            self.queueEvent(partial(self.loadFile, self.filePath or ""))
 
         # Callbacks:
         self.zoomWidget.valueChanged.connect(self.paintCanvas)
@@ -598,10 +598,10 @@ class MainWindow(QMainWindow, WindowMixin):
     def popLabelListMenu(self, point):
         self.menus.labelList.exec_(self.labelList.mapToGlobal(point))
 
-    def editLabel(self, item=None):
+    def editLabel(self):
         if not self.canvas.editing():
             return
-        item = item if item else self.currentItem()
+        item = self.currentItem()
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
@@ -686,12 +686,18 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.difficult = difficult
             shape.close()
             s.append(shape)
-            self.addLabel(shape)
 
             if line_color:
                 shape.line_color = QColor(*line_color)
+            else:
+                shape.line_color = generateColorByText(label)
+
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
+            else:
+                shape.fill_color = generateColorByText(label)
+            
+            self.addLabel(shape)
 
         self.canvas.loadShapes(s)
 
@@ -703,10 +709,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         def format_shape(s):
             return dict(label=s.label,
-                        line_color=s.line_color.getRgb()
-                        if s.line_color != self.lineColor else None,
-                        fill_color=s.fill_color.getRgb()
-                        if s.fill_color != self.fillColor else None,
+                        line_color=s.line_color.getRgb(),
+                        fill_color=s.fill_color.getRgb(),
                         points=[(p.x(), p.y()) for p in s.points],
                        # add chris
                         difficult = s.difficult)
@@ -723,8 +727,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                     self.lineColor.getRgb(), self.fillColor.getRgb())
             return True
         except LabelFileError as e:
-            self.errorMessage(u'Error saving label data',
-                              u'<b>%s</b>' % e)
+            self.errorMessage(u'Error saving label data', u'<b>%s</b>' % e)
             return False
 
     def copySelectedShape(self):
@@ -774,7 +777,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.setChecked(False)
         if text is not None:
             self.prevLabelText = text
-            self.addLabel(self.canvas.setLastLabel(text))
+            generate_color = generateColorByText(text)
+            shape = self.canvas.setLastLabel(text, generate_color, generate_color)
+            self.addLabel(shape)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.setEditing(True)
                 self.actions.create.setEnabled(True)
@@ -904,6 +909,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 # read data first and store for saving into label file.
                 self.imageData = read(unicodeFilePath, None)
                 self.labelFile = None
+                            
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
@@ -996,12 +1002,12 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_FILL_COLOR] = self.fillColor
         settings[SETTING_RECENT_FILES] = self.recentFiles
         settings[SETTING_ADVANCE_MODE] = not self._beginner
-        if self.defaultSaveDir is not None and len(self.defaultSaveDir) > 1:
+        if self.defaultSaveDir and os.path.exists(self.defaultSaveDir):
             settings[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
         else:
             settings[SETTING_SAVE_DIR] = ""
 
-        if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
+        if self.lastOpenDir and os.path.exists(self.lastOpenDir):
             settings[SETTING_LAST_OPEN_DIR] = self.lastOpenDir
         else:
             settings[SETTING_LAST_OPEN_DIR] = ""
@@ -1028,7 +1034,7 @@ class MainWindow(QMainWindow, WindowMixin):
         images.sort(key=lambda x: x.lower())
         return images
 
-    def changeSavedir(self, _value=False):
+    def changeSavedirDialog(self, _value=False):
         if self.defaultSaveDir is not None:
             path = ustr(self.defaultSaveDir)
         else:
@@ -1045,7 +1051,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                      ('Change saved folder', self.defaultSaveDir))
         self.statusBar().show()
 
-    def openAnnotation(self, _value=False):
+    def openAnnotationDialog(self, _value=False):
         if self.filePath is None:
             self.statusBar().showMessage('Please select image first')
             self.statusBar().show()
@@ -1061,23 +1067,26 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             self.loadPascalXMLByFilename(filename)
 
-    def openDir(self, _value=False):
+    def openDirDialog(self, _value=False):
         if not self.mayContinue():
             return
 
-        path = os.path.dirname(self.filePath)\
-            if self.filePath else '.'
-
-        if self.lastOpenDir is not None and len(self.lastOpenDir) > 1:
-            path = self.lastOpenDir
+        defaultOpenDirPath = '.'
+        if self.lastOpenDir and os.path.exists(self.lastOpenDir):
+            defaultOpenDirPath = self.lastOpenDir
+        else:
+            defaultOpenDirPath = os.path.dirname(self.filePath) if self.filePath else '.'
 
         dirpath = ustr(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, path,  QFileDialog.ShowDirsOnly
-                                                     | QFileDialog.DontResolveSymlinks))
+                                                     '%s - Open Directory' % __appname__, defaultOpenDirPath,  
+                                                     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
+        self.importDirImages(dirpath)
+        
+    def importDirImages(self, dirpath):
+        if not self.mayContinue() or not dirpath:
+            return
 
-        if dirpath is not None and len(dirpath) > 1:
-            self.lastOpenDir = dirpath
-
+        self.lastOpenDir = dirpath
         self.dirname = dirpath
         self.filePath = None
         self.fileListWidget.clear()
@@ -1109,7 +1118,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.changeSavedir()
+                self.changeSavedirDialog()
                 return
 
         if not self.mayContinue():
@@ -1240,8 +1249,8 @@ class MainWindow(QMainWindow, WindowMixin):
                                           default=DEFAULT_LINE_COLOR)
         if color:
             self.lineColor = color
-            # Change the color for all shape lines:
-            Shape.line_color = self.lineColor
+            Shape.line_color = color
+            self.canvas.setDrawingColor(color)
             self.canvas.update()
             self.setDirty()
 
@@ -1292,7 +1301,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 for line in f:
                     line = line.strip()
                     if self.labelHist is None:
-                        self.lablHist = [line]
+                        self.labelHist = [line]
                     else:
                         self.labelHist.append(line)
 
