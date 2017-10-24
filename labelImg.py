@@ -237,10 +237,8 @@ class MainWindow(QMainWindow, WindowMixin):
         
         resetAll = action('&ResetAll', self.resetAll, None, 'resetall', u'Reset all')
 
-        color1 = action('Box &Line Color', self.chooseColor1,
+        color1 = action('Box Line Color', self.chooseColor1,
                         'Ctrl+L', 'color_line', u'Choose Box line color')
-        color2 = action('Box &Fill Color', self.chooseColor2,
-                        'Ctrl+Shift+L', 'color', u'Choose Box fill color')
 
         createMode = action('Create\nRectBox', self.setCreateMode,
                             'w', 'new', u'Start drawing Boxs', enabled=False)
@@ -325,8 +323,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Store actions for further handling.
         self.actions = struct(save=save, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
-                              lineColor=color1, fillColor=color2,
-                              create=create, delete=delete, edit=edit, copy=copy,
+                              lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
@@ -336,7 +333,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                   open, opendir, save, saveAs, close, resetAll, quit),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
-                                        None, color1, color2),
+                                        None, color1),
                               beginnerContext=(create, edit, copy, delete),
                               advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
@@ -1251,15 +1248,6 @@ class MainWindow(QMainWindow, WindowMixin):
             self.lineColor = color
             Shape.line_color = color
             self.canvas.setDrawingColor(color)
-            self.canvas.update()
-            self.setDirty()
-
-    def chooseColor2(self):
-        color = self.colorDialog.getColor(self.fillColor, u'Choose fill color',
-                                          default=DEFAULT_FILL_COLOR)
-        if color:
-            self.fillColor = color
-            Shape.fill_color = self.fillColor
             self.canvas.update()
             self.setDirty()
 
