@@ -18,7 +18,7 @@ required_packages.append('labelImg')
 
 setup(
     name='labelImg',
-    version='1.5.1',
+    version='1.5.2',
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
