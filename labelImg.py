@@ -39,6 +39,7 @@ from libs.toolBar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
 from libs.ustr import ustr
+from libs.version import __version__
 
 __appname__ = 'labelImg'
 
@@ -264,8 +265,8 @@ class MainWindow(QMainWindow, WindowMixin):
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
 
-        help = action('&Tutorial', self.tutorial, 'Ctrl+T', 'help',
-                      u'Show demos')
+        help = action('&Tutorial', self.showTutorialDialog, None, 'help', u'Show demos')
+        showInfo = action('&Information', self.showInfoDialog, None, 'help', u'Information')
 
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoomWidget)
@@ -362,7 +363,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         addActions(self.menus.file,
                    (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, saveAs, close, resetAll, quit))
-        addActions(self.menus.help, (help,))
+        addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
             self.singleClassMode,
@@ -544,8 +545,12 @@ class MainWindow(QMainWindow, WindowMixin):
         return not self.beginner()
 
     ## Callbacks ##
-    def tutorial(self):
+    def showTutorialDialog(self):
         subprocess.Popen([self.screencastViewer, self.screencast])
+
+    def showInfoDialog(self):
+        msg = u'Name:{0} \nApp Version:{1} \n{2} '.format(__appname__, __version__, sys.version_info)
+        QMessageBox.information(self, u'Information', msg)
 
     def createShape(self):
         assert self.beginner()
