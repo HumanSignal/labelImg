@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
+from libs.version import __version__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -18,7 +19,7 @@ required_packages.append('labelImg')
 
 setup(
     name='labelImg',
-    version='1.5.2',
+    version=__version__,
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
