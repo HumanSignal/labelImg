@@ -28,6 +28,6 @@
 <file alias="next">icons/next.png</file>
 <file alias="prev">icons/prev.png</file>
 <file alias="resetall">icons/resetall.png</file>
-
+<file alias="verify">icons/verify.png</file>
 </qresource>
 </RCC>
