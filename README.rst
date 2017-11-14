@@ -22,7 +22,6 @@ To train a new food, you use Level's existing apps in training mode.
 		-  See if the images made it to Google Cloud: https://console.cloud.google.com/storage/browser/blobstoreforimages.appspot.com?project=blobstoreforimages (type in your label name in the prefix search)
 		-  Check that the images were actually saving to Android under Settings > Storage & USB > Explore > Pictures > FoodRecognition
 		-  Check the latest sync date of your Level Setup account under Settings > Accounts > Level (and toggle the Cooking Session data toggle)
-		-  Tokens expire regularly for that account, so you may need to delete the Level account and create a new one in Settings > Accounts.
 
 
 Using LabelImg
