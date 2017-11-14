@@ -85,10 +85,10 @@ class HashableQListWidgetItem(QListWidgetItem):
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
-    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None):
+    def __init__(self, autoselect, defaultFilename=None, defaultPrefdefClassFile=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
-
+        self.autoselect = autoselect
         # Load setting in the main thread
         self.settings = Settings()
         self.settings.load()
@@ -880,6 +880,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadFile(self, filePath=None):
         """Load the specified file, or the last opened file if None."""
+        self.autoselect
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
@@ -947,12 +948,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
             # Default : select last item if there is at least one item
-            if self.labelList.count():
-                self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
-                self.labelList.item(self.labelList.count()-1).setSelected(True)
-
-            self.canvas.setFocus(True)
-            return True
+            if self.autoselect == True:
+                if self.labelList.count():
+                    self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
+                    self.labelList.item(self.labelList.count()-1).setSelected(True)
+                self.canvas.setFocus(True)
+                return True
         return False
 
     def resizeEvent(self, event):
@@ -1333,10 +1334,9 @@ def get_main_app(argv=[]):
     app.setWindowIcon(newIcon("app"))
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
     # Usage : labelImg.py image predefClassFile
-    win = MainWindow(argv[1] if len(argv) >= 2 else None,
-                     argv[2] if len(argv) >= 3 else os.path.join(
-                         os.path.dirname(sys.argv[0]),
-                         'data', 'predefined_classes.txt'))
+    win = MainWindow(argv[1] if len(argv) >= 2 else True,
+                     argv[2] if len(argv) >= 3 else None,
+                     argv[3] if len(argv) >= 4 else os.path.join(os.path.dirname(sys.argv[0]), 'data', 'predefined_classes.txt'))
     win.show()
     return app, win
 
