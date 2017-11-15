@@ -13,3 +13,10 @@ steak
 tilapia
 bacon
 salmon
+sliced turkey
+sliced roast beef
+scrambled eggs
+pastrami
+corned beef
+pulled chicken
+chili
