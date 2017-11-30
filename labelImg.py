@@ -235,7 +235,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
 
         close = action('&Close', self.closeFile, 'Ctrl+W', 'close', u'Close current file')
-        
+
         resetAll = action('&ResetAll', self.resetAll, None, 'resetall', u'Reset all')
 
         color1 = action('Box Line Color', self.chooseColor1,
@@ -607,6 +607,7 @@ class MainWindow(QMainWindow, WindowMixin):
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
+            item.setBackground(generateColorByText(text))
             self.setDirty()
 
     # Tzutalin 20160906 : Add file list and dock to move faster
@@ -699,7 +700,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.fill_color = QColor(*fill_color)
             else:
                 shape.fill_color = generateColorByText(label)
-            
+
             self.addLabel(shape)
 
         self.canvas.loadShapes(s)
@@ -752,6 +753,7 @@ class MainWindow(QMainWindow, WindowMixin):
         label = item.text()
         if label != shape.label:
             shape.label = item.text()
+            shape.line_color = generateColorByText(shape.label)
             self.setDirty()
         else:  # User probably changed item visibility
             self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
@@ -912,7 +914,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 # read data first and store for saving into label file.
                 self.imageData = read(unicodeFilePath, None)
                 self.labelFile = None
-                            
+
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
@@ -1081,10 +1083,10 @@ class MainWindow(QMainWindow, WindowMixin):
             defaultOpenDirPath = os.path.dirname(self.filePath) if self.filePath else '.'
 
         dirpath = ustr(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, defaultOpenDirPath,  
+                                                     '%s - Open Directory' % __appname__, defaultOpenDirPath,
                                                      QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
         self.importDirImages(dirpath)
-        
+
     def importDirImages(self, dirpath):
         if not self.mayContinue() or not dirpath:
             return
