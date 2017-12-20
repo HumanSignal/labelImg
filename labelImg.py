@@ -1148,7 +1148,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.changeSavedir()
+                self.changeSavedirDialog()
                 return
 
         if not self.mayContinue():
