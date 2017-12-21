@@ -74,6 +74,16 @@ Python 2 + Qt4
     python labelImg.py
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
+Python 3 + Qt5 (Works on macOS High Sierra)
+
+.. code::
+
+    brew install qt  # will install qt-5.x.x
+    brew install libxml2
+    make qt5py3
+    python labelImg.py
+    python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
 
 Windows
 ^^^^^^^
