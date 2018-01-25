@@ -888,6 +888,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if filePath is None:
             filePath = self.settings.get(SETTING_FILENAME)
 
+        # Make sure that filePath is a regular python string, rather than QString
+        filePath = str(filePath)
+
         unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
