@@ -176,7 +176,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
 
-        self.canvas = Canvas()
+        self.canvas = Canvas(parent=self)
         self.canvas.zoomRequest.connect(self.zoomRequest)
 
         scroll = QScrollArea()
@@ -456,6 +456,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.populateModeActions()
 
+        # Display cursor coordinates at the right of status bar
+        self.labelCoordinates = QLabel('')
+        self.statusBar().addPermanentWidget(self.labelCoordinates)
+
     ## Support Functions ##
 
     def noShapes(self):
@@ -525,6 +529,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.imageData = None
         self.labelFile = None
         self.canvas.resetState()
+        self.labelCoordinates.clear()
 
     def currentItem(self):
         items = self.labelList.selectedItems()
@@ -887,6 +892,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.setEnabled(False)
         if filePath is None:
             filePath = self.settings.get(SETTING_FILENAME)
+
+        # Make sure that filePath is a regular python string, rather than QString
+        filePath = str(filePath)
 
         unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
