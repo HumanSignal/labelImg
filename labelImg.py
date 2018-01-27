@@ -24,7 +24,6 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
 # Add internal libs
 from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
