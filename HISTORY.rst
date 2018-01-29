@@ -2,6 +2,13 @@
 History
 =======
 
+1.6.0 (2018-01-29)
+------------------
+
+* Add more pre-defined labels
+* Show cursor pose in status bar
+* Fix minor issues
+
 1.5.2 (2017-10-24)
 ------------------
 
