@@ -120,6 +120,8 @@ class Shape(object):
                 font.setPointSize(8)
                 font.setBold(True)
                 painter.setFont(font)
+                if(self.label == None):
+                    self.label = ""
                 painter.drawText(min_x, min_y, self.label)
 
             if self.fill:
