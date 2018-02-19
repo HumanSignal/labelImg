@@ -27,12 +27,11 @@ Alternatively, enter and search: ``https://localhost:9999/tree?``
 	- Take images with varying servings of food. 
 8. When done collecting images:
 
-  i.   navigate to ``predator.local:5000``
+	i.   navigate to ``predator.local:5000``
   
-  ii.  Go to ``Chopper > food_training > food_recognition``
+	ii.  Go to ``Chopper > food_training > food_recognition``
   
-  iii. Open up the data folder of interest, and create a new folder for the food images to be trained (if not 
-		    already made)
+	iii. Open up the data folder of interest, and create a new folder for the food images to be trained (if not already made)
 
   iv. Upload .jpeg images. 
 
@@ -42,11 +41,13 @@ Alternatively, enter and search: ``https://localhost:9999/tree?``
 1. Scroll down to the Installation section below to download and build the labelImg program.
 2. Start up labelImag program:
 
-  i. Navigate to your local ``labelImg`` folder
+	i. Navigate to your local ``labelImg`` folder
 
-  ii. Go to ``data`` folder and open up ``predefined_classes.txt``. Ensure the name of your food (i.e. "ribs") is included--if not, add food name, save, and close.
+	ii. Go to ``data`` folder and open up ``predefined_classes.txt``. Ensure the name of your food (i.e. "ribs") is included--if not, add food name, save, and close.
 
-  iii. Run ``python labelImg.py``
+	iii. Run ``python labelImg.py``
+
+
 3. Click on "Open Dir", navigate to ``/code/gallium/notebooks/`` and open the folder with the images you are going to train. 
 4. Click on "Change Save Dir" to verify and/or change the directory the trained files will be saved in. 
 5. Make the program full window and zoom in (it will make labeling easier!)
@@ -56,19 +57,19 @@ Alternatively, enter and search: ``https://localhost:9999/tree?``
 9. A selection box will appear for you to label the food. Select the food that you're tagging ("ribs"). If it's not available, you can edit the file under ``data > predefined-classes.txt`` (and commit the change to our repo).
 10. Finalize the bounding box. It should be the smallest box that contains the entire food. For multiple servings of food:
 
-  - Foods in close proximity should be grouped within one RectBox -- avoid RectBox overlap
-  - Foods farther apart should be grouped individually -- minimize whitespace within Rectbox
+	- Foods in close proximity should be grouped within one RectBox -- avoid RectBox overlap
+	- Foods farther apart should be grouped individually -- minimize whitespace within Rectbox
 11. Click 'Save' or type ``Ctrl`` + ``s``. Check the designated download folder to ensure .xml files are correctly populating.
 12. Repeat steps 6-11 until you have gone through all images in the directory.
 13. When you're done labeling all images:
 
-  - Double check that they have the proper label ("ribs") in the top right of the program. You can click 'Edit Label' to bring up the selection box again.
-  - Check the designated download folder to ensure the number of .xml files downloaded matches the number of .jpeg files on predator.
+	- Double check that they have the proper label ("ribs") in the top right of the program. You can click 'Edit Label' to bring up the selection box again.
+	- Check the designated download folder to ensure the number of .xml files downloaded matches the number of .jpeg files on predator.
 14. Exit out of the program.
 15. Upload files:
-  - Navigate to ``predator.local:5000`` and go to ``Chopper > food_training > food_recognition > data``.
-  - Open up the correct data folder containing the .jpeg food training images. 
-  - Upload all .xml files.
+	- Navigate to ``predator.local:5000`` and go to ``Chopper > food_training > food_recognition > data``.
+	- Open up the correct data folder containing the .jpeg food training images.
+	- Upload all .xml files.
 16. Notify Arvind and Joel that images and labeling for food training are complete and uploaded to predator. 
 
 
@@ -137,13 +138,13 @@ Watch a demo video <https://youtu.be/p0nR2YsCY_U>
 Installation
 ------------------
 
-##Download prebuilt binaries
+## Download prebuilt binaries
 
 
 -  Windows & Linux <http://tzutalin.github.io/labelImg/>
 -  OS X. Binaries for OS X are not yet available. Help would be appreciated. At present, it must be built from source <#os-x>.
 
-##Build from source
+## Build from source
 
 
 Linux/Ubuntu/Mac requires at least Python
@@ -151,9 +152,9 @@ Linux/Ubuntu/Mac requires at least Python
 4.8 <http://www.riverbankcomputing.co.uk/software/pyqt/intro>.
 
 
-###Ubuntu Linux
+### Ubuntu Linux
 
-####Python 2 + Qt4
+#### Python 2 + Qt4
 
 code:
 
@@ -163,7 +164,7 @@ code:
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-####Python 3 + Qt5
+#### Python 3 + Qt5
 
 code:
 
@@ -173,9 +174,9 @@ code:
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-###OS X
+### OS X
 
-####Python 2 + Qt4
+#### Python 2 + Qt4
 
 code:
 
@@ -186,7 +187,7 @@ code:
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 
-###Windows
+### Windows
 
 Download and setup Python 2.6 or
 later <https://www.python.org/downloads/windows/>,
@@ -235,7 +236,7 @@ You can pull the image which has all of the installed and required dependencies.
 # Usage
 
 
-##Steps
+## Steps
 
 
 1. Build and launch using the instructions above.
@@ -250,11 +251,11 @@ The annotation will be saved to the folder you specify.
 
 You can refer to the below hotkeys to speed up your workflow.
 
-##Create pre-defined classes
+## Create pre-defined classes
 
 You can edit the ``data/predefined\_classes.txt`` <https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt> to load pre-defined classes
 
-##Hotkeys
+## Hotkeys
 
 - ``Ctrl + u`` - Load all of the images from a directory
 - ``Ctrl + r`` - Change the default annotation target dir
@@ -269,12 +270,12 @@ You can edit the ``data/predefined\_classes.txt`` <https://github.com/tzutalin/l
 - ``Ctrl--`` - Zoom out
 - ``↑→↓←`` - Keyboard arrows to move selected rect box
 
-##How to contribute
+## How to contribute
 
 
 Send a pull request
 
-##License
+## License
 
 Free software: MIT license <https://github.com/tzutalin/labelImg/blob/master/LICENSE>
 
