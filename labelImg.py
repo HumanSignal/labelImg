@@ -222,6 +222,9 @@ class MainWindow(QMainWindow, WindowMixin):
         openNextImg = action('&Next Image', self.openNextImg,
                              'd', 'next', u'Open Next')
 
+        openSaveNextImg = action('&Save and Next', self.openSaveNextImg,
+                             'D', 'savenext', u'Save and Open Next')
+
         openPrevImg = action('&Prev Image', self.openPrevImg,
                              'a', 'prev', u'Open Prev')
 
@@ -264,6 +267,9 @@ class MainWindow(QMainWindow, WindowMixin):
         showAll = action('&Show\nRectBox', partial(self.togglePolygons, True),
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
+        repeatLast = action('Repeat &Last', self.repeatLastCommand,
+                        'r', None, u'Repeat Last', enabled=True)
+        self.repeatLast = ""
 
         help = action('&Tutorial', self.showTutorialDialog, None, 'help', u'Show demos')
         showInfo = action('&Information', self.showInfoDialog, None, 'help', u'Information')
@@ -335,7 +341,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
                                         None, color1),
-                              beginnerContext=(create, edit, copy, delete),
+                              beginnerContext=(create, edit, copy, delete, repeatLast),
                               advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
                               onLoadActive=(
@@ -368,7 +374,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.autoSaving,
             self.singleClassMode,
             labels, advancedMode, None,
-            hideAll, showAll, None,
+            hideAll, showAll, repeatLast, None,
             zoomIn, zoomOut, zoomOrg, None,
             fitWindow, fitWidth))
 
@@ -383,7 +389,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
             open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, None, create, copy, delete, None,
-            zoomIn, zoom, zoomOut, fitWindow, fitWidth)
+            zoomIn, zoom, zoomOut, fitWindow, fitWidth,repeatLast)
 
         self.actions.advanced = (
             open, opendir, changeSavedir, openNextImg, openPrevImg, save, None,
@@ -393,6 +399,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
 
+        if defaultFilename == "-":
+            defaultFilename = None
         # Application state.
         self.image = QImage()
         self.filePath = ustr(defaultFilename)
@@ -597,6 +605,22 @@ class MainWindow(QMainWindow, WindowMixin):
             action.triggered.connect(partial(self.loadRecent, f))
             menu.addAction(action)
 
+    def repeatLastCommand(self):
+        print ("repeatLastCommand",self.repeatLast)
+        if not self.canvas.editing():
+            return
+        if self.repeatLast is None:
+            pass
+        item = self.currentItem()
+        if item is not None:
+            item.setText(self.repeatLast)
+            item.setBackground(generateColorByText(self.repeatLast))
+            self.setDirty()
+            self.openNextImg()
+            # find nearest
+            if self.labelList.count() > 0:
+                self.labelList.item(0).setSelected(True)
+
     def popLabelListMenu(self, point):
         self.menus.labelList.exec_(self.labelList.mapToGlobal(point))
 
@@ -607,6 +631,7 @@ class MainWindow(QMainWindow, WindowMixin):
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
+            self.repeatLast = text
             item.setBackground(generateColorByText(text))
             self.setDirty()
 
@@ -1141,6 +1166,8 @@ class MainWindow(QMainWindow, WindowMixin):
             if filename:
                 self.loadFile(filename)
 
+    def openSaveNextImg(self, _value=False):
+        pass
     def openNextImg(self, _value=False):
         # Proceding prev image without dialog if having any label
         if self.autoSaving.isChecked():
@@ -1148,7 +1175,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.changeSavedir()
+                self.changeSavedirDialog()
                 return
 
         if not self.mayContinue():
@@ -1303,14 +1330,18 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
+            print("no filePath")
             return
         if os.path.isfile(xmlPath) is False:
+            print("no xmlPath",xmlPath)
             return
+        print("loading",xmlPath)
 
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+        print("loaded")
 
 
 def inverted(color):
