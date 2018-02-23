@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import codecs
 import os.path
+import os
 import re
 import sys
 import subprocess
@@ -10,9 +11,10 @@ from functools import partial
 from collections import defaultdict
 
 try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
+    from PyQt4 import QtGui, QtCore
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+    from PyQt4.QtWidgets import *
 except ImportError:
     # needed for py3+qt4
     # Ref:
@@ -21,9 +23,7 @@ except ImportError:
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-
+   
 import resources
 # Add internal libs
 from libs.constants import *
@@ -1374,6 +1374,7 @@ def get_main_app(argv=[]):
 
 def main(argv=[]):
     '''construct main app and run it'''
+    QCoreApplication.addLibraryPath(os.path.join(os.path.dirname( QtCore.__file__), "plugins"))
     app, _win = get_main_app(argv)
     return app.exec_()
 
