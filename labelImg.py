@@ -355,6 +355,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.autoSaving = QAction("Auto Saving", self)
         self.autoSaving.setCheckable(True)
         self.autoSaving.setChecked(settings.get(SETTING_AUTO_SAVE, False))
+       # Preserve boxes : preserve boxes if pressing next
+        self.preserveBoxes = QAction("Preserve Boxes", self)
+        self.preserveBoxes.setCheckable(True)
+        self.preserveBoxes.setChecked(settings.get(SETTING_PRESERVE_BOXES, False))
         # Sync single class mode from PR#106
         self.singleClassMode = QAction("Single Class Mode", self)
         self.singleClassMode.setShortcut("Ctrl+Shift+S")
@@ -367,6 +371,7 @@ class MainWindow(QMainWindow, WindowMixin):
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
+            self.preserveBoxes,
             self.singleClassMode,
             labels, advancedMode, None,
             hideAll, showAll, None,
@@ -929,6 +934,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelFile = None
 
             image = QImage.fromData(self.imageData)
+            print image
             if image.isNull():
                 self.errorMessage(u'Error opening file',
                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicodeFilePath)
@@ -936,6 +942,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 return False
             self.status("Loaded %s" % os.path.basename(unicodeFilePath))
             self.image = image
+            previousFilePath=self.filePath 
             self.filePath = unicodeFilePath
             self.canvas.loadPixmap(QPixmap.fromImage(image))
             if self.labelFile:
@@ -953,7 +960,14 @@ class MainWindow(QMainWindow, WindowMixin):
                     basename = os.path.basename(
                         os.path.splitext(self.filePath)[0]) + XML_EXT
                     xmlPath = os.path.join(self.defaultSaveDir, basename)
-                    self.loadPascalXMLByFilename(xmlPath)
+                    hasBoxes=self.loadPascalXMLByFilename(xmlPath)
+                    #if we should preserve bounding boxes through images use the previous one
+                    if self.preserveBoxes.isChecked() and  not hasBoxes:
+                        print "loading previous boxes"
+                        basename = os.path.basename(
+                        os.path.splitext(previousFilePath)[0]) + XML_EXT
+                        xmlPath = os.path.join(self.defaultSaveDir, basename)
+                        self.loadPascalXMLByFilename(xmlPath)
                 else:
                     xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                     if os.path.isfile(xmlPath):
@@ -1031,6 +1045,7 @@ class MainWindow(QMainWindow, WindowMixin):
             settings[SETTING_LAST_OPEN_DIR] = ""
 
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
+        settings[SETTING_PRESERVE_BOXES] = self.preserveBoxes.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings.save()
     ## User Dialogs ##
@@ -1316,14 +1331,15 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
-            return
+            return False
         if os.path.isfile(xmlPath) is False:
-            return
+            return False
 
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+        return True
 
 
 def inverted(color):
