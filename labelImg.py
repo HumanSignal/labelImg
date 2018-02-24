@@ -897,7 +897,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadFile(self, filePath=None):
         """Load the specified file, or the last opened file if None."""
-        previousFilePath=self.filePath 
+        previousFilePath=self.filePath #keep previous file name to be able to reload it's boxes
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
@@ -960,14 +960,11 @@ class MainWindow(QMainWindow, WindowMixin):
                         os.path.splitext(self.filePath)[0]) + XML_EXT
                     xmlPath = os.path.join(self.defaultSaveDir, basename)
                     hasBoxes=self.loadPascalXMLByFilename(xmlPath)
-                    #if we should preserve bounding boxes through images use the previous one
-                    print "hasBoxes= ",hasBoxes, previousFilePath 
-                    if self.preserveBoxes.isChecked() and  not hasBoxes and not previousFilePath is None:
-                        print "loading previous boxes"
+                    if self.preserveBoxes.isChecked() and  not hasBoxes and not previousFilePath is None:  #if we should preserve bounding boxes through images use the previous one
                         basename = os.path.basename(
                         os.path.splitext(previousFilePath)[0]) + XML_EXT
                         xmlPath = os.path.join(self.defaultSaveDir, basename)
-                        if self.loadPascalXMLByFilename(xmlPath):
+                        if self.loadPascalXMLByFilename(xmlPath): #load boxes from previous image
                             self.dirty=True #created boxes from previous image so need to set dirty flag
                 else:
                     xmlPath = os.path.splitext(filePath)[0] + XML_EXT
@@ -1243,7 +1240,6 @@ class MainWindow(QMainWindow, WindowMixin):
         return ''
 
     def _saveFile(self, annotationFilePath):
-        print "_saveFile",annotationFilePath
         if annotationFilePath and self.saveLabels(annotationFilePath):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)
