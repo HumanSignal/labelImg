@@ -897,6 +897,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadFile(self, filePath=None):
         """Load the specified file, or the last opened file if None."""
+        previousFilePath=self.filePath 
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
@@ -934,7 +935,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelFile = None
 
             image = QImage.fromData(self.imageData)
-            print image
             if image.isNull():
                 self.errorMessage(u'Error opening file',
                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicodeFilePath)
@@ -942,7 +942,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 return False
             self.status("Loaded %s" % os.path.basename(unicodeFilePath))
             self.image = image
-            previousFilePath=self.filePath 
             self.filePath = unicodeFilePath
             self.canvas.loadPixmap(QPixmap.fromImage(image))
             if self.labelFile:
@@ -962,12 +961,14 @@ class MainWindow(QMainWindow, WindowMixin):
                     xmlPath = os.path.join(self.defaultSaveDir, basename)
                     hasBoxes=self.loadPascalXMLByFilename(xmlPath)
                     #if we should preserve bounding boxes through images use the previous one
-                    if self.preserveBoxes.isChecked() and  not hasBoxes:
+                    print "hasBoxes= ",hasBoxes, previousFilePath 
+                    if self.preserveBoxes.isChecked() and  not hasBoxes and not previousFilePath is None:
                         print "loading previous boxes"
                         basename = os.path.basename(
                         os.path.splitext(previousFilePath)[0]) + XML_EXT
                         xmlPath = os.path.join(self.defaultSaveDir, basename)
-                        self.loadPascalXMLByFilename(xmlPath)
+                        if self.loadPascalXMLByFilename(xmlPath):
+                            self.dirty=True #created boxes from previous image so need to set dirty flag
                 else:
                     xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                     if os.path.isfile(xmlPath):
@@ -1242,6 +1243,7 @@ class MainWindow(QMainWindow, WindowMixin):
         return ''
 
     def _saveFile(self, annotationFilePath):
+        print "_saveFile",annotationFilePath
         if annotationFilePath and self.saveLabels(annotationFilePath):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)
