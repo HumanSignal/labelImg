@@ -11,9 +11,7 @@ from functools import partial
 from collections import defaultdict
 
 try:
-    from PyQt4 import QtGui, QtCore
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+    from PyQt4 import QtCore
     from PyQt4.QtWidgets import *
 except ImportError:
     # needed for py3+qt4
@@ -23,6 +21,8 @@ except ImportError:
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
    
 import resources
 # Add internal libs
