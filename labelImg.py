@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import codecs
 import os.path
+import os
 import re
 import sys
 import subprocess
@@ -10,9 +11,8 @@ from functools import partial
 from collections import defaultdict
 
 try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
+    from PyQt4 import QtCore
+    from PyQt4.QtWidgets import *
 except ImportError:
     # needed for py3+qt4
     # Ref:
@@ -23,7 +23,7 @@ except ImportError:
         sip.setapi('QVariant', 2)
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
-
+   
 import resources
 # Add internal libs
 from libs.constants import *
@@ -355,6 +355,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.autoSaving = QAction("Auto Saving", self)
         self.autoSaving.setCheckable(True)
         self.autoSaving.setChecked(settings.get(SETTING_AUTO_SAVE, False))
+       # Preserve boxes : preserve boxes if pressing next
+        self.preserveBoxes = QAction("Preserve Boxes", self)
+        self.preserveBoxes.setCheckable(True)
+        self.preserveBoxes.setChecked(settings.get(SETTING_PRESERVE_BOXES, False))
         # Sync single class mode from PR#106
         self.singleClassMode = QAction("Single Class Mode", self)
         self.singleClassMode.setShortcut("Ctrl+Shift+S")
@@ -367,6 +371,7 @@ class MainWindow(QMainWindow, WindowMixin):
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
+            self.preserveBoxes,
             self.singleClassMode,
             labels, advancedMode, None,
             hideAll, showAll, None,
@@ -892,6 +897,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadFile(self, filePath=None):
         """Load the specified file, or the last opened file if None."""
+        previousFilePath=self.filePath #keep previous file name to be able to reload it's boxes
         self.resetState()
         self.canvas.setEnabled(False)
         if filePath is None:
@@ -953,7 +959,13 @@ class MainWindow(QMainWindow, WindowMixin):
                     basename = os.path.basename(
                         os.path.splitext(self.filePath)[0]) + XML_EXT
                     xmlPath = os.path.join(self.defaultSaveDir, basename)
-                    self.loadPascalXMLByFilename(xmlPath)
+                    hasBoxes=self.loadPascalXMLByFilename(xmlPath)
+                    if self.preserveBoxes.isChecked() and  not hasBoxes and not previousFilePath is None:  #if we should preserve bounding boxes through images use the previous one
+                        basename = os.path.basename(
+                        os.path.splitext(previousFilePath)[0]) + XML_EXT
+                        xmlPath = os.path.join(self.defaultSaveDir, basename)
+                        if self.loadPascalXMLByFilename(xmlPath): #load boxes from previous image
+                            self.dirty=True #created boxes from previous image so need to set dirty flag
                 else:
                     xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                     if os.path.isfile(xmlPath):
@@ -1031,6 +1043,7 @@ class MainWindow(QMainWindow, WindowMixin):
             settings[SETTING_LAST_OPEN_DIR] = ""
 
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
+        settings[SETTING_PRESERVE_BOXES] = self.preserveBoxes.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings.save()
     ## User Dialogs ##
@@ -1316,14 +1329,15 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
-            return
+            return False
         if os.path.isfile(xmlPath) is False:
-            return
+            return False
 
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+        return True
 
 
 def inverted(color):
@@ -1358,6 +1372,7 @@ def get_main_app(argv=[]):
 
 def main(argv=[]):
     '''construct main app and run it'''
+    QCoreApplication.addLibraryPath(os.path.join(os.path.dirname( QtCore.__file__), "plugins"))
     app, _win = get_main_app(argv)
     return app.exec_()
 
