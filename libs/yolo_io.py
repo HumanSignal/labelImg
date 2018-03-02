@@ -77,28 +77,35 @@ class YOLOWriter:
 
 class YoloReader:
 
-    def __init__(self, filepath, imgSize, classListPath=None):
+    def __init__(self, filepath, image, classListPath=None):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         self.shapes = []
         self.filepath = filepath
 
-        if classListPath == None:
+        if classListPath is None:
             dir_path = os.path.dirname(os.path.realpath(self.filepath))
             self.classListPath = os.path.join(dir_path, "classes.txt")
         else:
             self.classListPath = classListPath
 
+        print (filepath, self.classListPath)
+
         classesFile = open(self.classListPath, 'r')
-        self.classes = classesFile.read().split('\n')
+        self.classes = classesFile.read().strip('\n').split('\n')
+
+        print (self.classes)
+
+        imgSize = [image.height(), image.width(),
+                      1 if image.isGrayscale() else 3]
 
         self.imgSize = imgSize
 
         self.verified = False
-        try:
-            self.parseYoloFormat()
-        except:
-            pass
+        # try:
+        self.parseYoloFormat()
+        # except:
+            # pass
 
     def getShapes(self):
         return self.shapes
@@ -109,17 +116,17 @@ class YoloReader:
         self.shapes.append((label, points, None, None, difficult))
 
     def yoloLine2Shape(self, classIndex, xcen, ycen, w, h):
-        label = self.classes[classIndex]
+        label = self.classes[int(classIndex)]
 
-        xmin = min(float(xcen) - float(w) / 2, 0)
-        xmax = max(float(xcen) + float(w) / 2, 1)
-        ymin = min(float(ycen) - float(h) / 2, 0)
-        ymax = max(float(ycen) + float(h) / 2, 1)
+        xmin = max(float(xcen) - float(w) / 2, 0)
+        xmax = min(float(xcen) + float(w) / 2, 1)
+        ymin = max(float(ycen) - float(h) / 2, 0)
+        ymax = min(float(ycen) + float(h) / 2, 1)
 
-        xmin = int(imgSize[1] * xmin)
-        xmax = int(imgSize[1] * xmax)
-        ymin = int(imgSize[0] * ymin)
-        ymax = int(imgSize[0] * ymax)
+        xmin = int(self.imgSize[1] * xmin)
+        xmax = int(self.imgSize[1] * xmax)
+        ymin = int(self.imgSize[0] * ymin)
+        ymax = int(self.imgSize[0] * ymax)
 
         return label, xmin, ymin, xmax, ymax
 
@@ -127,7 +134,7 @@ class YoloReader:
         bndBoxFile = open(self.filepath, 'r')
         for bndBox in bndBoxFile:
             classIndex, xcen, ycen, w, h = bndBox.split(' ')
-            label, xmin, ymin, xmax, ymax = yoloLine2Shape(classIndex, xcen, ycen, w, h)
+            label, xmin, ymin, xmax, ymax = self.yoloLine2Shape(classIndex, xcen, ycen, w, h)
 
             # Caveat: difficult flag is discarded when saved as yolo format.
             self.addShape(label, xmin, ymin, xmax, ymax, False)

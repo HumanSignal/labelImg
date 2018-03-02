@@ -38,6 +38,7 @@ from libs.labelFile import LabelFile, LabelFileError
 from libs.toolBar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
+from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
 from libs.version import __version__
@@ -471,14 +472,20 @@ class MainWindow(QMainWindow, WindowMixin):
             self.openDirDialog(dirpath=self.filePath)
 
     ## Support Functions ##
+    def set_format(self, save_format):
+        if save_format == 'PascalVOC':
+            self.actions.save_format.setText("PascalVOC")
+            self.usingPascalVocFormat = True
+            self.usingYoloFormat = False
+
+        elif save_format == 'YOLO':
+            if self.usingYoloFormat: self.actions.save_format.setText("YOLO")
+            self.usingPascalVocFormat = False
+            self.usingYoloFormat = True
 
     def change_format(self):
-        self.usingPascalVocFormat = not self.usingPascalVocFormat
-        self.usingYoloFormat = not self.usingYoloFormat
-        print ("changing_format")
-        print(self.actions.save_format)
-        if self.usingPascalVocFormat: self.actions.save_format.setText("PascalVOC")
-        if self.usingYoloFormat: self.actions.save_format.setText("YOLO")
+        if self.usingPascalVocFormat: self.set_format("YOLO")
+        if self.usingYoloFormat: self.set_format("PascalVOC")
 
     def noShapes(self):
         return not self.itemsToShapes
@@ -968,16 +975,27 @@ class MainWindow(QMainWindow, WindowMixin):
             self.toggleActions(True)
 
             # Label xml file and show bound box according to its filename
-            if self.usingPascalVocFormat is True:
-                if self.defaultSaveDir is not None:
-                    basename = os.path.basename(
-                        os.path.splitext(self.filePath)[0]) + XML_EXT
-                    xmlPath = os.path.join(self.defaultSaveDir, basename)
+            # if self.usingPascalVocFormat is True:
+            if self.defaultSaveDir is not None:
+                basename = os.path.basename(
+                    os.path.splitext(self.filePath)[0])
+                xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
+                txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
+
+                """Annotation file priority:
+                PascalXML > YOLO
+                """
+                if os.path.isfile(xmlPath):
                     self.loadPascalXMLByFilename(xmlPath)
-                else:
-                    xmlPath = os.path.splitext(filePath)[0] + XML_EXT
-                    if os.path.isfile(xmlPath):
-                        self.loadPascalXMLByFilename(xmlPath)
+                elif os.path.isfile(txtPath):
+                    self.loadYOLOTXTByFilename(txtPath)
+            else:
+                xmlPath = os.path.splitext(filePath)[0] + XML_EXT
+                txtPath = os.path.splitext(filePath)[0] + TXT_EXT
+                if os.path.isfile(xmlPath):
+                    self.loadPascalXMLByFilename(xmlPath)
+                elif os.path.isfile(txtPath):
+                    self.loadYOLOTXTByFilename(txtPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1340,10 +1358,26 @@ class MainWindow(QMainWindow, WindowMixin):
         if os.path.isfile(xmlPath) is False:
             return
 
+        self.set_format("PascalVOC")
+
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+
+    def loadYOLOTXTByFilename(self, txtPath):
+        if self.filePath is None:
+            return
+        if os.path.isfile(txtPath) is False:
+            return
+
+        self.set_format("YOLO")
+        tYoloParseReader = YoloReader(txtPath, self.image)
+        shapes = tYoloParseReader.getShapes()
+        print (shapes)
+        self.loadLabels(shapes)
+        self.canvas.verified = tYoloParseReader.verified
+
 
 
 def inverted(color):
