@@ -237,7 +237,7 @@ class MainWindow(QMainWindow, WindowMixin):
                       'Ctrl+S', 'save', u'Save labels to file', enabled=False)
 
         save_format = action('&Format', self.change_format,
-                      'Ctrl+', 'format', u'Change save format', enabled=True)
+                      'Ctrl+', 'format_voc', u'Change save format', enabled=True)
 
         saveAs = action('&Save As', self.saveFileAs,
                         'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
@@ -475,17 +475,19 @@ class MainWindow(QMainWindow, WindowMixin):
     def set_format(self, save_format):
         if save_format == 'PascalVOC':
             self.actions.save_format.setText("PascalVOC")
+            self.actions.save_format.setIcon(newIcon("format_voc"))
             self.usingPascalVocFormat = True
             self.usingYoloFormat = False
 
         elif save_format == 'YOLO':
-            if self.usingYoloFormat: self.actions.save_format.setText("YOLO")
+            self.actions.save_format.setText("YOLO")
+            self.actions.save_format.setIcon(newIcon("format_yolo"))
             self.usingPascalVocFormat = False
             self.usingYoloFormat = True
 
     def change_format(self):
         if self.usingPascalVocFormat: self.set_format("YOLO")
-        if self.usingYoloFormat: self.set_format("PascalVOC")
+        elif self.usingYoloFormat: self.set_format("PascalVOC")
 
     def noShapes(self):
         return not self.itemsToShapes
