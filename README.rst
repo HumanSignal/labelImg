@@ -160,9 +160,9 @@ Steps (YOLO)
 3. Right below "Save" button in toolbar, click "PascalVOC" button to switch to YOLO format.
 
 4. You may use Open/OpenDIR to process single or multiple images. When finished with single image, click save.
-A txt file of yolo format will be saved in the same folder as your image with same name. A file
-named "classes.txt" is saved to that folder too. "classes.txt" defines the list of class names that your yolo label
-refers to.
+  A txt file of yolo format will be saved in the same folder as your image with same name. A file
+  named "classes.txt" is saved to that folder too. "classes.txt" defines the list of class names that your yolo label
+  refers to.
 
 Note: Your label list shall not change in the middle of processing a list of images. When you save a image, classes.txt
 will also get updated, while previous annotations will not be updated.
