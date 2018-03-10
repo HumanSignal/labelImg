@@ -18,6 +18,8 @@
 <file alias="edit">icons/edit.png</file>
 <file alias="open">icons/open.png</file>
 <file alias="save">icons/save.png</file>
+<file alias="format_voc">icons/format_voc.png</file>
+<file alias="format_yolo">icons/format_yolo.png</file>
 <file alias="save-as">icons/save-as.png</file>
 <file alias="color">icons/color.png</file>
 <file alias="color_line">icons/color_line.png</file>
