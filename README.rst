@@ -135,7 +135,7 @@ You can pull the image which has all of the installed and required dependencies.
 Usage
 -----
 
-Steps
+Steps (PascalVOC)
 ~~~~~
 
 1. Build and launch using the instructions above.
@@ -149,6 +149,27 @@ Steps
 The annotation will be saved to the folder you specify.
 
 You can refer to the below hotkeys to speed up your workflow.
+
+Steps (YOLO)
+~~~~~
+
+1. In ``data/predefined_classes.txt`` define the list of classes that will be used for your training.
+
+2. Build and launch using the instructions above.
+
+3. Right below "Save" button in toolbar, click "PascalVOC" button to switch to YOLO format.
+
+4. You may use Open/OpenDIR to process single or multiple images. When finished with single image, click save.
+
+A txt file of yolo format will be saved in the same folder as your image with same name. A file named "classes.txt" is saved to that folder too. "classes.txt" defines the list of class names that your yolo label refers to.
+
+Note:
+
+- Your label list shall not change in the middle of processing a list of images. When you save a image, classes.txt will also get updated, while previous annotations will not be updated.
+
+- You shouldn't use "default class" function when saving to YOLO format, it will not be referred.
+
+- When saving as YOLO format, "difficult" flag is discarded.
 
 Create pre-defined classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
