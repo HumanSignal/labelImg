@@ -100,6 +100,20 @@ Open cmd and go to `labelImg <#labelimg>`__ directory
     pyrcc4 -o resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    
+Windows + anaconda
+^^^^^^^
+
+Download and install anaconda (python 3+)
+
+Open cmd and go to `labelImg <#labelimg>`__ directory
+
+.. code::
+
+    conda install pyqt=4
+    pyrcc4 -py3 -o resources.py resources.qrc
+    python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Get from PyPI
 ~~~~~~~~~~~~~~~~~
