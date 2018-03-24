@@ -84,7 +84,7 @@ Python 3 + Qt5 (Works on macOS High Sierra)
     python labelImg.py
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-*NEW* Python 3 Virtualenv + Binary
+**NEW** Python 3 Virtualenv + Binary  
 This avoids a lot of the QT / Python version issues,
 and gives you a nice .app file with a new SVG Icon
 in your /Applications folder.
