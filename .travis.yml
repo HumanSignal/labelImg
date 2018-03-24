@@ -70,7 +70,10 @@ matrix:
     - os: osx
       language: generic
       python: "3.6"
-      before_install:
+      env:
+        - PIPENV_VENV_IN_PROJECT=1
+        - PIPENV_IGNORE_VIRTUALENVS=1
+      install:
         - brew upgrade python
         - pip install pipenv
         - pipenv --three
