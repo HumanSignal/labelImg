@@ -81,7 +81,7 @@ matrix:
         - pipenv run make qt5py3
         - rm -rf build dist
         - pipenv run python setup.py py2app
-        - pipenv run xvfb-run make testpy3
+        - open dist/labelImg.app
 
 script:
   - exit 0
