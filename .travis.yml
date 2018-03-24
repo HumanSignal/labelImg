@@ -69,9 +69,9 @@ matrix:
     # Pipenv Python 3 + QT5 - Build .app
     - os: osx
       language: generic
-      python: "3.5"
+      python: "3.6"
       before_install:
-        - brew install python3
+        - brew upgrade python
         - pip install pipenv
         - pipenv --three
         - pipenv shell
