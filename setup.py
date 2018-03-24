@@ -17,7 +17,14 @@ requirements = [
 required_packages = find_packages()
 required_packages.append('labelImg')
 
+APP = ['labelImg.py']
+OPTIONS = {
+    'argv_emulation': True,
+    'iconfile': 'icons/app.icns'
+}
+
 setup(
+    app=APP,
     name='labelImg',
     version=__version__,
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
@@ -51,5 +58,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']}
+    package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
+    options={'py2app': OPTIONS},
+    setup_requires=['py2app']
 )
