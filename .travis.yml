@@ -66,5 +66,20 @@ matrix:
         - make qt5py3
         - xvfb-run make testpy3
 
+    # Pipenv Python 3 + QT5 - Build .app
+    - os: osx
+      language: generic
+      python: "3.5"
+      before_install:
+        - brew install python3
+        - pip install pipenv
+        - pipenv --three
+        - pipenv shell
+        - pip install pyqt5 lxml
+        - make qt5py3
+        - rm -rf build dist
+        - python setup.py py2app
+        - xvfb-run make testpy3
+
 script:
   - exit 0
