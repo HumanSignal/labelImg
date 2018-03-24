@@ -75,10 +75,10 @@ matrix:
         - PIPENV_IGNORE_VIRTUALENVS=1
       install:
         - brew upgrade python
-        - pip install pipenv
+        - pip3 install pipenv
         - pipenv --three
         - pipenv shell
-        - pip install pyqt5 lxml
+        - pip3 install pyqt5 lxml
         - make qt5py3
         - rm -rf build dist
         - python setup.py py2app
