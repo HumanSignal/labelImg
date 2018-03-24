@@ -77,12 +77,11 @@ matrix:
         - brew upgrade python
         - pip3 install pipenv
         - pipenv --three
-        - pipenv shell
-        - pip3 install pyqt5 lxml
-        - make qt5py3
+        - pipenv run pip install pyqt5 lxml
+        - pipenv run make qt5py3
         - rm -rf build dist
-        - python setup.py py2app
-        - xvfb-run make testpy3
+        - pipenv run python setup.py py2app
+        - pipenv run xvfb-run make testpy3
 
 script:
   - exit 0
