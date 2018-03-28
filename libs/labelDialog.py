@@ -15,40 +15,57 @@ class LabelDialog(QDialog):
 
     def __init__(self, text="Enter object label", parent=None, listItem=None):
         super(LabelDialog, self).__init__(parent)
+
+        self.label = ''
+
         self.edit = QLineEdit()
-        self.edit.setText(text)
+        self.edit.setPlaceholderText('Enter search term')
         self.edit.setValidator(labelValidator())
-        self.edit.editingFinished.connect(self.postProcess)
+        self.edit.textChanged.connect(self.search)
+
         layout = QVBoxLayout()
         layout.addWidget(self.edit)
+
         self.buttonBox = bb = BB(BB.Ok | BB.Cancel, Qt.Horizontal, self)
         bb.button(BB.Ok).setIcon(newIcon('done'))
         bb.button(BB.Cancel).setIcon(newIcon('undo'))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
+
         layout.addWidget(bb)
 
         if listItem is not None and len(listItem) > 0:
+            self.origList = listItem
+
             self.listWidget = QListWidget(self)
-            for item in listItem:
+            self.listWidget.setSortingEnabled(True)
+
+            for item in self.origList:
                 self.listWidget.addItem(item)
-            self.listWidget.itemDoubleClicked.connect(self.listItemClick)
+
+            self.listWidget.itemClicked.connect(self.listItemClick)
+            self.listWidget.itemDoubleClicked.connect(self.listItemDoubleClick)
             layout.addWidget(self.listWidget)
 
         self.setLayout(layout)
 
     def validate(self):
         try:
-            if self.edit.text().trimmed():
+            if self.label.trimmed():
                 self.accept()
         except AttributeError:
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
-            if self.edit.text().strip():
+            if self.label.strip():
                 self.accept()
 
-    def postProcess(self):
+    def search(self, searchTerm):
         try:
-            self.edit.setText(self.edit.text().trimmed())
+            self.listWidget.clear()
+
+            for item in self.origList:
+                if searchTerm.upper() in item.upper():
+                    self.listWidget.addItem(item)
+
         except AttributeError:
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
             self.edit.setText(self.edit.text())
@@ -59,7 +76,7 @@ class LabelDialog(QDialog):
         self.edit.setFocus(Qt.PopupFocusReason)
         if move:
             self.move(QCursor.pos())
-        return self.edit.text() if self.exec_() else None
+        return self.label if self.exec_() else None
 
     def listItemClick(self, tQListWidgetItem):
         try:
@@ -67,5 +84,13 @@ class LabelDialog(QDialog):
         except AttributeError:
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
             text = tQListWidgetItem.text().strip()
-        self.edit.setText(text)
+        self.label = text
+
+    def listItemDoubleClick(self, tQListWidgetItem):
+        try:
+            text = tQListWidgetItem.text().trimmed()
+        except AttributeError:
+            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
+            text = tQListWidgetItem.text().strip()
+        self.label = text
         self.validate()
