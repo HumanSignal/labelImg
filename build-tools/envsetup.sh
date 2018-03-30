@@ -7,7 +7,6 @@ THIS_SCRIPT_DIR=`dirname ${THIS_SCRIPT_PATH}`
 if [ ! -e "pyinstaller" ]; then
     git clone https://github.com/pyinstaller/pyinstaller
     cd pyinstaller
-    git checkout v2.1 -b v2.1
     cd ${THIS_SCRIPT_DIR}
 fi
 
@@ -35,19 +34,19 @@ rm -rf venv_wine
 . venv_wine/bin/activate
 
 ### Use wine to install packages to virtual env
-if [ ! -e "python-2.7.8.msi" ]; then
-    wget "https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi"
+if [ ! -e "python-3.6.5.exe" ]; then
+    wget "https://www.python.org/ftp/python/3.6.5/python-3.6.5.exe"
 fi
 
-if [ ! -e "pywin32-218.win32-py2.7.exe" ]; then
-    wget "http://nchc.dl.sourceforge.net/project/pywin32/pywin32/Build%20218/pywin32-218.win32-py2.7.exe"
+if [ ! -e "pywin32-221.win32-py3.6.exe" ]; then
+    wget "http://nchc.dl.sourceforge.net/project/pywin32/pywin32/Build%20221/pywin32-221.win32-py3.6.exe"
 fi
 
-if [ ! -e "PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe" ]; then
-    wget "http://nchc.dl.sourceforge.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt4-4.11.4-gpl-Py2.7-Qt4.8.7-x32.exe"
+if [ ! -e "PyQt5-5.6-gpl-Py3.5-Qt5.6.0-x32-2.exe" ]; then
+    wget "http://nchc.dl.sourceforge.net/project/pyqt/PyQt5/PyQt-5.6/PyQt5-5.6-gpl-Py3.5-Qt5.6.0-x32-2.exe"
 fi
 
-if [ ! -e "lxml-3.7.3.win32-py2.7.exe" ]; then
-    wget "https://pypi.python.org/packages/a3/f6/a28c5cf63873f6c55a3eb7857b736379229b85ba918261d2e88cf886905e/lxml-3.7.3.win32-py2.7.exe#md5=a0f746355876aca4ca5371cb0f1d13ce"
+if [ ! -e "lxml-3.8.0.win32-py3.4.exe" ]; then
+    wget "https://pypi.python.org/packages/fe/2f/be4904004de282c4a737eae310c9303f1ba275337dc49c7e8308b4c0f301/lxml-3.8.0.win32-py3.4.exe#md5=d6079121430ce01541d701e46ae87523"
 fi
 
