@@ -1,8 +1,8 @@
-from unittest import TestCase
-import sys
 import os
+import sys
+import unittest
 
-class TestPascalVocRW(TestCase):
+class TestPascalVocRW(unittest.TestCase):
 
     def test_upper(self):
         dir_name = os.path.abspath(os.path.dirname(__file__))
