@@ -152,6 +152,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Create and add a widget for showing current label items
         self.labelList = QListWidget()
+        self.labelList.setSelectionMode(QAbstractItemView.ExtendedSelection)
         labelListContainer = QWidget()
         labelListContainer.setLayout(listLayout)
         self.labelList.itemActivated.connect(self.labelSelectionChanged)
@@ -368,6 +369,14 @@ class MainWindow(QMainWindow, WindowMixin):
         self.singleClassMode.setCheckable(True)
         self.singleClassMode.setChecked(settings.get(SETTING_SINGLE_CLASS, False))
         self.lastLabel = None
+        # Multiselect mode for fast classes defining
+        self.multiselectMode = QAction("Multiselect Mode", self)
+        self.multiselectMode.setCheckable(True)
+        self.multiselectMode.setChecked(settings.get(SETTING_MULTISELECT, False))
+        self.lastLabel = None
+
+        self.canvas.setIsMultiselectMode(self.isMultiselectMode)
+
 
         addActions(self.menus.file,
                    (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
@@ -375,6 +384,7 @@ class MainWindow(QMainWindow, WindowMixin):
         addActions(self.menus.view, (
             self.autoSaving,
             self.singleClassMode,
+            self.multiselectMode,
             labels, advancedMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
@@ -471,6 +481,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.filePath and os.path.isdir(self.filePath):
             self.openDirDialog(dirpath=self.filePath)
 
+    def isMultiselectMode(self):
+        return self.multiselectMode.isChecked()
+
     ## Support Functions ##
     def set_format(self, save_format):
         if save_format == 'PascalVOC':
@@ -558,10 +571,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.resetState()
         self.labelCoordinates.clear()
 
-    def currentItem(self):
+    def currentItems(self):
         items = self.labelList.selectedItems()
         if items:
-            return items[0]
+            return items
         return None
 
     def addRecentFile(self, filePath):
@@ -636,11 +649,12 @@ class MainWindow(QMainWindow, WindowMixin):
     def editLabel(self):
         if not self.canvas.editing():
             return
-        item = self.currentItem()
-        text = self.labelDialog.popUp(item.text())
+        items = self.currentItems()
+        text = self.labelDialog.popUp(items[0].text())
         if text is not None:
-            item.setText(text)
-            item.setBackground(generateColorByText(text))
+            for item in items:
+                item.setText(text)
+                item.setBackground(generateColorByText(text))
             self.setDirty()
 
     # Tzutalin 20160906 : Add file list and dock to move faster
@@ -658,23 +672,24 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.canvas.editing():
             return
 
-        item = self.currentItem()
+        items = self.currentItems()
         if not item: # If not selected Item, take the first one
-            item = self.labelList.item(self.labelList.count()-1)
+            items = [self.labelList.item(self.labelList.count()-1)]
 
         difficult = self.diffcButton.isChecked()
 
         try:
-            shape = self.itemsToShapes[item]
+            shapes = [self.itemsToShapes[item] for item in items]
         except:
             pass
         # Checked and Update
         try:
-            if difficult != shape.difficult:
-                shape.difficult = difficult
-                self.setDirty()
-            else:  # User probably changed item visibility
-                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+            for shape in shapes:
+                if difficult != shape.difficult:
+                    shape.difficult = difficult
+                    self.setDirty()
+                else:  # User probably changed item visibility
+                    self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
         except:
             pass
 
@@ -683,9 +698,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if self._noSelectionSlot:
             self._noSelectionSlot = False
         else:
-            shape = self.canvas.selectedShape
-            if shape:
-                self.shapesToItems[shape].setSelected(True)
+            shapes = self.canvas.selectedShapes
+            if shapes and len(shapes) > 0:
+                for k, v in self.itemsToShapes.items():
+                    k.setSelected(v in shapes)
             else:
                 self.labelList.clearSelection()
         self.actions.delete.setEnabled(selected)
@@ -778,14 +794,20 @@ class MainWindow(QMainWindow, WindowMixin):
         # fix copy and delete
         self.shapeSelectionChanged(True)
 
+    def getShapesByItems(self, items):
+        return [self.itemsToShapes[i] for i in items]
+
     def labelSelectionChanged(self):
-        item = self.currentItem()
-        if item and self.canvas.editing():
+        items = self.currentItems()
+        if items and self.canvas.editing():
             self._noSelectionSlot = True
-            self.canvas.selectShape(self.itemsToShapes[item])
-            shape = self.itemsToShapes[item]
-            # Add Chris
-            self.diffcButton.setChecked(shape.difficult)
+            shapes = self.getShapesByItems(items)
+            self.canvas.selectShapes(shapes)
+            for shape in shapes:
+                # Add Chris
+                self.diffcButton.setChecked(shape.difficult)
+        else:
+            self.canvas.deSelectShapes()
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
@@ -1226,6 +1248,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
         path = os.path.dirname(ustr(self.filePath)) if self.filePath else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
+        formats += [f.upper() for f in formats]
         filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
         filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
@@ -1252,6 +1275,10 @@ class MainWindow(QMainWindow, WindowMixin):
         assert not self.image.isNull(), "cannot save empty image"
         self._saveFile(self.saveFileDialog())
 
+    def clearExtension(self, filePath):
+        splitted = os.path.splitext(filePath)
+        return splitted[0]
+
     def saveFileDialog(self):
         caption = '%s - Choose File' % __appname__
         filters = 'File (*%s)' % LabelFile.suffix
@@ -1259,11 +1286,11 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg = QFileDialog(self, caption, openDialogPath, filters)
         dlg.setDefaultSuffix(LabelFile.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
-        filenameWithoutExtension = os.path.splitext(self.filePath)[0]
+        filenameWithoutExtension = self.clearExtension(self.filePath)
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
-            return dlg.selectedFiles()[0]
+            return self.clearExtension(dlg.selectedFiles()[0])
         return ''
 
     def _saveFile(self, annotationFilePath):
@@ -1323,7 +1350,8 @@ class MainWindow(QMainWindow, WindowMixin):
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
                                           default=DEFAULT_LINE_COLOR)
         if color:
-            self.canvas.selectedShape.line_color = color
+            for shape in self.canvas.selectedShapes:
+                shape.line_color = color
             self.canvas.update()
             self.setDirty()
 
@@ -1331,13 +1359,15 @@ class MainWindow(QMainWindow, WindowMixin):
         color = self.colorDialog.getColor(self.fillColor, u'Choose fill color',
                                           default=DEFAULT_FILL_COLOR)
         if color:
-            self.canvas.selectedShape.fill_color = color
+            for shape in self.canvas.selectedShapes:
+                shape.fill_color = color
             self.canvas.update()
             self.setDirty()
 
     def copyShape(self):
         self.canvas.endMove(copy=True)
-        self.addLabel(self.canvas.selectedShape)
+        for shape in self.canvas.selectedShapes:
+            self.addLabel(shape)
         self.setDirty()
 
     def moveShape(self):
