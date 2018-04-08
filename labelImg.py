@@ -89,7 +89,7 @@ class HashableQListWidgetItem(QListWidgetItem):
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
 
-    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None):
+    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None, defaultSaveDir=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
 
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings = self.settings
 
         # Save as Pascal voc xml
-        self.defaultSaveDir = None
+        self.defaultSaveDir = defaultSaveDir
         self.usingPascalVocFormat = True
         self.usingYoloFormat = False
 
@@ -429,7 +429,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.move(position)
         saveDir = ustr(settings.get(SETTING_SAVE_DIR, None))
         self.lastOpenDir = ustr(settings.get(SETTING_LAST_OPEN_DIR, None))
-        if saveDir is not None and os.path.exists(saveDir):
+        if self.defaultSaveDir is None and saveDir is not None and os.path.exists(saveDir):
             self.defaultSaveDir = saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
                                          (__appname__, self.defaultSaveDir))
@@ -1415,11 +1415,12 @@ def get_main_app(argv=[]):
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("app"))
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
-    # Usage : labelImg.py image predefClassFile
+    # Usage : labelImg.py image predefClassFile saveDir
     win = MainWindow(argv[1] if len(argv) >= 2 else None,
                      argv[2] if len(argv) >= 3 else os.path.join(
                          os.path.dirname(sys.argv[0]),
-                         'data', 'predefined_classes.txt'))
+                         'data', 'predefined_classes.txt'),
+                     argv[3] if len(argv) >= 4 else None)
     win.show()
     return app, win
 
