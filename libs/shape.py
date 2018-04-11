@@ -12,7 +12,7 @@ except ImportError:
 from libs.lib import distance
 import sys
 
-DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
+DEFAULT_LINE_COLOR = QColor(0, 255, 0, 230)
 DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
 DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
@@ -35,7 +35,8 @@ class Shape(object):
     hvertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
     point_type = P_ROUND
     point_size = 8
-    scale = 1.0
+    scale = 1
+    screenscale=4
 
     def __init__(self, label=None, line_color=None,difficult = False):
         self.label = label
@@ -87,7 +88,8 @@ class Shape(object):
             color = self.select_line_color if self.selected else self.line_color
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
-            pen.setWidth(max(1, int(round(2.0 / self.scale))))
+            pen.setWidth(max(1, int(round(2.0 / self.scale)))*self.screenscale)
+               
             painter.setPen(pen)
 
             line_path = QPainterPath()
@@ -97,7 +99,7 @@ class Shape(object):
             # Uncommenting the following line will draw 2 paths
             # for the 1st vertex, and make it non-filled, which
             # may be desirable.
-            #self.drawVertex(vrtx_path, 0)
+            self.drawVertex(vrtx_path, 0)
 
             for i, p in enumerate(self.points):
                 line_path.lineTo(p)
@@ -117,7 +119,7 @@ class Shape(object):
                 min_y = min(min_y, point.y())
             if min_x != sys.maxsize and min_y != sys.maxsize:
                 font = QFont()
-                font.setPointSize(8)
+                font.setPointSize(4*self.screenscale)
                 font.setBold(True)
                 painter.setFont(font)
                 if(self.label == None):

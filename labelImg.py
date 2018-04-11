@@ -140,9 +140,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.stateChanged.connect(self.btnstate)
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.rotateButton = QToolButton()
+        self.rotateButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
+        listLayout.addWidget(self.rotateButton)
         listLayout.addWidget(self.diffcButton)
         listLayout.addWidget(useDefaultLabelContainer)
 
@@ -301,9 +304,13 @@ class MainWindow(QMainWindow, WindowMixin):
         }
 
         edit = action('&Edit Label', self.editLabel,
-                      'Ctrl+E', 'edit', u'Modify the label of the selected Box',
+                      'E', 'edit', u'Modify the label of the selected Box',
                       enabled=False)
         self.editButton.setDefaultAction(edit)
+        rotate = action('&Rotate Label', self.rotateLabel,
+                      'R', 'rotate', u'Rotate the label of the selected Box',
+                      enabled=False)
+        self.rotateButton.setDefaultAction(rotate)
 
         shapeLineColor = action('Shape &Line Color', self.chshapeLineColor,
                                 icon='color_line', tip=u'Change the line color for this specific shape',
@@ -325,7 +332,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Store actions for further handling.
         self.actions = struct(save=save, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
-                              lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
+                              lineColor=color1, create=create, delete=delete, edit=edit,rotate=rotate, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
@@ -337,7 +344,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               editMenu=(edit, copy, delete,
                                         None, color1),
                               beginnerContext=(create, edit, copy, delete),
-                              advancedContext=(createMode, editMode, edit, copy,
+                              advancedContext=(createMode, editMode, edit,rotate, copy,
                                                delete, shapeLineColor, shapeFillColor),
                               onLoadActive=(
                                   close, create, createMode, editMode),
@@ -479,6 +486,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.setEditing(True)
         self.populateModeActions()
         self.editButton.setVisible(not value)
+        self.rotateButton.setVisible(not value)
         if value:
             self.actions.createMode.setEnabled(True)
             self.actions.editMode.setEnabled(False)
@@ -624,6 +632,20 @@ class MainWindow(QMainWindow, WindowMixin):
             item.setText(text)
             item.setBackground(generateColorByText(text))
             self.setDirty()
+            
+    def rotateLabel(self):
+        if not self.canvas.editing():
+            return
+        item = self.currentItem()
+        if item.text() == "car":
+            text="space"
+        if item.text() == "space":
+            text="car"
+            
+        if text is not None:
+            item.setText(text)
+            item.setBackground(generateColorByText(text))
+            self.setDirty()
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
@@ -673,6 +695,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.delete.setEnabled(selected)
         self.actions.copy.setEnabled(selected)
         self.actions.edit.setEnabled(selected)
+        self.actions.rotate.setEnabled(selected)
         self.actions.shapeLineColor.setEnabled(selected)
         self.actions.shapeFillColor.setEnabled(selected)
 
@@ -1051,7 +1074,33 @@ class MainWindow(QMainWindow, WindowMixin):
     def loadRecent(self, filename):
         if self.mayContinue():
             self.loadFile(filename)
-
+    
+    def sortSmart(self,images):    
+        def removeLeadingZeroes(s):
+            zp=-1
+            for i in range(len(s)):
+                if s[i]=='0':
+                    zp=i
+                else:
+                    break
+            return s[zp+1:]
+        ims=map(lambda i:i[:-4].lower(),images)
+        finished=False
+        while len(ims[0])>0 and not finished:
+            c=ims[0][0]
+            for i in ims:
+                if i[0]!=c:
+                    finished=True
+                    break
+            if not finished:
+                im=map(lambda i:i[1:],ims)
+                ims=im
+        ims=map(removeLeadingZeroes,ims)
+        isdigit=map(lambda i:i.isdigit(),ims)
+        if sum(isdigit)==len(isdigit):
+            ims=map(int,ims)
+        return[x for _,x in sorted(zip(ims,images))]
+    
     def scanAllImages(self, folderPath):
         extensions = ['.jpeg', '.jpg', '.png', '.bmp']
         images = []
@@ -1062,8 +1111,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     relativePath = os.path.join(root, file)
                     path = ustr(os.path.abspath(relativePath))
                     images.append(path)
-        images.sort(key=lambda x: x.lower())
-        return images
+        return self.sortSmart(images)
 
     def changeSavedirDialog(self, _value=False):
         if self.defaultSaveDir is not None:
@@ -1293,8 +1341,10 @@ class MainWindow(QMainWindow, WindowMixin):
                 action.setEnabled(False)
 
     def chshapeLineColor(self):
+        print chshapeLineColor
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
                                           default=DEFAULT_LINE_COLOR)
+        print color
         if color:
             self.canvas.selectedShape.line_color = color
             self.canvas.update()
