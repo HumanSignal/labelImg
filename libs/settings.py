@@ -23,13 +23,13 @@ class Settings(object):
     def save(self):
         if self.path:
             with open(self.path, 'wb') as f:
-                pickle.dump(self.data, f, pickle.HIGHEST_PROTOCOL)
+                pickle.dump(self.data, f, 1)
                 return True
         return False
 
     def load(self):
         if os.path.exists(self.path):
-            with open(self.path, 'rb') as f:
+            with open(self.path,"r") as f:
                 self.data = pickle.load(f)
                 return True
         return False
