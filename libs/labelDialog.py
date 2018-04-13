@@ -1,10 +1,5 @@
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
 from libs.lib import newIcon, labelValidator
 
@@ -42,7 +37,7 @@ class LabelDialog(QDialog):
             if self.edit.text().trimmed():
                 self.accept()
         except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
+            # PyQt4: AttributeError: 'str' object has no attribute 'trimmed'
             if self.edit.text().strip():
                 self.accept()
 
@@ -50,7 +45,7 @@ class LabelDialog(QDialog):
         try:
             self.edit.setText(self.edit.text().trimmed())
         except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
+            # PyQt4: AttributeError: 'str' object has no attribute 'trimmed'
             self.edit.setText(self.edit.text())
 
     def popUp(self, text='', move=True):
@@ -65,7 +60,7 @@ class LabelDialog(QDialog):
         try:
             text = tQListWidgetItem.text().trimmed()
         except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
+            # PyQt4: AttributeError: 'str' object has no attribute 'trimmed'
             text = tQListWidgetItem.text().strip()
         self.edit.setText(text)
         self.validate()
