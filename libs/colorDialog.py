@@ -20,7 +20,6 @@ class ColorDialog(QColorDialog):
         self.bb.clicked.connect(self.checkRestore)
 
     def getColor(self, value=None, title=None, default=None):
-        print "calling getColor" 
         self.default = default
         if title:
             self.setWindowTitle(title)

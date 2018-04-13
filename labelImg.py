@@ -12,7 +12,7 @@ from collections import defaultdict
 
 try:
     from PyQt4 import QtCore
-    from PyQt4.QtWidgets import *
+    *
 except ImportError:
     # needed for py3+qt4
     # Ref:
@@ -72,7 +72,7 @@ class WindowMixin(object):
         return toolbar
 
 
-# PyQt5: TypeError: unhashable type: 'QListWidgetItem'
+# PyQt4: TypeError: unhashable type: 'QListWidgetItem'
 class HashableQListWidgetItem(QListWidgetItem):
 
     def __init__(self, *args):
@@ -1084,7 +1084,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 else:
                     break
             return s[zp+1:]
-        ims=map(lambda i:i[:-4].lower(),images)
+        ims=list(map(lambda i:i[:-4].lower(),images))
         finished=False
         while len(ims[0])>0 and not finished:
             c=ims[0][0]
@@ -1098,7 +1098,7 @@ class MainWindow(QMainWindow, WindowMixin):
         ims=map(removeLeadingZeroes,ims)
         isdigit=map(lambda i:i.isdigit(),ims)
         if sum(isdigit)==len(isdigit):
-            ims=map(int,ims)
+            ims=list(map(int,ims))
         return[x for _,x in sorted(zip(ims,images))]
     
     def scanAllImages(self, folderPath):
