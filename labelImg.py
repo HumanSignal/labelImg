@@ -12,7 +12,8 @@ from collections import defaultdict
 
 try:
     from PyQt4 import QtCore
-    *
+    from PyQt4.QtWidgets import *
+
 except ImportError:
     # needed for py3+qt4
     # Ref:
@@ -1341,10 +1342,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 action.setEnabled(False)
 
     def chshapeLineColor(self):
-        print chshapeLineColor
         color = self.colorDialog.getColor(self.lineColor, u'Choose line color',
                                           default=DEFAULT_LINE_COLOR)
-        print color
         if color:
             self.canvas.selectedShape.line_color = color
             self.canvas.update()
