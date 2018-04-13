@@ -25,7 +25,6 @@ class ColorDialog(QColorDialog):
             self.setWindowTitle(title)
         if value:
             self.setCurrentColor(value)
-        print self.currentColor()
         return self.currentColor() if self.exec_() else None
 
     def checkRestore(self, button):
