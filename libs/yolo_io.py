@@ -33,11 +33,11 @@ class YOLOWriter:
         ymin = box['ymin']
         ymax = box['ymax']
 
-        xcen = (xmin + xmax) / 2 / self.imgSize[1]
-        ycen = (ymin + ymax) / 2 / self.imgSize[0]
+        xcen = float((xmin + xmax)) / 2 / self.imgSize[1]
+        ycen = float((ymin + ymax)) / 2 / self.imgSize[0]
 
-        w = (xmax - xmin) / self.imgSize[1]
-        h = (ymax - ymin) / self.imgSize[0]
+        w = float((xmax - xmin)) / self.imgSize[1]
+        h = float((ymax - ymin)) / self.imgSize[0]
 
         classIndex = classList.index(box['name'])
 
