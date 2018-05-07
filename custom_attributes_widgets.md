@@ -86,7 +86,7 @@ By "error" images I mean ones that will be good for training because the boxes a
 But I really don't care about any of the other images - they may never get looked at again!
 And the default auto-save mode is not required (although I also don't care about the files it may produce).
 
-So I enter the directory where I want to collect my "error" output, and the "next" through the images, and when I see one I want I can press the copy button.
+So I enter the directory where I want to collect my "error" output, and then "next" through the images, and when I see one I want I press the copy button.
 
 This has massively improved my "labelling" productivity.
 
