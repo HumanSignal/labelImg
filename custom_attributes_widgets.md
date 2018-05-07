@@ -15,7 +15,7 @@ The following screenshot shows the screen impact, and following is an example of
 .. image:: custom-attributes-widgets.png
      :alt: Custom Attributes Widget
      
-.. code::
+```xml
     <annotation>
         <folder>goldfinch</folder>
         <filename>14-58-50_078-acd008-pi.jpg</filename>
@@ -70,7 +70,7 @@ The following screenshot shows the screen impact, and following is an example of
             </bndbox>
         </object>
     </annotation>
-
+```
 
 Custom Workflow Logic
 ~~~~~~~~~~~~~~~~~~~~~
