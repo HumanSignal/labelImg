@@ -12,8 +12,8 @@ Image and label attributes are simply read from and written to the PASCAL VOC fi
 
 The following screenshot shows the screen impact, and following is an example of the xml that is generated.
 
-.. image:: custom-attributes-widgets.png
-     :alt: Custom Attributes Widget
+![Custom Attributes Widget](custom-attributes-widgets.png "Custom Attributes Widget")
+
      
 ```xml
     <annotation>
