@@ -73,7 +73,7 @@ The following screenshot shows the screen impact, and following is an example of
 ```
 
 Custom Workflow Logic
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 I have several cameras producing thousands of images every day.
 My current latest object detection model is classifying the images and producing a PASCAL VOC file for each classified image.
