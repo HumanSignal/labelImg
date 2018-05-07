@@ -45,6 +45,10 @@ from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
 from libs.version import __version__
 
+# import custom attributes module
+from customAttributes import AttributesManager
+
+
 __appname__ = 'labelImg'
 
 # Utility functions and classes.
@@ -166,6 +170,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock = QDockWidget(u'Box Labels', self)
         self.dock.setObjectName(u'Labels')
         self.dock.setWidget(labelListContainer)
+        
+        self.attributes_manager = AttributesManager( self, Qt.RightDockWidgetArea )
+        
 
         # Tzutalin 20160906 : Add file list and dock to move faster
         self.fileListWidget = QListWidget()
@@ -554,6 +561,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.itemsToShapes.clear()
         self.shapesToItems.clear()
         self.labelList.clear()
+
+        self.attributes_manager.resetState()
+
         self.filePath = None
         self.imageData = None
         self.labelFile = None
@@ -728,11 +738,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, difficult in shapes:
+        for label, points, line_color, fill_color, difficult, attributes in shapes:
             shape = Shape(label=label)
             for x, y in points:
                 shape.addPoint(QPointF(x, y))
             shape.difficult = difficult
+            shape.attributes = attributes
             shape.close()
             s.append(shape)
 
@@ -762,16 +773,18 @@ class MainWindow(QMainWindow, WindowMixin):
                         fill_color=s.fill_color.getRgb(),
                         points=[(p.x(), p.y()) for p in s.points],
                        # add chris
-                        difficult = s.difficult)
+                        difficult = s.difficult,
+                        attributes = s.attributes)
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
-        # Can add differrent annotation formats here
+        # Can add different annotation formats here
         try:
             if self.usingPascalVocFormat is True:
                 annotationFilePath += XML_EXT
-                print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
+                print( 'Img: [{}]; save PASCAL_VOC file: [{}]'.format( self.filePath, annotationFilePath ) )
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
-                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
+                                                   self.lineColor.getRgb(), self.fillColor.getRgb(), 
+                                                   databaseSrc=None, image_attributes=self.attributes)
             elif self.usingYoloFormat is True:
                 annotationFilePath += TXT_EXT
                 print ('Img: ' + self.filePath + ' -> Its txt: ' + annotationFilePath)
@@ -798,6 +811,11 @@ class MainWindow(QMainWindow, WindowMixin):
             shape = self.itemsToShapes[item]
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
+
+            self.attributes_manager.loadLabelAttributes( shape.attributes )
+        else:
+            self.attributes_manager.loadLabelAttributes( None )        
+           
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
@@ -1378,6 +1396,9 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+
+        self.attributes_manager.loadImageAttributes( tVocParseReader.getAttributes() )
+
 
     def loadYOLOTXTByFilename(self, txtPath):
         if self.filePath is None:
