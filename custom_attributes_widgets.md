@@ -4,16 +4,17 @@ LabelImg - Custom Attributes Widgets
 Custom Attributes Widgets
 
 These allow additional detail to be stored within the standard PASCAL VOC xml format.
+I need this so I can organise, analyse, balance and tune my image datasets: aiming for the perfect training run. 
 
 They are specified in three scopes (image, label, and global) within the file "customAttributes.py".
 
 Image and label attributes are simply read from and written to the PASCAL VOC files, however global attributes widgets can be used to implement custom workflow logic.
 
-
-The following screenshot shows the screen impact, and following is an example of the xml that is generated.
+The following screenshot shows the screen impact:
 
 ![Custom Attributes Widget](custom-attributes-widgets.png "Custom Attributes Widget")
 
+With corresponding XML: 
      
 ```xml
     <annotation>
@@ -88,3 +89,13 @@ And the default auto-save mode is not required (although I also don't care about
 So I enter the directory where I want to collect my "error" output, and the "next" through the images, and when I see one I want I can press the copy button.
 
 This has massively improved my "labelling" productivity.
+
+
+Not Working as Expected
+-----------------------
+
+Only the types "text", "combo" are working (I tried "radio" and "checkbox" but fails and overwrites all fields).
+Default values only for "combo".
+
+ 
+
