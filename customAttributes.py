@@ -11,15 +11,22 @@ class AttributesManager( AbstractAttributesWidgets ):
         self.global_index = self.global_index + 1
         return self.global_index
 
+    # 
+    def toggle_defaults_dirty( self, toggle ):
+        self.defaults_dirty = toggle
+        print( "defaults_dirty={}".format( self.defaults_dirty ) )
+        return True     
+
+
     # just capture the destination
     def update_destination( self, destination ):
         self.destination = destination
-        return True     
-
+        return True          
+        
     # try to copy the current image file and create a new label file at the destination
     def copy_to_destination( self ):
-        if self.destination is None:
-            raise ValueError( "Can't copy to destination as destination is None" )
+        if not hasattr(self, "destination") or self.destination is None:
+            raise ValueError( "Destination not defined!" )
 
         if not os.path.isdir( self.destination ):
             raise ValueError( "Destination does not exist: {}".format( self.destination ) )
@@ -54,6 +61,13 @@ class AttributesManager( AbstractAttributesWidgets ):
                 "tooltip": "Copy the current image and it's PASCAL VOC file the to directory specified in 'destination'",            
                 "type": "button",
                 "action": self.copy_to_destination
+            },
+            "toggle defaults dirty": {
+                "order": self.next_index(),
+                "tooltip": "Whether the dirty flag should be set when assigning a default value (hence always saving when applied)",            
+                "type": "radio",
+                "default": self.defaults_dirty,
+                "action": self.toggle_defaults_dirty
             }
         }  
 
