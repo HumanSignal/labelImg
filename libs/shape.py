@@ -37,12 +37,14 @@ class Shape(object):
     point_size = 8
     scale = 1.0
 
-    def __init__(self, label=None, line_color=None,difficult = False):
+    def __init__(self, label=None, line_color=None, difficult = False, score=None, attributes = None):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
+        self.score = score
+        self.attributes = attributes
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -122,7 +124,11 @@ class Shape(object):
                 painter.setFont(font)
                 if(self.label == None):
                     self.label = ""
-                painter.drawText(min_x, min_y, self.label)
+                
+                if self.score is not None:
+                    painter.drawText(min_x, min_y, "{} [ {} % ]".format( self.label, round( 100 * self.score, 2 ) ) )
+                else:
+                    painter.drawText(min_x, min_y, self.label)
 
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color
