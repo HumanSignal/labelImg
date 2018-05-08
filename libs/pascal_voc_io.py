@@ -80,11 +80,14 @@ class PascalVocWriter:
 
         return top
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult, attributes):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult, score, attributes):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
         bndbox['difficult'] = difficult
-        bndbox['attributes'] = attributes
+        if score is not None:
+            bndbox['score'] = score
+        if attributes is not None:
+            bndbox['attributes'] = attributes
         self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
@@ -108,8 +111,13 @@ class PascalVocWriter:
             difficult = SubElement(object_item, 'difficult')
             difficult.text = str( bool(each_object['difficult']) & 1 )
 
-            attributesManager.write_attributes_to_element( object_item, each_object['attributes'] )
+            if 'attributes' in each_object:
+                attributesManager.write_attributes_to_element( object_item, each_object['attributes'] )
 
+            if 'score' in each_object:
+                score = SubElement(object_item, 'score')
+                score.text = str(each_object['score'])
+            
             bndbox = SubElement(object_item, 'bndbox')
             xmin = SubElement(bndbox, 'xmin')
             xmin.text = str(each_object['xmin'])
@@ -155,13 +163,13 @@ class PascalVocReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, bndbox, difficult, attributes):
+    def addShape(self, label, bndbox, difficult, score, attributes):
         xmin = int(bndbox.find('xmin').text)
         ymin = int(bndbox.find('ymin').text)
         xmax = int(bndbox.find('xmax').text)
         ymax = int(bndbox.find('ymax').text)
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, difficult, attributes))
+        self.shapes.append((label, points, None, None, difficult, score, attributes))
 
     def parseXML(self):
         assert self.filepath.endswith(XML_EXT), "Unsupport file format"
@@ -184,8 +192,12 @@ class PascalVocReader:
             difficult = False
             if object_iter.find('difficult') is not None:
                 difficult = bool(int(object_iter.find('difficult').text))
+            
+            score = None
+            if object_iter.find('score') is not None:
+                score = float(object_iter.find('score').text)
 
             object_attributes = {}
             attributesManager.read_attributes_from_element( object_iter, object_attributes )
-            self.addShape( label, bndbox, difficult, object_attributes )
+            self.addShape( label, bndbox, difficult, score, object_attributes )
         return True
