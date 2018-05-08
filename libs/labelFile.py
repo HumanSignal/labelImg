@@ -28,9 +28,11 @@ class LabelFile(object):
         self.imagePath = None
         self.imageData = None
         self.verified = False
+        self.attributes = {}
 
     def savePascalVocFormat(self, filename, shapes, imagePath, imageData,
-                            lineColor=None, fillColor=None, databaseSrc=None):
+                            lineColor=None, fillColor=None, databaseSrc=None, 
+                            image_attributes=None):
         imgFolderPath = os.path.dirname(imagePath)
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
@@ -42,7 +44,8 @@ class LabelFile(object):
         imageShape = [image.height(), image.width(),
                       1 if image.isGrayscale() else 3]
         writer = PascalVocWriter(imgFolderName, imgFileName,
-                                 imageShape, localImgPath=imagePath)
+                                 imageShape, localImgPath=imagePath, 
+                                 image_attributes=image_attributes)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -50,8 +53,17 @@ class LabelFile(object):
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
+
+            score = None
+            if 'score' in shape:
+                score = shape['score']
+            
+            label_attributes = []
+            if 'attributes' in shape:
+                label_attributes = shape['attributes']
+                
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult, score, label_attributes)
 
         writer.save(targetFile=filename)
         return
