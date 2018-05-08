@@ -33,6 +33,10 @@ def read_attributes_from_element( parent_element, attributes ):
 # attributes and widgets
 class AttributesWidgets():
 
+    # if default attributes are applied then the current image meta-data is marked as dirty
+    # switch this on/off to avoid always updating XML files that are ONLY missing default values
+    defaults_dirty = True
+
     def get_global_attribute_definitions(self):
         pass
 
@@ -111,13 +115,13 @@ class AttributesWidgets():
 
         elif type == "radio":
             widget = QRadioButton( self.mainWindow )
-            widget.setText( key )
+            #widget.setText( key )
             if action is not None:
                 widget.toggled.connect( action )
 
         elif type == "checkbox":
             widget = QCheckBox( self.mainWindow )
-            widget.setText( key )
+            #widget.setText( key )
             if action is not None:
                 widget.toggled.connect( action )
 
@@ -196,8 +200,9 @@ class AttributesWidgets():
             elif hasattr( widget, "defaultValue" ):
                 value = widget.defaultValue
                 attributes[ attr ] = value
-                print( "Assigned default attribute value: key=[{}], value=[{}]".format( attr, value ) )
-                self.mainWindow.setDirty()
+                if self.defaults_dirty:
+                    print( "Assigned default attribute value: key=[{}], value=[{}]".format( attr, value ) )
+                    self.mainWindow.setDirty()
             else:
                 value = None
             self.set_widget_value( widget, value )
@@ -216,6 +221,9 @@ class AttributesWidgets():
     def update_label_attributes( self ):
         shape = self.mainWindow.canvas.selectedShape
         if shape:
+            if shape.attributes is None:
+                shape.attributes = {}
+
             for w in self.labelAttributeWidgets:
                 self.maybe_update_attribute(
                     w,
