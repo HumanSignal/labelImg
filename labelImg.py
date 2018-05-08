@@ -1175,7 +1175,11 @@ class MainWindow(QMainWindow, WindowMixin):
                 # If the labelling file does not exist yet, create if and
                 # re-save it with the verified attribute.
                 self.saveFile()
-                self.labelFile.toggleVerify()
+                try:
+                    self.labelFile.toggleVerify()
+                except AttributeError:
+                    # This occurs if the user cancels the operation
+                    return
 
             self.canvas.verified = self.labelFile.verified
             self.paintCanvas()
