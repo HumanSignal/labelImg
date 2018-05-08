@@ -54,12 +54,16 @@ class LabelFile(object):
             # Add Chris
             difficult = int(shape['difficult'])
 
+            score = None
+            if 'score' in shape:
+                score = shape['score']
+            
             label_attributes = []
             if 'attributes' in shape:
                 label_attributes = shape['attributes']
                 
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult, label_attributes)
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult, score, label_attributes)
 
         writer.save(targetFile=filename)
         return
