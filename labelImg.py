@@ -44,6 +44,7 @@ from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
 from libs.version import __version__
+from libs.file_read import read
 
 __appname__ = 'labelImg'
 
@@ -1396,15 +1397,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
-
-
-def read(filename, default=None):
-    try:
-        with open(filename, 'rb') as f:
-            return f.read()
-    except:
-        return default
-
 
 def get_main_app(argv=[]):
     """
