@@ -10,7 +10,7 @@ from base64 import b64encode, b64decode
 from libs.pascal_voc_io import PascalVocWriter
 from libs.yolo_io import YOLOWriter
 from libs.pascal_voc_io import XML_EXT
-from file_read import read
+from libs.file_read import read
 import os.path
 import sys
 
