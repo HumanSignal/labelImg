@@ -87,19 +87,21 @@ Python 3 + Qt5 (Works on macOS High Sierra)
 **NEW** Python 3 Virtualenv + Binary  
 This avoids a lot of the QT / Python version issues,
 and gives you a nice .app file with a new SVG Icon
-in your /Applications folder.
+in your /Applications folder. You can consider this script: build-tools/build-for-macos.sh
 
 .. code::
+    
     
     brew install python3
     pip install pipenv
     pipenv --three
     pipenv shell
-    pip install pyqt5 lxml
+    pip install py2app
+    pip install PyQt5 lxml
     make qt5py3
     rm -rf build dist
-    python setup.py py2app
-    cp -rf dist/labelImg.app /Applications
+    python setup.py py2app -A
+    mv "dist/labelImg.app" /Applications
 
 Windows
 ^^^^^^^
