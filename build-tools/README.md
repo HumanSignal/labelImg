@@ -5,7 +5,6 @@ cd [ROOT]
 sh build-tools/build-for-pypi.sh
 ```
 
-
 ### Build for Ubuntu
 
 ```
@@ -22,6 +21,13 @@ cd build-tools
 sh run-in-container.sh
 sh envsetup.sh
 sh build-windows-binary.sh
+```
+
+### Build for macOS High Sierra
+```
+cd build-tools
+chmod +x ./build-for-macos.sh
+./build-for-macos.sh
 ```
 
 Note: If there are some problems, try to
