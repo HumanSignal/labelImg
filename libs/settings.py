@@ -29,7 +29,9 @@ class Settings(object):
 
     def load(self):
         if os.path.exists(self.path):
-            with open(self.path, 'rb') as f:
+            with open("save.pickle", "wb") as f:
+                pickle.dump(self.path, f)
+            with open("save.pickle", 'rb') as f:
                 self.data = pickle.load(f)
                 return True
         return False

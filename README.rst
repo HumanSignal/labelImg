@@ -1,3 +1,6 @@
+
+- Edited libs/setting.py so UnicodeDecode Error is fixed and now works with python 3.6
+========
 LabelImg
 ========
 
@@ -84,13 +87,13 @@ Python 3 + Qt5 (Works on macOS High Sierra)
     python labelImg.py
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-**NEW** Python 3 Virtualenv + Binary  
+**NEW** Python 3 Virtualenv + Binary
 This avoids a lot of the QT / Python version issues,
 and gives you a nice .app file with a new SVG Icon
 in your /Applications folder.
 
 .. code::
-    
+
     brew install python3
     pip install pipenv
     pipenv --three
@@ -116,7 +119,7 @@ Open cmd and go to `labelImg <#labelimg>`__ directory
     pyrcc4 -o resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-    
+
 Windows + anaconda
 ^^^^^^^
 
@@ -256,4 +259,3 @@ Related
 2. `Use Docker to run labelImg <https://hub.docker.com/r/tzutalin/py2qt4>`__
 3. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
 4. `App Icon based on Icon by Nick Roach (GPL)` <https://www.elegantthemes.com/> <https://www.iconfinder.com/icons/1054978/shop_tag_icon> __
-
