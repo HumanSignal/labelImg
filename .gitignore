@@ -17,3 +17,5 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+
+save.pickle
