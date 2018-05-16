@@ -480,12 +480,14 @@ class MainWindow(QMainWindow, WindowMixin):
             self.actions.save_format.setIcon(newIcon("format_voc"))
             self.usingPascalVocFormat = True
             self.usingYoloFormat = False
+            LabelFile.suffix = XML_EXT
 
         elif save_format == 'YOLO':
             self.actions.save_format.setText("YOLO")
             self.actions.save_format.setIcon(newIcon("format_yolo"))
             self.usingPascalVocFormat = False
             self.usingYoloFormat = True
+            LabelFile.suffix = TXT_EXT
 
     def change_format(self):
         if self.usingPascalVocFormat: self.set_format("YOLO")
