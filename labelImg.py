@@ -1277,7 +1277,8 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
-            return dlg.selectedFiles()[0]
+            fullFilePath = dlg.selectedFiles()[0]
+            return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
         return ''
 
     def _saveFile(self, annotationFilePath):
