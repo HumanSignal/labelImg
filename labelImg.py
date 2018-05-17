@@ -967,11 +967,13 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.imageData = self.labelFile.imageData
                 self.lineColor = QColor(*self.labelFile.lineColor)
                 self.fillColor = QColor(*self.labelFile.fillColor)
+                self.canvas.verified = self.labelFile.verified
             else:
                 # Load image:
                 # read data first and store for saving into label file.
                 self.imageData = read(unicodeFilePath, None)
                 self.labelFile = None
+                self.canvas.verified = False
 
             image = QImage.fromData(self.imageData)
             if image.isNull():
