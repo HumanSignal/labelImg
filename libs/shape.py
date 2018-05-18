@@ -37,12 +37,13 @@ class Shape(object):
     point_size = 8
     scale = 1.0
 
-    def __init__(self, label=None, line_color=None,difficult = False):
+    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
+        self.paintLabel = paintLabel
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -110,19 +111,20 @@ class Shape(object):
             painter.fillPath(vrtx_path, self.vertex_fill_color)
 
             # Draw text at the top-left
-            min_x = sys.maxsize
-            min_y = sys.maxsize
-            for point in self.points:
-                min_x = min(min_x, point.x())
-                min_y = min(min_y, point.y())
-            if min_x != sys.maxsize and min_y != sys.maxsize:
-                font = QFont()
-                font.setPointSize(8)
-                font.setBold(True)
-                painter.setFont(font)
-                if(self.label == None):
-                    self.label = ""
-                painter.drawText(min_x, min_y, self.label)
+            if self.paintLabel:
+                min_x = sys.maxsize
+                min_y = sys.maxsize
+                for point in self.points:
+                    min_x = min(min_x, point.x())
+                    min_y = min(min_y, point.y())
+                if min_x != sys.maxsize and min_y != sys.maxsize:
+                    font = QFont()
+                    font.setPointSize(8)
+                    font.setBold(True)
+                    painter.setFont(font)
+                    if(self.label == None):
+                        self.label = ""
+                    painter.drawText(min_x, min_y, self.label)
 
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color

@@ -370,6 +370,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.singleClassMode.setCheckable(True)
         self.singleClassMode.setChecked(settings.get(SETTING_SINGLE_CLASS, False))
         self.lastLabel = None
+        # Add option to enable/disable labels being painted at the top of bounding boxes
+        self.paintLabelsOption = QAction("Paint Labels", self)
+        self.paintLabelsOption.setShortcut("Ctrl+Shift+P")
+        self.paintLabelsOption.setCheckable(True)
+        self.paintLabelsOption.setChecked(False)
+        self.paintLabelsOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
                    (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
@@ -377,6 +383,7 @@ class MainWindow(QMainWindow, WindowMixin):
         addActions(self.menus.view, (
             self.autoSaving,
             self.singleClassMode,
+            self.paintLabelsOption,
             labels, advancedMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
@@ -709,6 +716,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
+        shape.paintLabel = self.paintLabelsOption.isChecked()
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
@@ -1399,7 +1407,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.loadLabels(shapes)
         self.canvas.verified = tYoloParseReader.verified
 
-
+    def togglePaintLabelsOption(self):
+        paintLabelsOptionChecked = self.paintLabelsOption.isChecked()
+        for shape in self.canvas.shapes:
+            shape.paintLabel = paintLabelsOptionChecked
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
