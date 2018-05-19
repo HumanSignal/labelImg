@@ -374,7 +374,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.paintLabelsOption = QAction("Paint Labels", self)
         self.paintLabelsOption.setShortcut("Ctrl+Shift+P")
         self.paintLabelsOption.setCheckable(True)
-        self.paintLabelsOption.setChecked(False)
+        self.paintLabelsOption.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.paintLabelsOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
@@ -482,23 +482,23 @@ class MainWindow(QMainWindow, WindowMixin):
 
     ## Support Functions ##
     def set_format(self, save_format):
-        if save_format == 'PascalVOC':
-            self.actions.save_format.setText("PascalVOC")
+        if save_format == FORMAT_PASCALVOC:
+            self.actions.save_format.setText(FORMAT_PASCALVOC)
             self.actions.save_format.setIcon(newIcon("format_voc"))
             self.usingPascalVocFormat = True
             self.usingYoloFormat = False
             LabelFile.suffix = XML_EXT
 
-        elif save_format == 'YOLO':
-            self.actions.save_format.setText("YOLO")
+        elif save_format == FORMAT_YOLO:
+            self.actions.save_format.setText(FORMAT_YOLO)
             self.actions.save_format.setIcon(newIcon("format_yolo"))
             self.usingPascalVocFormat = False
             self.usingYoloFormat = True
             LabelFile.suffix = TXT_EXT
 
     def change_format(self):
-        if self.usingPascalVocFormat: self.set_format("YOLO")
-        elif self.usingYoloFormat: self.set_format("PascalVOC")
+        if self.usingPascalVocFormat: self.set_format(FORMAT_YOLO)
+        elif self.usingYoloFormat: self.set_format(FORMAT_PASCALVOC)
 
     def noShapes(self):
         return not self.itemsToShapes
@@ -778,7 +778,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add differrent annotation formats here
         try:
             if self.usingPascalVocFormat is True:
-                if str(annotationFilePath[-4:]) != ".xml":
+                if ustr(annotationFilePath[-4:]) != ".xml":
                     annotationFilePath += XML_EXT
                 print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
@@ -951,7 +951,7 @@ class MainWindow(QMainWindow, WindowMixin):
             filePath = self.settings.get(SETTING_FILENAME)
 
         # Make sure that filePath is a regular python string, rather than QString
-        filePath = str(filePath)
+        filePath = ustr(filePath)
 
         unicodeFilePath = ustr(filePath)
         # Tzutalin 20160906 : Add file list and dock to move faster
@@ -1098,6 +1098,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
+        settings[SETTING_PAINT_LABEL] = self.paintLabelsOption.isChecked()
         settings.save()
     ## User Dialogs ##
 
@@ -1289,7 +1290,7 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
-            fullFilePath = dlg.selectedFiles()[0]
+            fullFilePath = ustr(dlg.selectedFiles()[0])
             return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
         return ''
 
@@ -1387,7 +1388,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if os.path.isfile(xmlPath) is False:
             return
 
-        self.set_format("PascalVOC")
+        self.set_format(FORMAT_PASCALVOC)
 
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
@@ -1400,7 +1401,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if os.path.isfile(txtPath) is False:
             return
 
-        self.set_format("YOLO")
+        self.set_format(FORMAT_YOLO)
         tYoloParseReader = YoloReader(txtPath, self.image)
         shapes = tYoloParseReader.getShapes()
         print (shapes)
