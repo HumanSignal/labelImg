@@ -80,9 +80,10 @@ Python 3 + Qt5 (Works on macOS High Sierra)
 
     brew install qt  # will install qt-5.x.x
     brew install libxml2
+    pip3 install pyqt5 lxml
     make qt5py3
-    python labelImg.py
-    python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    python3 labelImg.py
+    python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 **NEW** Python 3 Virtualenv + Binary  
 This avoids a lot of the QT / Python version issues,
