@@ -4,11 +4,11 @@
 from setuptools import setup, find_packages
 from libs.version import __version__
 
-with open('README.rst') as readme_file:
-    readme = readme_file.read()
+# with open('README.rst') as readme_file:
+#     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
+# with open('HISTORY.rst') as history_file:
+#     history = history_file.read()
 
 requirements = [
     # TODO: Different OS have different requirements
@@ -28,7 +28,7 @@ setup(
     name='labelImg',
     version=__version__,
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
-    long_description=readme + '\n\n' + history,
+#     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
