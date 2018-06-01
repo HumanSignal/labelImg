@@ -170,6 +170,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Tzutalin 20160906 : Add file list and dock to move faster
         self.fileListWidget = QListWidget()
         self.fileListWidget.itemDoubleClicked.connect(self.fileitemDoubleClicked)
+        self.fileListWidget.currentItemChanged.connect(self.fileitemChanged)
         filelistLayout = QVBoxLayout()
         filelistLayout.setContentsMargins(0, 0, 0, 0)
         filelistLayout.addWidget(self.fileListWidget)
@@ -671,6 +672,10 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[currIndex]
             if filename:
                 self.loadFile(filename)
+
+    def fileitemChanged(self,item=None):
+        currIndex = self.mImgList.index(ustr(item.text()))
+        self.filedock.setWindowTitle('File No.:{}'.format(currIndex))
 
     # Add chris
     def btnstate(self, item= None):
@@ -1216,6 +1221,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         currIndex = self.mImgList.index(self.filePath)
+        self.filedock.setWindowTitle('File No:{}'.format(currIndex))
         if currIndex - 1 >= 0:
             filename = self.mImgList[currIndex - 1]
             if filename:
@@ -1242,6 +1248,7 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[0]
         else:
             currIndex = self.mImgList.index(self.filePath)
+            self.filedock.setWindowTitle('File No:{}'.format(currIndex))
             if currIndex + 1 < len(self.mImgList):
                 filename = self.mImgList[currIndex + 1]
 
