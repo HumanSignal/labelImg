@@ -674,8 +674,9 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.loadFile(filename)
 
     def fileitemChanged(self,item=None):
-        currIndex = self.mImgList.index(ustr(item.text()))
-        self.filedock.setWindowTitle('File No.:{}'.format(currIndex))
+        if item:
+            currIndex = self.mImgList.index(ustr(item.text()))
+            self.filedock.setWindowTitle('File No.:{}'.format(currIndex))
 
     # Add chris
     def btnstate(self, item= None):
