@@ -146,6 +146,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.stateChanged.connect(self.btnstate)
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        # Add rejectButton
+        self.rejectButton = QToolButton()
+        self.rejectButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
@@ -212,13 +215,13 @@ class MainWindow(QMainWindow, WindowMixin):
         # Actions
         action = partial(newAction, self)
         quit = action('&Quit', self.close,
-                      'Ctrl+Q', 'quit', u'Quit application')
+                      'Ctrl+Q', 'quit', u'Quit application (Ctrl-Q)')
 
         open = action('&Open', self.openFile,
-                      'Ctrl+O', 'open', u'Open image or label file')
+                      'Ctrl+O', 'open', u'Open image or label file (Ctrl-O)')
 
         opendir = action('&Open Dir', self.openDirDialog,
-                         'Ctrl+u', 'open', u'Open Dir')
+                         'Ctrl+u', 'open', u'Open Dir (Ctrl-u)')
 
         changeSavedir = action('&Change Save Dir', self.changeSavedirDialog,
                                'Ctrl+r', 'open', u'Change default saved Annotation dir')
@@ -227,53 +230,61 @@ class MainWindow(QMainWindow, WindowMixin):
                                 'Ctrl+Shift+O', 'open', u'Open Annotation')
 
         openNextImg = action('&Next Image', self.openNextImg,
-                             'd', 'next', u'Open Next')
+                             'd', 'next', u'Open Next (d)')
 
         openPrevImg = action('&Prev Image', self.openPrevImg,
-                             'a', 'prev', u'Open Prev')
+                             'a', 'prev', u'Open Prev (a)')
 
         verify = action('&Verify Image', self.verifyImg,
-                        'space', 'verify', u'Verify Image')
+                        'space', 'verify', u'Verify Image (<space>)')
 
         save = action('&Save', self.saveFile,
-                      'Ctrl+S', 'save', u'Save labels to file', enabled=False)
+                      'Ctrl+S', 'save', u'Save labels to file (Ctrl-S)', enabled=False)
+
+        #Reject picture from Labelling
+        reject = action('Reject image', self.rejectImg,
+                        'Ctrl+Delete', 'reject', u'Reject (Ctrl-Del)', enabled=True)
 
         save_format = action('&PascalVOC', self.change_format,
-                      'Ctrl+', 'format_voc', u'Change save format', enabled=True)
+                      'Ctrl+', 'format_voc', u'Change save format (Ctrl-+)', enabled=True)
 
         saveAs = action('&Save As', self.saveFileAs,
-                        'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
+            'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
 
-        close = action('&Close', self.closeFile, 'Ctrl+W', 'close', u'Close current file')
+        close = action('&Close', self.closeFile, 'Ctrl+W', 'close', u'Close current file (Ctrl-W)')
 
         resetAll = action('&ResetAll', self.resetAll, None, 'resetall', u'Reset all')
 
         color1 = action('Box Line Color', self.chooseColor1,
-                        'Ctrl+L', 'color_line', u'Choose Box line color')
+                        'Ctrl+L', 'color_line', u'Choose Box line color (Ctrl-L)')
 
         createMode = action('Create\nRectBox', self.setCreateMode,
-                            'w', 'new', u'Start drawing Boxs', enabled=False)
+                            'w', 'new', u'Start drawing Boxes (w)', enabled=False)
         editMode = action('&Edit\nRectBox', self.setEditMode,
-                          'Ctrl+J', 'edit', u'Move and edit Boxs', enabled=False)
+                          'Ctrl+J', 'edit', u'Move and edit Boxes (Ctrl-J)', enabled=False)
 
         create = action('Create\nRectBox', self.createShape,
-                        'w', 'new', u'Draw a new Box', enabled=False)
+                        'w', 'new', u'Draw a new Box (w)', enabled=False)
         delete = action('Delete\nRectBox', self.deleteSelectedShape,
-                        'Delete', 'delete', u'Delete', enabled=False)
+                        'Delete', 'delete', u'Delete (del)', enabled=False)
         copy = action('&Duplicate\nRectBox', self.copySelectedShape,
-                      'Ctrl+D', 'copy', u'Create a duplicate of the selected Box',
+                      'Ctrl+D', 'copy', u'Create a duplicate of the selected Box (ctrl-d)',
+                      enabled=False)
+        zoomInRectBox = action('Zoom in RectBox', self.zoomInRect,
+                      't', 'zoomInRectBox', u'Zoom In the selected Box (t)',
                       enabled=False)
 
         advancedMode = action('&Advanced Mode', self.toggleAdvancedMode,
-                              'Ctrl+Shift+A', 'expert', u'Switch to advanced mode',
+                              'Ctrl+Shift+A', 'expert', u'Switch to advanced mode (Ctrl-Shift-A)',
                               checkable=True)
 
         hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
-                         'Ctrl+H', 'hide', u'Hide all Boxs',
+                         'Ctrl+H', 'hide', u'Hide all Boxes (Ctrl-H)',
                          enabled=False)
         showAll = action('&Show\nRectBox', partial(self.togglePolygons, True),
-                         'Ctrl+A', 'hide', u'Show all Boxs',
+                         'Ctrl+A', 'hide', u'Show all Boxes (Ctrl-A)',
                          enabled=False)
+
 
         help = action('&Tutorial', self.showTutorialDialog, None, 'help', u'Show demos')
         showInfo = action('&Information', self.showInfoDialog, None, 'help', u'Information')
@@ -291,12 +302,12 @@ class MainWindow(QMainWindow, WindowMixin):
         zoomOut = action('&Zoom Out', partial(self.addZoom, -10),
                          'Ctrl+-', 'zoom-out', u'Decrease zoom level', enabled=False)
         zoomOrg = action('&Original size', partial(self.setZoom, 100),
-                         'Ctrl+=', 'zoom', u'Zoom to original size', enabled=False)
+                         'Ctrl+=', 'zoom', u'Zoom to original size (Ctrl-=)', enabled=False)
         fitWindow = action('&Fit Window', self.setFitWindow,
-                           'Ctrl+F', 'fit-window', u'Zoom follows window size',
+                           'Ctrl+F', 'fit-window', u'Zoom follows window size (Ctrl-F)',
                            checkable=True, enabled=False)
         fitWidth = action('Fit &Width', self.setFitWidth,
-                          'Ctrl+Shift+F', 'fit-width', u'Zoom follows window width',
+                          'Ctrl+Shift+F', 'fit-width', u'Zoom follows window width (Ctrl-Shift-F)',
                           checkable=True, enabled=False)
         # Group zoom controls into a list for easier toggling.
         zoomActions = (self.zoomWidget, zoomIn, zoomOut,
@@ -325,7 +336,7 @@ class MainWindow(QMainWindow, WindowMixin):
         labels.setText('Show/Hide Label Panel')
         labels.setShortcut('Ctrl+Shift+L')
 
-        # Lavel list context menu.
+        # Label list context menu.
         labelMenu = QMenu()
         addActions(labelMenu, (edit, delete))
         self.labelList.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -333,24 +344,24 @@ class MainWindow(QMainWindow, WindowMixin):
             self.popLabelListMenu)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
+        self.actions = struct(reject=reject, save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                               fitWindow=fitWindow, fitWidth=fitWidth,
-                              zoomActions=zoomActions,
+                              zoomActions=zoomActions, zoomInRectBox=zoomInRectBox,
                               fileMenuActions=(
                                   open, opendir, save, saveAs, close, resetAll, quit),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
                                         None, color1),
-                              beginnerContext=(create, edit, copy, delete),
+                              beginnerContext=(create, edit, copy, delete, None, zoomInRectBox, fitWindow),  # Add ZoomIn in the context menu (usefull for adding extra boxes within)
                               advancedContext=(createMode, editMode, edit, copy,
-                                               delete, shapeLineColor, shapeFillColor),
+                                               delete, zoomInRectBox,shapeLineColor, shapeFillColor),
                               onLoadActive=(
                                   close, create, createMode, editMode),
-                              onShapesPresent=(saveAs, hideAll, showAll))
+                              onShapesPresent=(saveAs, hideAll, showAll, zoomInRectBox))
 
         self.menus = struct(
             file=self.menu('&File'),
@@ -387,7 +398,7 @@ class MainWindow(QMainWindow, WindowMixin):
             labels, advancedMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
-            fitWindow, fitWidth))
+            fitWindow, fitWidth, zoomInRectBox))
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -399,11 +410,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
-            zoomIn, zoom, zoomOut, fitWindow, fitWidth)
+            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, reject, save_format, None, create, copy, delete, None,
+            zoomIn, zoom, zoomOut, fitWindow, fitWidth, zoomInRectBox)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, save, reject, save_format, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -707,8 +718,10 @@ class MainWindow(QMainWindow, WindowMixin):
             shape = self.canvas.selectedShape
             if shape:
                 self.shapesToItems[shape].setSelected(True)
+                #self.actions.zoomInRectBox.setEnabled(True)
             else:
                 self.labelList.clearSelection()
+                #self.actions.zoomInRectBox.setEnabled(False)
         self.actions.delete.setEnabled(selected)
         self.actions.copy.setEnabled(selected)
         self.actions.edit.setEnabled(selected)
@@ -792,6 +805,10 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 self.labelFile.save(annotationFilePath, shapes, self.filePath, self.imageData,
                                     self.lineColor.getRgb(), self.fillColor.getRgb())
+            #!!! Set the file as blue
+            currIndex=self.mImgList.index(self.filePath)
+            self.fileListWidget.item(currIndex).setForeground(QBrush(QColor(0,0, 255)))
+
             return True
         except LabelFileError as e:
             self.errorMessage(u'Error saving label data', u'<b>%s</b>' % e)
@@ -810,6 +827,10 @@ class MainWindow(QMainWindow, WindowMixin):
             shape = self.itemsToShapes[item]
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
+        if item:
+            self.actions.zoomInRectBox.setEnabled(True)
+        else:
+            self.actions.zoomInRectBox.setEnabled(False)
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
@@ -860,6 +881,7 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             # self.canvas.undoLastLine()
             self.canvas.resetAllLines()
+        #self.actions.zoomInRectBox.setEnabled(True)
 
     def scrollRequest(self, delta, orientation):
         units = - delta / (8 * 15)
@@ -1138,6 +1160,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def openAnnotationDialog(self, _value=False):
         if self.filePath is None:
+            new_h_bar_value = h_bar.value() + move_x * d_h_bar_max
+            new_v_bar_value = v_bar.value() + move_y * d_v_bar_max
+
             self.statusBar().showMessage('Please select image first')
             self.statusBar().show()
             return
@@ -1181,6 +1206,14 @@ class MainWindow(QMainWindow, WindowMixin):
             item = QListWidgetItem(imgPath)
             self.fileListWidget.addItem(item)
 
+            #Put in blue if it's annotated
+            (head, tail) = os.path.split(imgPath)
+            (baseName, ext) = os.path.splitext(tail)
+            xmlPath = os.path.join(self.defaultSaveDir, baseName + XML_EXT)
+            txtPath = os.path.join(self.defaultSaveDir, baseName + TXT_EXT)
+            if os.path.isfile(xmlPath)==True or os.path.isfile(txtPath)==True:
+                self.fileListWidget.item(self.fileListWidget.count()-1).setForeground(QBrush(QColor(0,0, 255)))
+
     def verifyImg(self, _value=False):
         # Proceding next image without dialog if having any label
          if self.filePath is not None:
@@ -1195,6 +1228,75 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.verified = self.labelFile.verified
             self.paintCanvas()
             self.saveFile()
+
+    #Zoom to the selected shape. Can adjust quickly and precisely the handles
+    def zoomInRect(self):
+
+        if not self.canvas.selectedShape:
+            return
+
+        #Calculate the zoom ratio
+        e = 2.0  # So that no scrollbars are generated.
+        w1 = self.centralWidget().width() - e
+        h1 = self.centralWidget().height() - e
+        a1 = w1 / h1
+
+        # Calculate a new scale value based on the pixmap's aspect ratio.
+        w2 = (self.canvas.selectedShape.points[2]-self.canvas.selectedShape.points[0]).x()
+        h2 = (self.canvas.selectedShape.points[2]-self.canvas.selectedShape.points[0]).y()
+        a2 = w2 / h2
+
+        zf  = w1 / w2 if a2 >= a1 else h1 / h2 
+        zf *= 0.9 # limiting the zoom factor in order to display object handles
+
+        self.setZoom(zf*100) #this can go beyond 5x zoom but it is limited by the widget
+
+        # get the current scrollbars
+        h_bar = self.scrollBars[Qt.Horizontal]
+        v_bar = self.scrollBars[Qt.Vertical]
+
+        # get the current maximum
+        h_bar_max = h_bar.maximum()
+        v_bar_max = v_bar.maximum()
+
+        # It's a little bit tricky (and not totally accurate
+        # Since we move the scrollbars, we need to cope with the fact that we won't move for the pixels in the first half the screen and the last half of the screen
+        h_bar.setMinimum((w1/2)/zf)
+        v_bar.setMinimum((h1/2)/zf)
+        h_bar.setMaximum(h_bar_max-(w1/2)/zf)
+        h_bar.setMaximum(h_bar_max-(h1/2)/zf)
+
+        cx = (self.canvas.selectedShape.points[2]+self.canvas.selectedShape.points[0]).x()/2-h_bar.minimum()
+        cy = (self.canvas.selectedShape.points[2]+self.canvas.selectedShape.points[0]).y()/2-v_bar.minimum()
+        
+        w = self.canvas.pixmap.width()-w1/zf
+        h = self.canvas.pixmap.height()-h1/zf
+
+        hx = (h_bar_max*cx/w)
+        hy = (v_bar_max*cy/h)
+
+        h_bar.setValue(hx)
+        v_bar.setValue(hy)
+        return
+
+
+    # If the image is not usable for the dataset, reject it
+    # ==> change its suffix as reject so it won't be downloaded when we start labelimg again
+    # ==> update the image list widget to that it appears as rejected
+    def rejectImg(self):
+        if len(self.mImgList) <= 0:
+            return
+
+        #Mark the image as rejected
+        currIndex = self.mImgList.index(self.filePath)
+        newPath=self.filePath+".reject"
+        os.rename(self.filePath, newPath)
+        self.filePath=newPath
+        self.mImgList[currIndex]=self.filePath
+        self.openNextImg()
+        self.fileListWidget.item(currIndex).setText(newPath)        
+        self.fileListWidget.item(currIndex).setForeground(QBrush(QColor(255,0,0)))
+
 
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label
