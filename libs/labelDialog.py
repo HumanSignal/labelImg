@@ -78,6 +78,6 @@ class LabelDialog(QDialog):
             text = tQListWidgetItem.text().strip()
         self.edit.setText(text)
         
-    def listItemDoubleClick(self, tQLisstWidgetItem):
-        self.listItemClick(tQlistWidgetItem)
+    def listItemDoubleClick(self, tQListWidgetItem):
+        self.listItemClick(tQListWidgetItem)
         self.validate()
