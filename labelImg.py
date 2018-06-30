@@ -1209,8 +1209,13 @@ class MainWindow(QMainWindow, WindowMixin):
             #Put in blue if it's annotated
             (head, tail) = os.path.split(imgPath)
             (baseName, ext) = os.path.splitext(tail)
-            xmlPath = os.path.join(self.defaultSaveDir, baseName + XML_EXT)
-            txtPath = os.path.join(self.defaultSaveDir, baseName + TXT_EXT)
+            if self.defaultSaveDir is not None:
+                xmlPath = os.path.join(self.defaultSaveDir, baseName + XML_EXT)
+                txtPath = os.path.join(self.defaultSaveDir, baseName + TXT_EXT)
+            else:
+                xmlPath = os.path.join(head, baseName + XML_EXT)
+                txtPath = os.path.join(head, baseName + TXT_EXT)
+        
             if os.path.isfile(xmlPath)==True or os.path.isfile(txtPath)==True:
                 self.fileListWidget.item(self.fileListWidget.count()-1).setForeground(QBrush(QColor(0,0, 255)))
 
