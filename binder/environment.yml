@@ -1,10 +1,11 @@
-name: pyqae_base
+name: labelimg_env
 channels:
   - menpo
   - conda-forge
   - defaults
 dependencies:
-  - PyQt5
+  - qt>=5.0
   - lxml
   - pip:
     - py2app
+    - PyQt5
