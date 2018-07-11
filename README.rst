@@ -242,6 +242,18 @@ Hotkeys
 | ↑→↓←       | Keyboard arrows to move selected rect box  |
 +------------+--------------------------------------------+
 
+Try now in Binder
+~~~~~~~~~~~~~~~~~
+
+.. image:: https://raw.githubusercontent.com/4QuantOSS/labelImg/binder-tools/demo/demo.gif
+     :alt: Demo Video
+
+1. Click the launch binder button
+2. Go to new -> VNC Session
+3. Click connect to connect
+4. Type 'python labelImg.py'
+5. Annotate away
+
 How to contribute
 ~~~~~~~~~~~~~~~~~
 
