@@ -9,3 +9,7 @@ dependencies:
   - lxml
   - pip:
     - py2app
+    - pyzmq>=17
+    - tornado>=5
+    - nbserverproxy==0.8.1
+    - git+https://github.com/ryanlovett/nbnovnc@master
