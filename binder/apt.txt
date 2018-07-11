@@ -1,0 +1,3 @@
+cmake
+xvfb
+pyqt5-dev-tools
