@@ -1,0 +1,10 @@
+name: pyqae_base
+channels:
+  - menpo
+  - conda-forge
+  - defaults
+dependencies:
+  - PyQt5
+  - lxml
+  - pip:
+    - py2app
