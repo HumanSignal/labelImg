@@ -7,6 +7,9 @@ LabelImg
 .. image:: https://img.shields.io/travis/tzutalin/labelImg.svg
         :target: https://travis-ci.org/tzutalin/labelImg
 
+.. image:: https://mybinder.org/badge.svg 
+        :target: https://mybinder.org/v2/gh/4QuantOSS/labelImg/binder-tools
+
 LabelImg is a graphical image annotation tool.
 
 It is written in Python and uses Qt for its graphical interface.
@@ -238,6 +241,18 @@ Hotkeys
 +------------+--------------------------------------------+
 | ↑→↓←       | Keyboard arrows to move selected rect box  |
 +------------+--------------------------------------------+
+
+Try now in Binder
+~~~~~~~~~~~~~~~~~
+
+.. image:: https://raw.githubusercontent.com/4QuantOSS/labelImg/binder-tools/demo/demo.gif
+     :alt: Demo Video
+
+1. Click the launch binder button
+2. Go to new -> VNC Session
+3. Click connect to connect
+4. Type 'python labelImg.py'
+5. Annotate away
 
 How to contribute
 ~~~~~~~~~~~~~~~~~

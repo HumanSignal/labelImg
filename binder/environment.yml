@@ -1,0 +1,15 @@
+name: labelimg_env
+channels:
+  - menpo
+  - conda-forge
+  - defaults
+dependencies:
+  - qt>=5.0
+  - pyqt=5
+  - lxml
+  - pip:
+    - py2app
+    - pyzmq>=17
+    - tornado>=5
+    - nbserverproxy==0.8.1
+    - git+https://github.com/ryanlovett/nbnovnc@master
