@@ -1,0 +1,5 @@
+jupyter serverextension enable  --py nbserverproxy --sys-prefix
+
+jupyter serverextension enable  --py nbnovnc --sys-prefix
+jupyter nbextension     install --py nbnovnc --sys-prefix
+jupyter nbextension     enable  --py nbnovnc --sys-prefix
