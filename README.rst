@@ -83,6 +83,14 @@ Python 3 + Qt5 (Works on macOS High Sierra)
     make qt5py3
     python labelImg.py
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    
+    
+Python 3 without brew (works on MacOS Sierra)
+     
+.. code::
+
+     pip3 install labelImg sip PyQt5 resources requests staty lxml
+        
 
 **NEW** Python 3 Virtualenv + Binary  
 This avoids a lot of the QT / Python version issues,
