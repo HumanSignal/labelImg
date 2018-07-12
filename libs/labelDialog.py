@@ -34,6 +34,7 @@ class LabelDialog(QDialog):
         bb.button(BB.Cancel).setIcon(newIcon('undo'))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
+        
         layout.addWidget(bb)
 
         if listItem is not None and len(listItem) > 0:
@@ -43,8 +44,12 @@ class LabelDialog(QDialog):
             self.listWidget.itemClicked.connect(self.listItemClick)
             self.listWidget.itemDoubleClicked.connect(self.listItemDoubleClick)
             layout.addWidget(self.listWidget)
-
+        
         self.setLayout(layout)
+        
+        # set window size
+        self.resize(350, 850)
+        
 
     def validate(self):
         try:
@@ -62,12 +67,20 @@ class LabelDialog(QDialog):
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
             self.edit.setText(self.edit.text())
 
-    def popUp(self, text='', move=True):
+    def popUp(self, text='', move=False):
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
         if move:
-            self.move(QCursor.pos())
+            #self.move(QCursor.pos())
+            # move to center
+            ph = self.parent().geometry().height()
+            px = self.parent().geometry().x()
+            py = self.parent().geometry().y()
+            dw = self.width()
+            dh = self.height()   
+            self.move(px, py+ph-dh)
+            
         return self.edit.text() if self.exec_() else None
 
     def listItemClick(self, tQListWidgetItem):

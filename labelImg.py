@@ -12,6 +12,7 @@ from functools import partial
 from collections import defaultdict
 
 try:
+    import PyQt5.QtCore as QtCore
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
     from PyQt5.QtWidgets import *
@@ -23,6 +24,7 @@ except ImportError:
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
+    import PyQt4.QtCore as QtCore
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
@@ -263,6 +265,9 @@ class MainWindow(QMainWindow, WindowMixin):
         copy = action('&Duplicate\nRectBox', self.copySelectedShape,
                       'Ctrl+D', 'copy', u'Create a duplicate of the selected Box',
                       enabled=False)
+        rotate = action('&Rotate Image', self.rotateImage,
+                      'Ctrl+Shift+R', 'rotate', u'Rotate the image for 90 degrees',
+                      enabled=False)
 
         advancedMode = action('&Advanced Mode', self.toggleAdvancedMode,
                               'Ctrl+Shift+A', 'expert', u'Switch to advanced mode',
@@ -334,7 +339,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Store actions for further handling.
         self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
-                              lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
+                              lineColor=color1, create=create, delete=delete, edit=edit, copy=copy, rotate=rotate,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
@@ -343,13 +348,13 @@ class MainWindow(QMainWindow, WindowMixin):
                               fileMenuActions=(
                                   open, opendir, save, saveAs, close, resetAll, quit),
                               beginner=(), advanced=(),
-                              editMenu=(edit, copy, delete,
+                              editMenu=(edit, copy, delete, rotate,
                                         None, color1),
-                              beginnerContext=(create, edit, copy, delete),
+                              beginnerContext=(create, edit, copy, delete, rotate),
                               advancedContext=(createMode, editMode, edit, copy,
-                                               delete, shapeLineColor, shapeFillColor),
+                                               delete, rotate, shapeLineColor, shapeFillColor),
                               onLoadActive=(
-                                  close, create, createMode, editMode),
+                                  close, create, createMode, editMode, rotate),
                               onShapesPresent=(saveAs, hideAll, showAll))
 
         self.menus = struct(
@@ -399,12 +404,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, rotate, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
-            createMode, editMode, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, save, None,
+            createMode, editMode, rotate, None,
             hideAll, showAll)
 
         self.statusBar().showMessage('%s started.' % __appname__)
@@ -566,6 +571,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.filePath = None
         self.imageData = None
         self.labelFile = None
+        self.rotationDegree = 0
         self.canvas.resetState()
         self.labelCoordinates.clear()
 
@@ -666,7 +672,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
-        currIndex = self.mImgList.index(ustr(item.text()))
+        currIndex = self.mImgList.index(ustr(item.data(QtCore.Qt.UserRole)))
         if currIndex < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
@@ -801,6 +807,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addLabel(self.canvas.copySelectedShape())
         # fix copy and delete
         self.shapeSelectionChanged(True)
+        
+    def rotateImage(self):
+        if not self.image.isNull():
+            degree = 90
+            myTransform = QTransform()
+            myTransform.rotate(degree)
+            self.image = self.image.transformed(myTransform)
+            self.canvas.refreshPixmap(QPixmap.fromImage(self.image))
+            self.rotationDegree = (self.rotationDegree+degree) % 360
+            self.setDirty()
 
     def labelSelectionChanged(self):
         item = self.currentItem()
@@ -988,7 +1004,9 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.errorMessage(u'Error opening file',
                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicodeFilePath)
                 self.status("Error reading %s" % unicodeFilePath)
+                self.actions.rotate.setEnabled(False)
                 return False
+            self.actions.rotate.setEnabled(True)
             self.status("Loaded %s" % os.path.basename(unicodeFilePath))
             self.image = image
             self.filePath = unicodeFilePath
@@ -1027,10 +1045,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
-            # Default : select last item if there is at least one item
-            if self.labelList.count():
-                self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
-                self.labelList.item(self.labelList.count()-1).setSelected(True)
+            # # Default : select last item if there is at least one item
+            # if self.labelList.count():
+            #     self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
+            #     self.labelList.item(self.labelList.count()-1).setSelected(True)
 
             self.canvas.setFocus(True)
             return True
@@ -1165,6 +1183,10 @@ class MainWindow(QMainWindow, WindowMixin):
         targetDirPath = ustr(QFileDialog.getExistingDirectory(self,
                                                      '%s - Open Directory' % __appname__, defaultOpenDirPath,
                                                      QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
+        
+        # Always set save dir to the current open folder
+        self.defaultSaveDir = targetDirPath
+        
         self.importDirImages(targetDirPath)
 
     def importDirImages(self, dirpath):
@@ -1178,7 +1200,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
         for imgPath in self.mImgList:
-            item = QListWidgetItem(imgPath)
+            item = QListWidgetItem(os.path.basename(imgPath))
+            item.setData(QtCore.Qt.UserRole, imgPath)
             self.fileListWidget.addItem(item)
 
     def verifyImg(self, _value=False):
@@ -1269,18 +1292,20 @@ class MainWindow(QMainWindow, WindowMixin):
                 imgFileName = os.path.basename(self.filePath)
                 savedFileName = os.path.splitext(imgFileName)[0]
                 savedPath = os.path.join(ustr(self.defaultSaveDir), savedFileName)
-                self._saveFile(savedPath)
+                self._saveFileAnnotation(savedPath)
+                self._saveFileImg(self.filePath)
         else:
             imgFileDir = os.path.dirname(self.filePath)
             imgFileName = os.path.basename(self.filePath)
             savedFileName = os.path.splitext(imgFileName)[0]
             savedPath = os.path.join(imgFileDir, savedFileName)
-            self._saveFile(savedPath if self.labelFile
+            self._saveFileAnnotation(savedPath if self.labelFile
                            else self.saveFileDialog())
+            self._saveFileImg(self.filePath)
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
-        self._saveFile(self.saveFileDialog())
+        self._saveFileAnnotation(self.saveFileDialog())
 
     def saveFileDialog(self):
         caption = '%s - Choose File' % __appname__
@@ -1297,7 +1322,11 @@ class MainWindow(QMainWindow, WindowMixin):
             return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
         return ''
 
-    def _saveFile(self, annotationFilePath):
+    def _saveFileImg(self, imgFilePath):
+        if self.rotationDegree > 0 and not self.image.isNull():
+            self.image.save(imgFilePath)
+        
+    def _saveFileAnnotation(self, annotationFilePath):
         if annotationFilePath and self.saveLabels(annotationFilePath):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)

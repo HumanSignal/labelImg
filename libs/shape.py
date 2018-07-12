@@ -12,9 +12,10 @@ except ImportError:
 from libs.lib import distance
 import sys
 
+DEFAULT_FONTSIZE = 16
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
 DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
-DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
+DEFAULT_SELECT_LINE_COLOR = QColor(255, 0, 0)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
@@ -45,6 +46,7 @@ class Shape(object):
         self.selected = False
         self.difficult = difficult
         self.paintLabel = paintLabel
+        self.fontsize = DEFAULT_FONTSIZE
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -86,7 +88,8 @@ class Shape(object):
 
     def paint(self, painter):
         if self.points:
-            color = self.select_line_color if self.selected else self.line_color
+            color = self.select_line_color if self.selected else QColor(255, 255, 255) # self.line_color
+            
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
@@ -120,7 +123,7 @@ class Shape(object):
                     min_y = min(min_y, point.y())
                 if min_x != sys.maxsize and min_y != sys.maxsize:
                     font = QFont()
-                    font.setPointSize(8)
+                    font.setPointSize(self.fontsize)
                     font.setBold(True)
                     painter.setFont(font)
                     if(self.label == None):
