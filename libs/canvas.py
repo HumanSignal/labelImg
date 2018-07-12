@@ -42,7 +42,7 @@ class Canvas(QWidget):
         self.selectedShape = None  # save the selected shape here
         self.selectedShapeCopy = None
         self.drawingLineColor = QColor(0, 0, 255)
-        self.drawingRectColor = QColor(0, 0, 255) 
+        self.drawingRectColor = QColor(0, 0, 255)
         self.line = Shape(line_color=self.drawingLineColor)
         self.prevPoint = QPointF()
         self.offsets = QPointF(), QPointF()

@@ -12,7 +12,6 @@ except ImportError:
 from libs.lib import distance
 import sys
 
-DEFAULT_FONTSIZE = 16
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
 DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
 DEFAULT_SELECT_LINE_COLOR = QColor(255, 0, 0)
@@ -46,7 +45,7 @@ class Shape(object):
         self.selected = False
         self.difficult = difficult
         self.paintLabel = paintLabel
-        self.fontsize = DEFAULT_FONTSIZE
+        self.setLabelFontSize(16)
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -85,6 +84,9 @@ class Shape(object):
 
     def setOpen(self):
         self._closed = False
+        
+    def setLabelFontSize(self, labelFontSize):
+        self.labelFontSize = labelFontSize
 
     def paint(self, painter):
         if self.points:
@@ -123,7 +125,7 @@ class Shape(object):
                     min_y = min(min_y, point.y())
                 if min_x != sys.maxsize and min_y != sys.maxsize:
                     font = QFont()
-                    font.setPointSize(self.fontsize)
+                    font.setPointSize(self.labelFontSize)
                     font.setBold(True)
                     painter.setFont(font)
                     if(self.label == None):
@@ -186,7 +188,7 @@ class Shape(object):
         self._highlightIndex = None
 
     def copy(self):
-        shape = Shape("%s" % self.label)
+        shape = Shape("%s" % self.label, labelFontSize=self.labelFontSize)
         shape.points = [p for p in self.points]
         shape.fill = self.fill
         shape.selected = self.selected

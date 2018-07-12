@@ -183,7 +183,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.zoomWidget = ZoomWidget()
         self.colorDialog = ColorDialog(parent=self)
-
+        
         self.canvas = Canvas(parent=self)
         self.canvas.zoomRequest.connect(self.zoomRequest)
 
@@ -279,6 +279,14 @@ class MainWindow(QMainWindow, WindowMixin):
         showAll = action('&Show\nRectBox', partial(self.togglePolygons, True),
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
+                         
+        # Increase/Decrease Label Font Size
+        self.labelFontSize = settings.get(SETTING_LABEL_FONT_SIZE, DEFAULT_LABEL_FONT_SIZE)
+        increaseLabelFontSize = action('&Increase Label Fontsize', self.pressedIncreaseLabelFontSize,
+                              None, 'plus', u'Increase Label Fontsize')
+        decreaseLabelFontSize = action('&Decrease Label Fontsize', self.pressedDecreaseLabelFontSize,
+                              None, 'minus', u'Decrease Label Fontsize')
+        
 
         help = action('&Tutorial', self.showTutorialDialog, None, 'help', u'Show demos')
         showInfo = action('&Information', self.showInfoDialog, None, 'help', u'Information')
@@ -390,6 +398,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.singleClassMode,
             self.paintLabelsOption,
             labels, advancedMode, None,
+            increaseLabelFontSize, decreaseLabelFontSize, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
             fitWindow, fitWidth))
@@ -676,6 +685,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if currIndex < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
+                if not self.checkIfSavingIsNeeded():
+                    return
+                
                 self.loadFile(filename)
 
     # Add chris
@@ -722,6 +734,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
+        shape.setLabelFontSize(self.labelFontSize)
         shape.paintLabel = self.paintLabelsOption.isChecked()
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -864,6 +877,7 @@ class MainWindow(QMainWindow, WindowMixin):
             generate_color = generateColorByText(text)
             shape = self.canvas.setLastLabel(text, generate_color, generate_color)
             self.addLabel(shape)
+            shape.setLabelFontSize(self.labelFontSize)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.setEditing(True)
                 self.actions.create.setEnabled(True)
@@ -1117,6 +1131,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.paintLabelsOption.isChecked()
+        settings[SETTING_LABEL_FONT_SIZE] = self.labelFontSize
         settings.save()
     ## User Dialogs ##
 
@@ -1222,17 +1237,23 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paintCanvas()
             self.saveFile()
 
-    def openPrevImg(self, _value=False):
-        # Proceding prev image without dialog if having any label
+    def checkIfSavingIsNeeded(self):
         if self.autoSaving.isChecked():
             if self.defaultSaveDir is not None:
                 if self.dirty is True:
                     self.saveFile()
             else:
                 self.changeSavedirDialog()
-                return
+                return False
 
         if not self.mayContinue():
+            return False
+            
+        return True
+    
+    def openPrevImg(self, _value=False):
+        # Proceding prev image without dialog if having any label
+        if not self.checkIfSavingIsNeeded():
             return
 
         if len(self.mImgList) <= 0:
@@ -1249,15 +1270,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def openNextImg(self, _value=False):
         # Proceding prev image without dialog if having any label
-        if self.autoSaving.isChecked():
-            if self.defaultSaveDir is not None:
-                if self.dirty is True:
-                    self.saveFile()
-            else:
-                self.changeSavedirDialog()
-                return
-
-        if not self.mayContinue():
+        if not self.checkIfSavingIsNeeded():
             return
 
         if len(self.mImgList) <= 0:
@@ -1444,6 +1457,19 @@ class MainWindow(QMainWindow, WindowMixin):
         paintLabelsOptionChecked = self.paintLabelsOption.isChecked()
         for shape in self.canvas.shapes:
             shape.paintLabel = paintLabelsOptionChecked
+    
+    def refreshLabelFontSize(self):
+        for shape in self.canvas.shapes:
+            shape.setLabelFontSize(self.labelFontSize)
+    
+    def pressedIncreaseLabelFontSize(self):
+        self.labelFontSize += DEFAULT_LABEL_FONT_SIZE_STEP
+        self.refreshLabelFontSize()
+    
+    def pressedDecreaseLabelFontSize(self):
+        if self.labelFontSize > DEFAULT_LABEL_FONT_SIZE_STEP:
+            self.labelFontSize -= DEFAULT_LABEL_FONT_SIZE_STEP
+            self.refreshLabelFontSize()
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])

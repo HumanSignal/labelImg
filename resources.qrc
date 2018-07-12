@@ -32,5 +32,7 @@
 <file alias="resetall">icons/resetall.png</file>
 <file alias="verify">icons/verify.png</file>
 <file alias="rotate">icons/rotate.png</file>
+<file alias="minus">icons/minus.png</file>
+<file alias="plus">icons/plus.png</file>
 </qresource>
 </RCC>
