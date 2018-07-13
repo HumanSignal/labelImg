@@ -48,7 +48,7 @@ class LabelDialog(QDialog):
         self.setLayout(layout)
         
         # set window size
-        self.resize(350, 850)
+        self.resize(850, 850)
         
 
     def validate(self):
