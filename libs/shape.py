@@ -188,11 +188,12 @@ class Shape(object):
         self._highlightIndex = None
 
     def copy(self):
-        shape = Shape("%s" % self.label, labelFontSize=self.labelFontSize)
+        shape = Shape("%s" % self.label)
         shape.points = [p for p in self.points]
         shape.fill = self.fill
         shape.selected = self.selected
         shape._closed = self._closed
+        shape.setLabelFontSize(self.labelFontSize)
         if self.line_color != Shape.line_color:
             shape.line_color = self.line_color
         if self.fill_color != Shape.fill_color:

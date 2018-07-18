@@ -359,8 +359,8 @@ class MainWindow(QMainWindow, WindowMixin):
                               editMenu=(edit, copy, delete, rotate,
                                         None, color1),
                               beginnerContext=(create, edit, copy, delete, rotate),
-                              advancedContext=(createMode, editMode, edit, copy,
-                                               delete, rotate, shapeLineColor, shapeFillColor),
+                              advancedContext=(createMode, editMode, edit,
+                                               delete, shapeLineColor, shapeFillColor),
                               onLoadActive=(
                                   close, create, createMode, editMode, rotate),
                               onShapesPresent=(saveAs, hideAll, showAll))
