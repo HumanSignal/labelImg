@@ -3,7 +3,7 @@
 import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
-from lxml import etree
+from xml import etree
 import codecs
 
 XML_EXT = '.xml'
