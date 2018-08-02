@@ -359,7 +359,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               editMenu=(edit, copy, delete, rotate,
                                         None, color1),
                               beginnerContext=(create, edit, copy, delete, rotate),
-                              advancedContext=(createMode, editMode, edit,
+                              advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
                               onLoadActive=(
                                   close, create, createMode, editMode, rotate),
@@ -417,7 +417,7 @@ class MainWindow(QMainWindow, WindowMixin):
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
             createMode, editMode, rotate, None,
             hideAll, showAll)
 
@@ -1059,10 +1059,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
-            # # Default : select last item if there is at least one item
-            # if self.labelList.count():
-            #     self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
-            #     self.labelList.item(self.labelList.count()-1).setSelected(True)
+            # Default : select last item if there is at least one item
+            if self.labelList.count():
+                self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
+                self.labelList.item(self.labelList.count()-1).setSelected(True)
 
             self.canvas.setFocus(True)
             return True
