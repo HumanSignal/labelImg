@@ -159,41 +159,74 @@ class Canvas(QWidget):
                 self.repaint()
             return
 
-        # Just hovering over the canvas, 2 posibilities:
+        # Just hovering over the canvas, 2 possibilities:
         # - Highlight shapes
         # - Highlight vertex
         # Update shape/vertex fill and tooltip value accordingly.
         self.setToolTip("Image")
-        for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
-            # Look for a nearby vertex to highlight. If that fails,
-            # check if we happen to be inside a shape.
-            index = shape.nearestVertex(pos, self.epsilon)
-            if index is not None:
-                if self.selectedVertex():
-                    self.hShape.highlightClear()
-                self.hVertex, self.hShape = index, shape
-                shape.highlightVertex(index, shape.MOVE_VERTEX)
-                self.overrideCursor(CURSOR_POINT)
-                self.setToolTip("Click & drag to move point")
-                self.setStatusTip(self.toolTip())
-                self.update()
-                break
-            elif shape.containsPoint(pos):
-                if self.selectedVertex():
-                    self.hShape.highlightClear()
-                self.hVertex, self.hShape = None, shape
-                self.setToolTip(
-                    "Click & drag to move shape '%s'" % shape.label)
-                self.setStatusTip(self.toolTip())
-                self.overrideCursor(CURSOR_GRAB)
-                self.update()
-                break
-        else:  # Nothing found, clear highlights, reset state.
-            if self.hShape:
+
+        # Declaration of variables storing selection criterion and information and the selected items themselves:
+        vertex_selected = None
+        vertex_min_dist = 0
+        shape_selected = None
+        shape_min_len = 0
+        for shape in self.shapes:
+            if self.isVisible(shape):
+
+                # Iteratively find the vertex that is closest to the
+                # specified point. Vertices are prioritised to shapes
+                vertex_info = shape.getClosestVertex(pos, self.epsilon)
+
+                if vertex_info:
+                    index, dist = vertex_info
+                    if vertex_selected is None or dist < vertex_min_dist:
+                        vertex_selected = index, shape
+                        vertex_min_dist = dist
+
+                # In case no vertex has been found yet, check if the
+                # current shape contains the point. Select the shape
+                # with the smallest length (as length indicates whether
+                # the shape is likely to to be completely covered by
+                # a different shape.
+                elif not vertex_selected:
+                    path = shape.makePath()
+                    contains = path.contains(pos)
+                    if contains:
+                        length = path.length()
+                        if not shape_selected or length < shape_min_len:
+                            shape_selected = shape
+                            shape_min_len = length
+
+        # update the graphical user interface accordingly
+        if vertex_selected is not None:
+            if self.selectedVertex():
                 self.hShape.highlightClear()
-                self.update()
+
+            self.hVertex, self.hShape = vertex_selected
+            self.hShape.highlightVertex(self.hVertex, self.hShape.MOVE_VERTEX)
+            self.setToolTip("Click & drag to move point")
+            self.overrideCursor(CURSOR_POINT)
+            self.setStatusTip(self.toolTip())
+            self.update()
+
+        elif shape_selected is not None:
+
+            if self.selectedVertex():
+                self.hShape.highlightClear()
+
+            self.hVertex, self.hShape = None, shape_selected
+            self.setToolTip(
+                "Click & drag to move shape '%s'" % shape_selected.label)
+            self.setStatusTip(self.toolTip())
+            self.overrideCursor(CURSOR_GRAB)
+            self.update()
+        else:
+            # Nothing found, clear highlights, reset state.
+            if self.selectedVertex():
+                self.hShape.highlightClear()
             self.hVertex, self.hShape = None, None
             self.overrideCursor(CURSOR_DEFAULT)
+            self.update()
 
     def mousePressEvent(self, ev):
         pos = self.transformPos(ev.pos())
@@ -285,7 +318,6 @@ class Canvas(QWidget):
             self.finalise()
 
     def selectShape(self, shape):
-        self.deSelectShape()
         shape.selected = True
         self.selectedShape = shape
         self.setHiding()
@@ -299,12 +331,9 @@ class Canvas(QWidget):
             index, shape = self.hVertex, self.hShape
             shape.highlightVertex(index, shape.MOVE_VERTEX)
             self.selectShape(shape)
-            return
-        for shape in reversed(self.shapes):
-            if self.isVisible(shape) and shape.containsPoint(point):
-                self.selectShape(shape)
-                self.calculateOffsets(shape, point)
-                return
+        elif self.hShape is not None:
+            self.selectShape(self.hShape)
+            self.calculateOffsets(self.hShape, point)
 
     def calculateOffsets(self, shape, point):
         rect = shape.boundingRect()

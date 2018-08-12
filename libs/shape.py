@@ -151,14 +151,28 @@ class Shape(object):
         else:
             assert False, "unsupported vertex shape"
 
-    def nearestVertex(self, point, epsilon):
+    def getClosestVertex(self, point, epsilon):
+        """
+        Returns the index and distance of shape's nearest vertex to a specified :point:
+        in case the distance is smaller or equal to the threshold :epsilon:.
+        Otherwise return None.
+
+        :param point:       the position to which the vertices are to be comapred
+        :param epsilon:     a threshold that indicates when to accept a point as
+                            close enough to be considered to be returned.
+        :return:            index, distance to the closest element if distance < epsilon, else none.
+        """
+        sel_distance, sel_index = -1, -1
         for i, p in enumerate(self.points):
-            if distance(p - point) <= epsilon:
-                return i
-        return None
+            d = distance(p-point)
+            if d <= epsilon:
+                if sel_distance == -1 or sel_distance > d:
+                    sel_index, sel_distance, = i, d
+        return (sel_index, sel_distance) if sel_index != -1 else None
 
     def containsPoint(self, point):
         return self.makePath().contains(point)
+
 
     def makePath(self):
         path = QPainterPath(self.points[0])
@@ -178,6 +192,7 @@ class Shape(object):
     def highlightVertex(self, i, action):
         self._highlightIndex = i
         self._highlightMode = action
+
 
     def highlightClear(self):
         self._highlightIndex = None
