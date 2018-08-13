@@ -251,16 +251,16 @@ class MainWindow(QMainWindow, WindowMixin):
         color1 = action('Box Line Color', self.chooseColor1,
                         'Ctrl+L', 'color_line', u'Choose Box line color')
 
-        createMode = action('Create\nRectBox', self.setCreateMode,
+        createMode = action('Create\nKeypoint', self.setCreateMode,
                             'w', 'new', u'Start drawing Boxs', enabled=False)
-        editMode = action('&Edit\nRectBox', self.setEditMode,
+        editMode = action('&Edit\nKeypoint', self.setEditMode,
                           'Ctrl+J', 'edit', u'Move and edit Boxs', enabled=False)
 
-        create = action('Create\nRectBox', self.createShape,
+        create = action('Create\nKeypoint', self.createShape,
                         'w', 'new', u'Draw a new Box', enabled=False)
-        delete = action('Delete\nRectBox', self.deleteSelectedShape,
+        delete = action('Delete\nKeypoint', self.deleteSelectedShape,
                         'Delete', 'delete', u'Delete', enabled=False)
-        copy = action('&Duplicate\nRectBox', self.copySelectedShape,
+        copy = action('&Duplicate\nKeypoint', self.copySelectedShape,
                       'Ctrl+D', 'copy', u'Create a duplicate of the selected Box',
                       enabled=False)
 
@@ -268,10 +268,10 @@ class MainWindow(QMainWindow, WindowMixin):
                               'Ctrl+Shift+A', 'expert', u'Switch to advanced mode',
                               checkable=True)
 
-        hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
+        hideAll = action('&Hide\nKeypoint', partial(self.togglePolygons, False),
                          'Ctrl+H', 'hide', u'Hide all Boxs',
                          enabled=False)
-        showAll = action('&Show\nRectBox', partial(self.togglePolygons, True),
+        showAll = action('&Show\nKeypoint', partial(self.togglePolygons, True),
                          'Ctrl+A', 'hide', u'Show all Boxs',
                          enabled=False)
 
