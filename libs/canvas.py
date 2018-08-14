@@ -11,12 +11,14 @@ except ImportError:
 
 from libs.shape import Shape
 from libs.lib import distance
+from math import acos, pi
 
 CURSOR_DEFAULT = Qt.ArrowCursor
 CURSOR_POINT = Qt.PointingHandCursor
 CURSOR_DRAW = Qt.CrossCursor
 CURSOR_MOVE = Qt.ClosedHandCursor
 CURSOR_GRAB = Qt.OpenHandCursor
+CURSOR_ROTATE = Qt.SizeAllCursor
 
 # class Canvas(QGLWidget):
 
@@ -205,7 +207,10 @@ class Canvas(QWidget):
             self.hVertex, self.hShape = vertex_selected
             self.hShape.highlightVertex(self.hVertex, self.hShape.MOVE_VERTEX)
             self.setToolTip("Click & drag to move point")
-            self.overrideCursor(CURSOR_POINT)
+            if self.hVertex == Shape.INDEX_ROTATION_ENTITY:
+                self.overrideCursor(CURSOR_ROTATE)
+            else:
+                self.overrideCursor(CURSOR_POINT)
             self.setStatusTip(self.toolTip())
             self.update()
 
@@ -238,6 +243,7 @@ class Canvas(QWidget):
                 self.selectShapePoint(pos)
                 self.prevPoint = pos
                 self.repaint()
+                pass
         elif ev.button() == Qt.RightButton and self.editing():
             self.selectShapePoint(pos)
             self.prevPoint = pos
@@ -327,7 +333,7 @@ class Canvas(QWidget):
     def selectShapePoint(self, point):
         """Select the first shape created which contains this point."""
         self.deSelectShape()
-        if self.selectedVertex():  # A vertex is marked for selection.
+        if self.selectedVertex():
             index, shape = self.hVertex, self.hShape
             shape.highlightVertex(index, shape.MOVE_VERTEX)
             self.selectShape(shape)
@@ -344,26 +350,128 @@ class Canvas(QWidget):
         self.offsets = QPointF(x1, y1), QPointF(x2, y2)
 
     def boundedMoveVertex(self, pos):
+        """
+        Code executed when dragging a vertex.
+        This can imply two different operations:
+        1.  Rotation of the vertex
+        2.  Stretch the vertex
+        :param pos:         the 'new' position of the vertex in question
+        """
         index, shape = self.hVertex, self.hShape
-        point = shape[index]
-        if self.outOfPixmap(pos):
-            pos = self.intersectionPoint(point, pos)
 
-        shiftPos = pos - point
-        shape.moveVertexBy(index, shiftPos)
+        # Case 1: Rotate the shape
+        if index == Shape.INDEX_ROTATION_ENTITY:
+            vertex_not_rotated = shape.getShapeRotationVertex(False)
+            if vertex_not_rotated is not None:
+                eucl_sq = lambda a : a.x()**2 + a.y()**2
 
-        lindex = (index + 1) % 4
-        rindex = (index + 3) % 4
-        lshift = None
-        rshift = None
-        if index % 2 == 0:
-            rshift = QPointF(shiftPos.x(), 0)
-            lshift = QPointF(0, shiftPos.y())
-        else:
-            lshift = QPointF(shiftPos.x(), 0)
-            rshift = QPointF(0, shiftPos.y())
-        shape.moveVertexBy(rindex, rshift)
-        shape.moveVertexBy(lindex, lshift)
+                # Fetch the original (=not rotated) vertex-position for movement
+                # and the center of mass of the shape (once again according to the coordinates that are not rotated)
+                vertex_point = vertex_not_rotated[0]
+                vertex_mirrored = vertex_not_rotated[2]
+                shape_center = shape.getCenter(False)
+
+                # Compute the vector and distance between both aforementioned points
+                vec_old_center = vertex_point - shape_center# - vertex_point
+                dist_old_center_square = eucl_sq(vec_old_center)
+
+                # Compute the vector and distance between the new position and the center
+                vec_new_center = pos - shape_center# - pos
+                dist_new_center_square = eucl_sq(vec_new_center)
+
+                # Now compute the angle between both the vector pointing to the new
+                # position of the rotation vertex and the one pointing to its original position.
+                # Make completely sure that no rounding errors can cause mathematical
+                # errors.
+                val = vec_new_center.dotProduct(vec_new_center, vec_old_center) / \
+                      (dist_new_center_square * dist_old_center_square) **.5
+                while val > 1: val -= 1
+                while val < -1: val +=1
+                angle = acos(val)
+
+                # The direction of movement can be switched either
+                #   if in the second half of the rotation
+                #   if the vertex is 'mirrored'; the initially topmost
+                #      line dragged under line at the bottom;
+                #      in that ase the sign needs to be swapped
+                if pos.x() < vertex_point.x():
+                    angle = 2 * pi - angle
+                if vertex_mirrored:
+                    angle = -angle
+
+                # Apply the rotation for the shape (computes new location of rotated
+                # values and stores the current angle for future reference):
+                shape.applyRotationAngle(angle, shape_center)
+
+
+        elif not self.outOfPixmap(pos):
+            dot = lambda x, y: x.x() * y.x() + x.y() * y.y()
+            eucl = lambda a : 1.*a.x()**2 + 1.*a.y()**2
+
+            # Apply the shift in the rotated space
+            offset_rotated = shape.points[index] - pos
+            if shape.points[index] != pos:
+
+                lindex = (index + 1) % 4
+                rindex = (index + 3) % 4
+                oindex = (index + 2) % 4
+                vec_l = shape.points[oindex] - shape.points[lindex]
+                vec_r = shape.points[oindex] - shape.points[rindex]
+
+                vec_l_len = eucl(vec_l)
+                vec_r_len = eucl(vec_r)
+                proj_l = vec_l * dot(vec_l, offset_rotated) / vec_l_len
+                proj_r = vec_r * dot(vec_r, offset_rotated) / vec_r_len
+
+                width, height = self.pixmap.width(), self.pixmap.height()
+                lines = [[QPointF(0, 0), QPointF(width, 0)],
+                         [QPointF(0, 0), QPointF(width, height)],
+                         [QPointF(width, height), QPointF(-width, 0)],
+                         [QPointF(width, height), QPointF(0, -height)]]
+                values = {lindex : [shape.points[lindex] - proj_l, -proj_l],
+                          rindex : [shape.points[rindex] - proj_r, -proj_r]}
+
+                for vec_index, vec_info in values.items():
+                    if self.outOfPixmap(vec_info[0]):
+                        return
+                        found = False
+                        for support, dir in lines:
+                            lam = Canvas.intersectionParametrized(shape.points[vec_index], vec_info[1], support, dir)
+                            if lam is not None and 0 <= lam <= 1:
+                                values[vec_index][0] = shape.points[vec_index] - lam * vec_info[1]
+                                pos -= (1.-lam) * vec_info[1]
+                                found = True
+                                break
+                        if not found: print("Error, this is does not happen!")
+                if self.outOfPixmap(pos) or self.outOfPixmap(values[lindex][0]) or self.outOfPixmap(values[rindex][0]):
+                    print("Error, this is does not happen! (2)")
+
+                if self.outOfPixmap(values[lindex][0]) != pos \
+                        and self.outOfPixmap(values[rindex][0]) != pos:
+                    shape.points[index] = pos
+                    shape.points[lindex] = QPointF(values[lindex][0].x(), values[lindex][0].y())
+                    shape.points[rindex] = QPointF(values[rindex][0].x(), values[rindex][0].y())
+                    shape_center = shape.getCenter(True)
+                    shape.applyRotationAngle(shape.currentAngle, shape_center, False)
+
+    @staticmethod
+    def intersectionParametrized(s_1, d_1, s_2, d_2):
+        """
+        Return the multiplier \lambda of d_1 such that \exists \mu s.th.
+            s_1 + \lambda d_1 = s_2 + \mu d_2.
+        Otherwise return None.
+
+        :param s_1: first support vector
+        :param d_1: first direction vector that is multiplied by \lambda. \lambda is to be returned
+        :param s_2: second support
+        :param d_2: second direction. Multiplier is irrelevant and not required.
+        :return:    the multiplier \lambda of d_1 such that the two lines intersect
+        """
+        print(s_1, s_2, d_1, d_2)
+        denominator = d_2.y() * d_1.x() - d_2.x() * d_1.y()
+        if denominator != 0:
+            return 1. * (d_2.x() * (s_1.y() - s_2.y()) - d_2.y() * (s_1.x() - s_2.x())) / denominator
+        return None
 
     def boundedMoveShape(self, shape, pos):
         if self.outOfPixmap(pos):
@@ -382,7 +490,7 @@ class Canvas(QWidget):
         #self.calculateOffsets(self.selectedShape, pos)
         dp = pos - self.prevPoint
         if dp:
-            shape.moveBy(dp)
+            shape.shift(dp)
             self.prevPoint = pos
             return True
         return False
@@ -491,7 +599,7 @@ class Canvas(QWidget):
 
     def outOfPixmap(self, p):
         w, h = self.pixmap.width(), self.pixmap.height()
-        return not (0 <= p.x() <= w and 0 <= p.y() <= h)
+        return not (0 <= p.x() < w and 0 <= p.y() < h)
 
     def finalise(self):
         assert self.current
@@ -525,6 +633,7 @@ class Canvas(QWidget):
                   (0, size.height())]
         x1, y1 = p1.x(), p1.y()
         x2, y2 = p2.x(), p2.y()
+
         d, i, (x, y) = min(self.intersectingEdges((x1, y1), (x2, y2), points))
         x3, y3 = points[i]
         x4, y4 = points[(i + 1) % 4]
@@ -543,7 +652,7 @@ class Canvas(QWidget):
         edge along with its index, so that the one closest can be chosen."""
         x1, y1 = x1y1
         x2, y2 = x2y2
-        for i in range(4):
+        for i in range(len(points)):
             x3, y3 = points[i]
             x4, y4 = points[(i + 1) % 4]
             denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
