@@ -11,7 +11,8 @@ except ImportError:
 
 from libs.shape import Shape
 from libs.lib import distance
-from math import acos, pi
+from math import acos, cos, sin, pi
+from time import *
 
 CURSOR_DEFAULT = Qt.ArrowCursor
 CURSOR_POINT = Qt.PointingHandCursor
@@ -349,6 +350,9 @@ class Canvas(QWidget):
         y2 = (rect.y() + rect.height()) - point.y()
         self.offsets = QPointF(x1, y1), QPointF(x2, y2)
 
+
+
+
     def boundedMoveVertex(self, pos):
         """
         Code executed when dragging a vertex.
@@ -358,101 +362,235 @@ class Canvas(QWidget):
         :param pos:         the 'new' position of the vertex in question
         """
         index, shape = self.hVertex, self.hShape
+        if index == Shape.INDEX_ROTATION_ENTITY:
+            self.rotateShape(pos, shape)
+        else:
+            self.resizeShape(pos, index, shape)
+
+
+    def getClosestValid(self, point):
+        """
+        Return the point that is closest to any point inside the rectangle.
+        Especially, if the point itself is inside, return the point.
+        """
+        return QPointF(max(min(point.x(), self.pixmap.width() - 1), 0), 
+                max(min(point.y(),self.pixmap.height() - 1),0))
+
+    def rotateShape(self, pos, shape):
+        """
+        Rotates a shape by dragging the shape-rotation-button to the position 
+        `pos`.
+
+        Checks if the resulting shape is completely inside the image in the 
+        image. If not, rotate by an angle that is closest to the desired angle
+        but still yielding a shape inside the image.
+        """
 
         # Case 1: Rotate the shape
-        if index == Shape.INDEX_ROTATION_ENTITY:
-            vertex_not_rotated = shape.getShapeRotationVertex(False)
-            if vertex_not_rotated is not None:
-                eucl_sq = lambda a : a.x()**2 + a.y()**2
+        vertex_not_rotated = shape.getShapeRotationVertex(False)
+        if vertex_not_rotated is not None:
+            eucl_sq = lambda a : a.x()**2 + a.y()**2
 
-                # Fetch the original (=not rotated) vertex-position for movement
-                # and the center of mass of the shape (once again according to the coordinates that are not rotated)
-                vertex_point = vertex_not_rotated[0]
-                vertex_mirrored = vertex_not_rotated[2]
-                shape_center = shape.getCenter(False)
+            # Fetch the original (=not rotated) vertex-position for movement
+            # and the center of mass of the shape (once again according to the coordinates that are not rotated)
+            vertex_point = vertex_not_rotated[0]
+            vertex_mirrored = vertex_not_rotated[2]
+            shape_center = shape.getCenter(False)
 
-                # Compute the vector and distance between both aforementioned points
-                vec_old_center = vertex_point - shape_center# - vertex_point
-                dist_old_center_square = eucl_sq(vec_old_center)
+            # Compute the vector and distance between both aforementioned points
+            vec_old_center = vertex_point - shape_center# - vertex_point
+            dist_old_center_square = eucl_sq(vec_old_center)
 
-                # Compute the vector and distance between the new position and the center
-                vec_new_center = pos - shape_center# - pos
-                dist_new_center_square = eucl_sq(vec_new_center)
+            # Compute the vector and distance between the new position and the center
+            vec_new_center = pos - shape_center# - pos
+            dist_new_center_square = eucl_sq(vec_new_center)
 
-                # Now compute the angle between both the vector pointing to the new
-                # position of the rotation vertex and the one pointing to its original position.
-                # Make completely sure that no rounding errors can cause mathematical
-                # errors.
-                val = vec_new_center.dotProduct(vec_new_center, vec_old_center) / \
-                      (dist_new_center_square * dist_old_center_square) **.5
-                while val > 1: val -= 1
-                while val < -1: val +=1
-                angle = acos(val)
+            # Now compute the angle between both the vector pointing to the new
+            # position of the rotation vertex and the one pointing to its original position.
+            # Make completely sure that no rounding errors can cause mathematical
+            # errors.
+            val = vec_new_center.dotProduct(vec_new_center, vec_old_center) / \
+                (dist_new_center_square * dist_old_center_square) **.5
+            while val > 1: val -= 1
+            while val < -1: val +=1
+            angle = acos(val)
 
-                # The direction of movement can be switched either
-                #   if in the second half of the rotation
-                #   if the vertex is 'mirrored'; the initially topmost
-                #      line dragged under line at the bottom;
-                #      in that ase the sign needs to be swapped
-                if pos.x() < vertex_point.x():
-                    angle = 2 * pi - angle
-                if vertex_mirrored:
-                    angle = -angle
+            # The direction of movement can be switched either
+            #   if in the second half of the rotation
+            #   if the vertex is 'mirrored'; the initially topmost
+            #      line dragged under line at the bottom;
+            #      in that ase the sign needs to be swapped
+            if pos.x() < vertex_point.x():
+                angle = 2 * pi - angle
+            if vertex_mirrored:
+                angle = -angle
 
-                # Apply the rotation for the shape (computes new location of rotated
-                # values and stores the current angle for future reference):
-                shape.applyRotationAngle(angle, shape_center)
+            # XXX: check if the angle is resulting in a shape completely inside
+            # the coordindates of the image.
+            # Step 1)       find (x,y) with \|(x,y) - c \| = \|x_1 - x_3\|
+            #               and (x,y) on image's borders
+            # Step 2)       find the associated rotation angles and store them
+            #               in a sorted way
 
 
-        elif not self.outOfPixmap(pos):
-            dot = lambda x, y: x.x() * y.x() + x.y() * y.y()
-            eucl = lambda a : 1.*a.x()**2 + 1.*a.y()**2
+            # Apply the rotation for the shape (computes new location of rotated
+            # values and stores the current angle for future reference):
+            shape.applyRotationAngle(angle, shape_center)
 
-            # Apply the shift in the rotated space
+
+    def resizeShape(self, pos, index, shape):
+        """
+        Resize shape of rectangle, enforcing rectangular form in the original 
+        coordinates
+
+
+        """
+
+        dot = lambda x, y: x.x() * y.x() + x.y() * y.y()
+        eucl = lambda a : 1.*a.x()**2 + 1.*a.y()**2
+        rot = lambda p, a: Shape.rotatePoint(p, QPointF(0, 0), a)
+        rotShapeLine = lambda i, ia, s: rot(
+                s.pointsWithoutRotation[ia] - s.pointsWithoutRotation[i], 
+                s.currentAngle)
+
+        if shape.points[index] != pos:
+
+            # give reasonable names to the vectices that are affected ('left'
+            # and 'right' and to the vertex that remains unaffected 'other')
+            rindex, lindex, oindex = [(index + o) % 4 for o in [1, 3, 2]]
+
+            # A) compute the offset defining the movement to be applied in this 
+            #    step at the vertex in question.
+            pos = self.getClosestValid(pos)
             offset_rotated = shape.points[index] - pos
-            if shape.points[index] != pos:
+            shape.points[index] = pos
 
-                lindex = (index + 1) % 4
-                rindex = (index + 3) % 4
-                oindex = (index + 2) % 4
-                vec_l = shape.points[oindex] - shape.points[lindex]
-                vec_r = shape.points[oindex] - shape.points[rindex]
+            # B) Find new location of affected points (lindex and rindex)
+            #    1) w,h = rotate back vector from dragged vertex (=: i) to other
+            #       vertex (=: o)
+            #    2) cos(w or h), sin(w or h) -> vector from i to lindex (=:l) 
+            #       or rindex (=: r) 
+            vec_involved = shape.points[oindex] - shape.points[index]
 
-                vec_l_len = eucl(vec_l)
-                vec_r_len = eucl(vec_r)
-                proj_l = vec_l * dot(vec_l, offset_rotated) / vec_l_len
-                proj_r = vec_r * dot(vec_r, offset_rotated) / vec_r_len
+            size = -rot(vec_involved, -shape.currentAngle)
+            w, h = size.x(), size.y()
 
-                width, height = self.pixmap.width(), self.pixmap.height()
-                lines = [[QPointF(0, 0), QPointF(width, 0)],
-                         [QPointF(0, 0), QPointF(width, height)],
-                         [QPointF(width, height), QPointF(-width, 0)],
-                         [QPointF(width, height), QPointF(0, -height)]]
-                values = {lindex : [shape.points[lindex] - proj_l, -proj_l],
-                          rindex : [shape.points[rindex] - proj_r, -proj_r]}
+            vec_il = QPointF(cos(shape.currentAngle)*w, 
+                    sin(shape.currentAngle)*w)
+            vec_ir = QPointF(-sin(shape.currentAngle)*h, 
+                    cos(shape.currentAngle)*h)
 
-                for vec_index, vec_info in values.items():
-                    if self.outOfPixmap(vec_info[0]):
-                        return
-                        found = False
-                        for support, dir in lines:
-                            lam = Canvas.intersectionParametrized(shape.points[vec_index], vec_info[1], support, dir)
-                            if lam is not None and 0 <= lam <= 1:
-                                values[vec_index][0] = shape.points[vec_index] - lam * vec_info[1]
-                                pos -= (1.-lam) * vec_info[1]
-                                found = True
-                                break
-                        if not found: print("Error, this is does not happen!")
-                if self.outOfPixmap(pos) or self.outOfPixmap(values[lindex][0]) or self.outOfPixmap(values[rindex][0]):
-                    print("Error, this is does not happen! (2)")
+            # C) Correct locations accordingly
+            #    1) compute  position 1, 3
+            #    2) compute intersection in rotated space, such that it is ensured
+            #      that the resulting values are rounded inside the coordinates.
+            #      subtract the resulting value directly from i and 1 or 3
+            if index % 2 == 0: 
+                rind = vec_ir
+                vec_ir = vec_il
+                vec_il = rind
+            shape.points[rindex] = shape.points[index] - vec_ir
+            shape.points[lindex] = shape.points[index] - vec_il
 
-                if self.outOfPixmap(values[lindex][0]) != pos \
-                        and self.outOfPixmap(values[rindex][0]) != pos:
-                    shape.points[index] = pos
-                    shape.points[lindex] = QPointF(values[lindex][0].x(), values[lindex][0].y())
-                    shape.points[rindex] = QPointF(values[rindex][0].x(), values[rindex][0].y())
-                    shape_center = shape.getCenter(True)
-                    shape.applyRotationAngle(shape.currentAngle, shape_center, False)
+            # apply the rotation angle to the data that is uk
+            shape_center = shape.getCenter(rotated=True)
+            shifts = self.checkBorders(shape, index, lindex, vec_ir),  \
+                    self.checkBorders(shape, index, rindex, vec_il)
+            for shift in shifts: 
+                if shift is not None:
+                    shape.points[index] += shift
+            
+            shape.applyRotationAngle(shape.currentAngle, shape_center, False)
+            return 
+
+
+
+
+
+            # Compute the new location of the moved verted in the non-rotated
+            # space.
+            shape.pointsWithoutRotation[index] = rot(shape.points[index], 
+                    -shape.currentAngle)
+
+          
+
+
+            # compute the vectors from moved point to both points affected 
+            # by the movement.
+            vec_l, vec_r = rot(index, lindex), rot(index, rindex)
+
+            # decompose the movement (,e
+
+            # for each point that is outside the pixmap, 
+
+
+
+
+            vec_l_len = eucl(vec_l)
+            vec_r_len = eucl(vec_r)
+            proj_l = vec_l * dot(vec_l, offset_rotated) / vec_l_len
+            proj_r = vec_r * dot(vec_r, offset_rotated) / vec_r_len
+
+            width, height = self.pixmap.width(), self.pixmap.height()
+            lines = [[QPointF(0, 0), QPointF(width, 0)],
+                     [QPointF(0, 0), QPointF(width, height)],
+                     [QPointF(width, height), QPointF(-width, 0)],
+                     [QPointF(width, height), QPointF(0, -height)]]
+            values = {lindex : [shape.points[lindex] - proj_l, -proj_l],
+                      rindex : [shape.points[rindex] - proj_r, -proj_r]}
+
+            for vec_index, vec_info in values.items():
+                if self.outOfPixmap(vec_info[0]):
+                    return
+                    found = False
+                    for support, dir in lines:
+                        lam = Canvas.intersectionParametrized(shape.points[vec_index], vec_info[1], support, dir)
+                        if lam is not None and 0 <= lam <= 1:
+                            values[vec_index][0] = shape.points[vec_index] - lam * vec_info[1]
+                            pos -= (1.-lam) * vec_info[1]
+                            found = True
+                            break
+                    if not found: print("Error, this is does not happen!")
+            if self.outOfPixmap(pos) or self.outOfPixmap(values[lindex][0]) or self.outOfPixmap(values[rindex][0]):
+                print("Error, this is does not happen! (2)")
+
+            if self.outOfPixmap(values[lindex][0]) != pos \
+                    and self.outOfPixmap(values[rindex][0]) != pos:
+                shape.points[index] = pos
+                shape.points[lindex] = QPointF(values[lindex][0].x(), values[lindex][0].y())
+                shape.points[rindex] = QPointF(values[rindex][0].x(), values[rindex][0].y())
+                shape_center = shape.getCenter(True)
+                shape.applyRotationAngle(shape.currentAngle, shape_center, False)
+
+    def checkBorders(self, shape, index, aindex, direction):
+        """
+        """
+        #give largest return value
+        width, height = self.pixmap.width(), self.pixmap.height()
+        a1, a2 = shape[aindex].y() < 0, shape[aindex].y() >= height
+
+        if shape[aindex].y() < 0 or shape[aindex].y() >= height:
+            
+            lam = self.intersectionParametrized(shape[aindex], direction, 
+                    QPointF(0, (shape[aindex].y()>=height)*height), QPointF(width, 0))
+            shift = lam * direction
+            res = shape[aindex] + shift
+            if round(res.x()) >= 0 and round(res.x()) < width:
+                shape[aindex] = res
+                return shift
+            
+        if shape[aindex].x() < 0 or shape[aindex].x() >= width:
+            
+            lam = self.intersectionParametrized(shape[aindex], direction, 
+                    QPointF((shape[aindex].x()>=width)*width,0), QPointF(0, height))
+            shift = lam * direction
+            res = shape[aindex] + shift
+            if round(res.y()) >= 0 and round(res.y()) < height:
+                shape[aindex] = res
+                return shift
+        return None
+            
+
 
     @staticmethod
     def intersectionParametrized(s_1, d_1, s_2, d_2):
@@ -467,11 +605,9 @@ class Canvas(QWidget):
         :param d_2: second direction. Multiplier is irrelevant and not required.
         :return:    the multiplier \lambda of d_1 such that the two lines intersect
         """
-        print(s_1, s_2, d_1, d_2)
         denominator = d_2.y() * d_1.x() - d_2.x() * d_1.y()
-        if denominator != 0:
-            return 1. * (d_2.x() * (s_1.y() - s_2.y()) - d_2.y() * (s_1.x() - s_2.x())) / denominator
-        return None
+        return None if denominator == 0 else 1. * (d_2.x() * (s_1.y() - s_2.y()) 
+                - d_2.y() * (s_1.x() - s_2.x())) / denominator
 
     def boundedMoveShape(self, shape, pos):
         if self.outOfPixmap(pos):

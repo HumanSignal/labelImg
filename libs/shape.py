@@ -167,6 +167,7 @@ class Shape(object):
         pts = self.points if rotated else self.pointsWithoutRotation
         if pts[0].x() > pts[1].x(): id1, id2 = 1, 0
         else: id1, id2 = 0, 1
+        print(pts[0].x(), pts[1].x(), rotated)
 
 
         if len(pts) >= 4:
@@ -217,7 +218,7 @@ class Shape(object):
         if shape == self.P_SQUARE:
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
-            path.addEllipse(point, d / 2.0, d / 2.0)
+            path.addEllipse(point, d / 2.0*(i+1)/2, d / 2.0*(i+1)/2)
         else:
             assert False, "unsupported vertex shape"
 
@@ -320,6 +321,7 @@ class Shape(object):
                 dc = self.points[i] - shape_center
                 self.pointsWithoutRotation[i] = QPointF(shape_center.x() + cos(angle) * dc.x() - sin(angle) * dc.y(),
                                                         shape_center.y() + sin(angle) * dc.x() + cos(angle) * dc.y())
+
 
 
     @staticmethod
