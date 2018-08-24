@@ -103,6 +103,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.usingPascalVocFormat = True
         self.usingYoloFormat = False
 
+        # Source tags loaded from Pascal VOC label file
+        self.sourceTags = []
+
         # For loading all image under a directory
         self.mImgList = []
         self.dirname = None
@@ -782,7 +785,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     annotationFilePath += XML_EXT
                 print ('Img: ' + self.filePath + ' -> Its xml: ' + annotationFilePath)
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
-                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
+                                                   self.lineColor.getRgb(), self.fillColor.getRgb(), self.sourceTags)
             elif self.usingYoloFormat is True:
                 if annotationFilePath[-4:] != ".txt":
                     annotationFilePath += TXT_EXT
@@ -983,6 +986,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelFile = None
                 self.canvas.verified = False
 
+            self.sourceTags = []
+            
             image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
@@ -1397,6 +1402,7 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+        self.sourceTags = tVocParseReader.sourceTags
 
     def loadYOLOTXTByFilename(self, txtPath):
         if self.filePath is None:
@@ -1410,6 +1416,7 @@ class MainWindow(QMainWindow, WindowMixin):
         print (shapes)
         self.loadLabels(shapes)
         self.canvas.verified = tYoloParseReader.verified
+        self.sourceTags = []
 
     def togglePaintLabelsOption(self):
         paintLabelsOptionChecked = self.paintLabelsOption.isChecked()
