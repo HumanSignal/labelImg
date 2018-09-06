@@ -57,7 +57,7 @@ Python 3 + Qt5
 .. code::
 
     sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install lxml
+    sudo pip3 install -r requirements-python3.txt
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
@@ -84,14 +84,14 @@ Python 3 + Qt5 (Works on macOS High Sierra)
     python labelImg.py
     python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-**NEW** Python 3 Virtualenv + Binary  
+**NEW** Python 3 Virtualenv + Binary
 This avoids a lot of the QT / Python version issues,
 and gives you a nice .app file with a new SVG Icon
 in your /Applications folder. You can consider this script: build-tools/build-for-macos.sh
 
 .. code::
-    
-    
+
+
     brew install python3
     pip install pipenv
     pipenv --three
@@ -118,7 +118,7 @@ Open cmd and go to the `labelImg <#labelimg>`__ directory
     pyrcc4 -o resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-    
+
 Windows + Anaconda
 ^^^^^^^
 
