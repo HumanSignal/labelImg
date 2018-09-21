@@ -167,7 +167,6 @@ class Shape(object):
         pts = self.points if rotated else self.pointsWithoutRotation
         if pts[0].x() > pts[1].x(): id1, id2 = 1, 0
         else: id1, id2 = 0, 1
-        print(pts[0].x(), pts[1].x(), rotated)
 
 
         if len(pts) >= 4:
@@ -218,7 +217,7 @@ class Shape(object):
         if shape == self.P_SQUARE:
             path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
         elif shape == self.P_ROUND:
-            path.addEllipse(point, d / 2.0*(i+1)/2, d / 2.0*(i+1)/2)
+            path.addEllipse(point, d / 2.0, d / 2.0)
         else:
             assert False, "unsupported vertex shape"
 
@@ -284,9 +283,6 @@ class Shape(object):
     def shift(self, offset):
         self.pointsWithoutRotation = list(map(lambda a : a + offset, self.pointsWithoutRotation))
         self.points = list(map(lambda a : a + offset, self.points))
-
-    def moveBy(self, offset):
-        self.pointsWithoutRotation = list(map(lambda a : a + offset, self.pointsWithoutRotation))
 
     def applyRotationAngle(self, angle, shape_center, fromUnrotated=True):
         """

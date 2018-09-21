@@ -11,7 +11,7 @@ except ImportError:
 
 from libs.shape import Shape
 from libs.lib import distance
-from math import acos, cos, sin, pi
+from math import acos, cos, sin, pi, sqrt
 from time import *
 
 CURSOR_DEFAULT = Qt.ArrowCursor
@@ -48,7 +48,6 @@ class Canvas(QWidget):
         self.drawingRectColor = QColor(0, 0, 255) 
         self.line = Shape(line_color=self.drawingLineColor)
         self.prevPoint = QPointF()
-        self.offsets = QPointF(), QPointF()
         self.scale = 1.0
         self.pixmap = QPixmap()
         self.visible = {}
@@ -340,16 +339,6 @@ class Canvas(QWidget):
             self.selectShape(shape)
         elif self.hShape is not None:
             self.selectShape(self.hShape)
-            self.calculateOffsets(self.hShape, point)
-
-    def calculateOffsets(self, shape, point):
-        rect = shape.boundingRect()
-        x1 = rect.x() - point.x()
-        y1 = rect.y() - point.y()
-        x2 = (rect.x() + rect.width()) - point.x()
-        y2 = (rect.y() + rect.height()) - point.y()
-        self.offsets = QPointF(x1, y1), QPointF(x2, y2)
-
 
 
 
@@ -376,7 +365,7 @@ class Canvas(QWidget):
         return QPointF(max(min(point.x(), self.pixmap.width() - 1), 0), 
                 max(min(point.y(),self.pixmap.height() - 1),0))
 
-    def rotateShape(self, pos, shape):
+    def rotateShape(self, pos, shape, debug=True):
         """
         Rotates a shape by dragging the shape-rotation-button to the position 
         `pos`.
@@ -392,7 +381,8 @@ class Canvas(QWidget):
             eucl_sq = lambda a : a.x()**2 + a.y()**2
 
             # Fetch the original (=not rotated) vertex-position for movement
-            # and the center of mass of the shape (once again according to the coordinates that are not rotated)
+            # and the center of mass of the shape (once again according to 
+            # the coordinates that are not rotated)
             vertex_point = vertex_not_rotated[0]
             vertex_mirrored = vertex_not_rotated[2]
             shape_center = shape.getCenter(False)
@@ -406,32 +396,167 @@ class Canvas(QWidget):
             dist_new_center_square = eucl_sq(vec_new_center)
 
             # Now compute the angle between both the vector pointing to the new
-            # position of the rotation vertex and the one pointing to its original position.
-            # Make completely sure that no rounding errors can cause mathematical
-            # errors.
-            val = vec_new_center.dotProduct(vec_new_center, vec_old_center) / \
+            # position of the rotation vertex and the one pointing to its 
+            # original position.
+            # Make completely sure that no rounding errors can cause 
+            # mathematical errors for the input value by checking bounds.
+            val = QPointF.dotProduct(vec_new_center, vec_old_center) / \
                 (dist_new_center_square * dist_old_center_square) **.5
-            while val > 1: val -= 1
-            while val < -1: val +=1
+            val = min(max(val, -1), 1)
             angle = acos(val)
 
-            # The direction of movement can be switched either
-            #   if in the second half of the rotation
-            #   if the vertex is 'mirrored'; the initially topmost
-            #      line dragged under line at the bottom;
-            #      in that ase the sign needs to be swapped
-            if pos.x() < vertex_point.x():
-                angle = 2 * pi - angle
-            if vertex_mirrored:
-                angle = -angle
+            # The direction of movement has to be adapted depending on the
+            # current state of the vertex.
+            # First condition:  vertex is 'mirrored':
+            #                   the initially topmost line is dragged under line 
+            #                   at the bottom; In this case the sign must be
+            #                   swapped.
+            # Second condition: as the shape-move vertex is always
+            #                   directly above or beneath the shape's center
+            #                   it is succicent to check the x coordinate for
+            #                   checking if the rotation is 'in the second
+            #                   half'. In that case, rotate by 2pi -angle
+            transform_angle = lambda a, posx :  \
+                    (-1 if vertex_mirrored else 1)  \
+                    * (a if (posx >= vertex_point.x()) else 2. * pi - a)
+            angle = transform_angle(angle, pos.x())
 
-            # XXX: check if the angle is resulting in a shape completely inside
-            # the coordindates of the image.
+            # Not all angles are valid. Find out which angles are leading to
+            # coordiantes outside the image:
             # Step 1)       find (x,y) with \|(x,y) - c \| = \|x_1 - x_3\|
             #               and (x,y) on image's borders
             # Step 2)       find the associated rotation angles and store them
             #               in a sorted way
+            width, height = self.pixmap.width(), self.pixmap.height()
+            # get the radius of the circle
+            p_c = shape.pointsWithoutRotation[0] - shape_center
+            len_p_c = eucl_sq(p_c)
+            # list all the support vectors indicating image border alongside 
+            # with their directions
+            support_direction = [
+                    [QPointF(0,0), QPointF(width-1,0)],
+                    [QPointF(0,0), QPointF(0,height-1)],
+                    [QPointF(width-1,0), QPointF(0,height-1)],
+                    [QPointF(0,height-1), QPointF(width-1,0)]]
+            forbiddenAngleIntervals = []
+            for s, d in support_direction:
+                # find intersections between the circle (defined by the center
+                # and its radius) and the currently considered image border.
+                #
+                # In case there is only one (or none) intersection, 
+                # no conditions are imposed in this step on the anlge as the
+                # image borders are selected to be the last line of pixels
+                # inside the image. 
+                #
+                # If there are two intersections, the space in between them is
+                # forbidden
+                intersects = Canvas.intersectionLineCircle(s - shape_center, d, 
+                        sqrt(len_p_c))
+                if intersects is not None:
 
+                    # In case debugging is enabled, add new shapes that show
+                    # the intersections with the borders in the image. 
+                    # Attention: debugging cannot be used in a productive mode.
+                    # Results in a bunch of new vertices.
+                    if debug:
+                        deb = Shape()
+                        deb.addPoint(intersects[0] + shape_center)
+                        deb.addPoint(intersects[1] + shape_center)
+                        deb.close()
+                        self.shapes.append(deb)
+
+                        deb = Shape()
+                        deb.addPoint(p_c + shape_center)
+                        deb.close()
+                        self.shapes.append(deb)
+
+                    # the corresponding angle is the angle between the
+                    # intersection point and the  vertex_point (shifted by
+                    # center)
+                    if len(intersects) == 2:
+
+                        angles = [[transform_angle(acos(
+                            QPointF.dotProduct(spwr - shape_center, a)
+                            / (len_p_c * eucl_sq(a)) **.5), spwr.x())
+                            for a in intersects] 
+                            for spwr in shape.pointsWithoutRotation]
+
+                        for i, (a, b) in enumerate(angles):
+                            # find the min and max value and compute the
+                            # min and max value that are still allowed.
+                            # if the angle might be affected by them
+                            t = 0
+                            if a < 0: a += 2*pi; 
+                            if b < 0: b += 2*pi
+                            mx, mi = max(a, b), min(a,b)
+                            if mx - mi > pi:
+                                forbiddenAngleIntervals.append([mx, 2*pi])
+                                forbiddenAngleIntervals.append([0, mi])
+                            else:
+                                forbiddenAngleIntervals.append([mi, mx])
+
+                            #if a < b:
+                            #    forbiddenAngleIntervals.append([a, b])
+                            #elif b < a:
+                            #    forbiddenAngleIntervals.append([a, 2*pi])
+                            #    forbiddenAngleIntervals.append([0, b])
+
+                            # paint vector (forbidden area) based on the
+                            # computed angle
+                            if debug:
+                                p1 = Shape.rotatePoint(
+                                        shape.pointsWithoutRotation[i], 
+                                        shape_center, a)
+                                p2 = Shape.rotatePoint(
+                                        shape.pointsWithoutRotation[i], 
+                                        shape_center, b)
+
+                                deb = Shape()
+                                deb.addPoint(p1)
+                                deb.addPoint(p2)
+                                deb.close()
+                                self.shapes.append(deb)
+
+
+            # XXX: There most likely is a better solution to this.
+            #      The code below is supposed to unite all forbidden intervals.
+            #      This is necessary for being able to pick the closest point
+            #      to the forbidden area.
+            if len(forbiddenAngleIntervals):
+                unionInterval = [forbiddenAngleIntervals[0]]
+                uiid = 0
+                # starts before other.end and stops after other.start
+                checkIntersect = lambda a, b: a[1] >= b[0] and a[0] <= b[1]
+                checkIntersectMutual = lambda a, b: checkIntersect(a, b) \
+                        or checkIntersect(b, a)
+                # need to check multiple times as there might be an array that
+                # unites two other arrays.
+                for k in range(len(forbiddenAngleIntervals)-1):
+                    for i in range(1, len(forbiddenAngleIntervals)):
+                        # check if there is already is an interval comprising me
+                        inters = False
+                        for ui in range(len(unionInterval)):
+                            # end union > start this
+                            if (checkIntersectMutual(
+                                unionInterval[ui], forbiddenAngleIntervals[i])):
+                                unionInterval[ui][0] = min(unionInterval[ui][0], 
+                                        forbiddenAngleIntervals[i][0])
+                                unionInterval[ui][1] = max(unionInterval[ui][1], 
+                                        forbiddenAngleIntervals[i][1])
+                                inters = True
+                                break;
+                        if not inters:
+                            unionInterval.append(forbiddenAngleIntervals[i])
+
+                print(forbiddenAngleIntervals, unionInterval)
+
+                # Check if there is some intersection and use the closest point
+                # as corrected angle.
+                if angle < 0: angle += 2*pi
+                for i in unionInterval:
+                    if i[0] < angle and angle < i[1]:
+                        angle = i[0] if angle-i[0]< i[1]- angle else i[1]
+                        break
 
             # Apply the rotation for the shape (computes new location of rotated
             # values and stores the current angle for future reference):
@@ -482,9 +607,13 @@ class Canvas(QWidget):
 
             # C) Correct locations accordingly
             #    1) compute  position 1, 3
-            #    2) compute intersection in rotated space, such that it is ensured
-            #      that the resulting values are rounded inside the coordinates.
-            #      subtract the resulting value directly from i and 1 or 3
+            #    2) compute intersection in rotated space, such that it is 
+            #       ensured that the resulting values are rounded inside the 
+            #       coordinates. 
+            #       Subtract the resulting value directly from i and 1 or 3
+            #    3) Use the projection vector to move both the currently
+            #       dragged point and the point that is out of bounds to the 
+            #       last valid location.
             if index % 2 == 0: 
                 rind = vec_ir
                 vec_ir = vec_il
@@ -499,90 +628,31 @@ class Canvas(QWidget):
             for shift in shifts: 
                 if shift is not None:
                     shape.points[index] += shift
-            
+
+            # apply the new coordinates to the latent (unrotated) array
             shape.applyRotationAngle(shape.currentAngle, shape_center, False)
-            return 
-
-
-
-
-
-            # Compute the new location of the moved verted in the non-rotated
-            # space.
-            shape.pointsWithoutRotation[index] = rot(shape.points[index], 
-                    -shape.currentAngle)
-
-          
-
-
-            # compute the vectors from moved point to both points affected 
-            # by the movement.
-            vec_l, vec_r = rot(index, lindex), rot(index, rindex)
-
-            # decompose the movement (,e
-
-            # for each point that is outside the pixmap, 
-
-
-
-
-            vec_l_len = eucl(vec_l)
-            vec_r_len = eucl(vec_r)
-            proj_l = vec_l * dot(vec_l, offset_rotated) / vec_l_len
-            proj_r = vec_r * dot(vec_r, offset_rotated) / vec_r_len
-
-            width, height = self.pixmap.width(), self.pixmap.height()
-            lines = [[QPointF(0, 0), QPointF(width, 0)],
-                     [QPointF(0, 0), QPointF(width, height)],
-                     [QPointF(width, height), QPointF(-width, 0)],
-                     [QPointF(width, height), QPointF(0, -height)]]
-            values = {lindex : [shape.points[lindex] - proj_l, -proj_l],
-                      rindex : [shape.points[rindex] - proj_r, -proj_r]}
-
-            for vec_index, vec_info in values.items():
-                if self.outOfPixmap(vec_info[0]):
-                    return
-                    found = False
-                    for support, dir in lines:
-                        lam = Canvas.intersectionParametrized(shape.points[vec_index], vec_info[1], support, dir)
-                        if lam is not None and 0 <= lam <= 1:
-                            values[vec_index][0] = shape.points[vec_index] - lam * vec_info[1]
-                            pos -= (1.-lam) * vec_info[1]
-                            found = True
-                            break
-                    if not found: print("Error, this is does not happen!")
-            if self.outOfPixmap(pos) or self.outOfPixmap(values[lindex][0]) or self.outOfPixmap(values[rindex][0]):
-                print("Error, this is does not happen! (2)")
-
-            if self.outOfPixmap(values[lindex][0]) != pos \
-                    and self.outOfPixmap(values[rindex][0]) != pos:
-                shape.points[index] = pos
-                shape.points[lindex] = QPointF(values[lindex][0].x(), values[lindex][0].y())
-                shape.points[rindex] = QPointF(values[rindex][0].x(), values[rindex][0].y())
-                shape_center = shape.getCenter(True)
-                shape.applyRotationAngle(shape.currentAngle, shape_center, False)
 
     def checkBorders(self, shape, index, aindex, direction):
-        """
-        """
-        #give largest return value
         width, height = self.pixmap.width(), self.pixmap.height()
         a1, a2 = shape[aindex].y() < 0, shape[aindex].y() >= height
 
         if shape[aindex].y() < 0 or shape[aindex].y() >= height:
             
             lam = self.intersectionParametrized(shape[aindex], direction, 
-                    QPointF(0, (shape[aindex].y()>=height)*height), QPointF(width, 0))
-            shift = lam * direction
-            res = shape[aindex] + shift
-            if round(res.x()) >= 0 and round(res.x()) < width:
-                shape[aindex] = res
-                return shift
+                    QPointF(0, (shape[aindex].y()>=height)*height), 
+                    QPointF(width, 0))
+            if lam is not None:
+                shift = lam * direction
+                res = shape[aindex] + shift
+                if round(res.x()) >= 0 and round(res.x()) < width:
+                    shape[aindex] = res
+                    return shift
             
         if shape[aindex].x() < 0 or shape[aindex].x() >= width:
             
             lam = self.intersectionParametrized(shape[aindex], direction, 
-                    QPointF((shape[aindex].x()>=width)*width,0), QPointF(0, height))
+                    QPointF((shape[aindex].x()>=width)*width,0), 
+                    QPointF(0, height))
             shift = lam * direction
             res = shape[aindex] + shift
             if round(res.y()) >= 0 and round(res.y()) < height:
@@ -609,25 +679,49 @@ class Canvas(QWidget):
         return None if denominator == 0 else 1. * (d_2.x() * (s_1.y() - s_2.y()) 
                 - d_2.y() * (s_1.x() - s_2.x())) / denominator
 
+    
+    @staticmethod
+    def intersectionLineCircle(s, d, radius):
+        signStar = lambda x : -1 if x < 0 else 1
+        s2 = s + d
+        dx = d.x()
+        dy = d.y()
+        dr = sqrt(dx**2. + dy**2.)
+        D = s.x() * s2.y() - s2.x() * s.y()
+        delta = radius**2. * dr**2. - D**2.
+        
+        if delta >= 0:
+            p1 = QPointF((1.* D * dy + signStar(dy) * dx * sqrt(delta))/dr**2,
+                    (-1.* D * dx     + abs(dy) * sqrt(delta))/dr**2)
+            p2 = QPointF((1.* D * dy - signStar(dy) * dx * sqrt(delta))/dr**2,
+                    (-1.* D * dx     - abs(dy) * sqrt(delta))/dr**2)
+            if delta == 0: return p1 
+            return p1, p2
+        return None
+
+        
+
     def boundedMoveShape(self, shape, pos):
-        if self.outOfPixmap(pos):
-            return False  # No need to move
-        o1 = pos + self.offsets[0]
-        if self.outOfPixmap(o1):
-            pos -= QPointF(min(0, o1.x()), min(0, o1.y()))
-        o2 = pos + self.offsets[1]
-        if self.outOfPixmap(o2):
-            pos += QPointF(min(0, self.pixmap.width() - o2.x()),
-                           min(0, self.pixmap.height() - o2.y()))
-        # The next line tracks the new position of the cursor
-        # relative to the shape, but also results in making it
-        # a bit "shaky" when nearing the border and allows it to
-        # go outside of the shape's area for some reason. XXX
-        #self.calculateOffsets(self.selectedShape, pos)
         dp = pos - self.prevPoint
+        self.prevPoint = pos
+        return self.boundedMoveShapeBy(shape, dp)
+
+    def boundedMoveShapeBy(self, shape, dp):
+        minx, miny = shape.points[0].x(), shape.points[0].y()
+        maxx, maxy = minx, miny
+        for p in shape.points[1:]:
+            minx = min(p.x(), minx)
+            miny = min(p.y(), miny)
+            maxx = max(p.x(), maxx)
+            maxy = max(p.y(), maxy)
+        
+        maxx = self.pixmap.width() - maxx
+        maxy = self.pixmap.height() - maxy
+        dp = QPointF(max(min(maxx, dp.x()), -minx),
+                max(min(maxy, dp.y()), -miny))
+
         if dp:
             shape.shift(dp)
-            self.prevPoint = pos
             return True
         return False
 
@@ -662,7 +756,6 @@ class Canvas(QWidget):
         # Give up if both fail.
         point = shape[0]
         offset = QPointF(2.0, 2.0)
-        self.calculateOffsets(shape, point)
         self.prevPoint = point
         if not self.boundedMoveShape(shape, point - offset):
             self.boundedMoveShape(shape, point + offset)
@@ -849,46 +942,18 @@ class Canvas(QWidget):
         elif key == Qt.Key_Return and self.canCloseShape():
             self.finalise()
         elif key == Qt.Key_Left and self.selectedShape:
-            self.moveOnePixel('Left')
+            self.moveOnePixel(QPointF(-1,0))
         elif key == Qt.Key_Right and self.selectedShape:
-            self.moveOnePixel('Right')
+            self.moveOnePixel(QPointF(1,0))
         elif key == Qt.Key_Up and self.selectedShape:
-            self.moveOnePixel('Up')
+            self.moveOnePixel(QPointF(0,-1))
         elif key == Qt.Key_Down and self.selectedShape:
-            self.moveOnePixel('Down')
+            self.moveOnePixel(QPointF(0,1))
 
     def moveOnePixel(self, direction):
-        # print(self.selectedShape.points)
-        if direction == 'Left' and not self.moveOutOfBound(QPointF(-1.0, 0)):
-            # print("move Left one pixel")
-            self.selectedShape.points[0] += QPointF(-1.0, 0)
-            self.selectedShape.points[1] += QPointF(-1.0, 0)
-            self.selectedShape.points[2] += QPointF(-1.0, 0)
-            self.selectedShape.points[3] += QPointF(-1.0, 0)
-        elif direction == 'Right' and not self.moveOutOfBound(QPointF(1.0, 0)):
-            # print("move Right one pixel")
-            self.selectedShape.points[0] += QPointF(1.0, 0)
-            self.selectedShape.points[1] += QPointF(1.0, 0)
-            self.selectedShape.points[2] += QPointF(1.0, 0)
-            self.selectedShape.points[3] += QPointF(1.0, 0)
-        elif direction == 'Up' and not self.moveOutOfBound(QPointF(0, -1.0)):
-            # print("move Up one pixel")
-            self.selectedShape.points[0] += QPointF(0, -1.0)
-            self.selectedShape.points[1] += QPointF(0, -1.0)
-            self.selectedShape.points[2] += QPointF(0, -1.0)
-            self.selectedShape.points[3] += QPointF(0, -1.0)
-        elif direction == 'Down' and not self.moveOutOfBound(QPointF(0, 1.0)):
-            # print("move Down one pixel")
-            self.selectedShape.points[0] += QPointF(0, 1.0)
-            self.selectedShape.points[1] += QPointF(0, 1.0)
-            self.selectedShape.points[2] += QPointF(0, 1.0)
-            self.selectedShape.points[3] += QPointF(0, 1.0)
+        self.boundedMoveShapeBy(self.selectedShape, direction)
         self.shapeMoved.emit()
         self.repaint()
-
-    def moveOutOfBound(self, step):
-        points = [p1+p2 for p1, p2 in zip(self.selectedShape.points, [step]*4)]
-        return True in map(self.outOfPixmap, points)
 
     def setLastLabel(self, text, line_color  = None, fill_color = None):
         assert text
