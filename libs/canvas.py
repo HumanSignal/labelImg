@@ -421,142 +421,152 @@ class Canvas(QWidget):
                     * (a if (posx >= vertex_point.x()) else 2. * pi - a)
             angle = transform_angle(angle, pos.x())
 
-            # Not all angles are valid. Find out which angles are leading to
-            # coordiantes outside the image:
-            # Step 1)       find (x,y) with \|(x,y) - c \| = \|x_1 - x_3\|
-            #               and (x,y) on image's borders
-            # Step 2)       find the associated rotation angles and store them
-            #               in a sorted way
-            width, height = self.pixmap.width(), self.pixmap.height()
-            # get the radius of the circle
-            p_c = shape.pointsWithoutRotation[0] - shape_center
-            len_p_c = eucl_sq(p_c)
-            # list all the support vectors indicating image border alongside 
-            # with their directions
-            support_direction = [
-                    [QPointF(0,0), QPointF(width-1,0)],
-                    [QPointF(0,0), QPointF(0,height-1)],
-                    [QPointF(width-1,0), QPointF(0,height-1)],
-                    [QPointF(0,height-1), QPointF(width-1,0)]]
-            forbiddenAngleIntervals = []
-            for s, d in support_direction:
-                # find intersections between the circle (defined by the center
-                # and its radius) and the currently considered image border.
-                #
-                # In case there is only one (or none) intersection, 
-                # no conditions are imposed in this step on the anlge as the
-                # image borders are selected to be the last line of pixels
-                # inside the image. 
-                #
-                # If there are two intersections, the space in between them is
-                # forbidden
-                intersects = Canvas.intersectionLineCircle(s - shape_center, d, 
-                        sqrt(len_p_c))
-                if intersects is not None:
+            # XXX: this checking mechanism does not work entirely (the
+            #      distinction of valid angles sometimes does not recognize the
+            #      fact that two edges are outside the valid area).
+            #      and contains debug code (that inserts vertices to some
+            #      positions for debugging) and thus should only be commented
+            #      in for finishing the implementation of that feature (in case
+            #      it is required)).
+            #      If it is not required it should be removed.
+            performCheckOfIntervals = False
+            if performCheckOfIntervals:
+                # Not all angles are valid. Find out which angles are leading to
+                # coordiantes outside the image:
+                # Step 1)       find (x,y) with \|(x,y) - c \| = \|x_1 - x_3\|
+                #               and (x,y) on image's borders
+                # Step 2)       find the associated rotation angles and store them
+                #               in a sorted way
+                width, height = self.pixmap.width(), self.pixmap.height()
+                # get the radius of the circle
+                p_c = shape.pointsWithoutRotation[0] - shape_center
+                len_p_c = eucl_sq(p_c)
+                # list all the support vectors indicating image border alongside
+                # with their directions
+                support_direction = [
+                        [QPointF(0,0), QPointF(width-1,0)],
+                        [QPointF(0,0), QPointF(0,height-1)],
+                        [QPointF(width-1,0), QPointF(0,height-1)],
+                        [QPointF(0,height-1), QPointF(width-1,0)]]
+                forbiddenAngleIntervals = []
+                for s, d in support_direction:
+                    # find intersections between the circle (defined by the center
+                    # and its radius) and the currently considered image border.
+                    #
+                    # In case there is only one (or none) intersection,
+                    # no conditions are imposed in this step on the anlge as the
+                    # image borders are selected to be the last line of pixels
+                    # inside the image.
+                    #
+                    # If there are two intersections, the space in between them is
+                    # forbidden
+                    intersects = Canvas.intersectionLineCircle(s - shape_center, d,
+                            sqrt(len_p_c))
+                    if intersects is not None:
 
-                    # In case debugging is enabled, add new shapes that show
-                    # the intersections with the borders in the image. 
-                    # Attention: debugging cannot be used in a productive mode.
-                    # Results in a bunch of new vertices.
-                    if debug:
-                        deb = Shape()
-                        deb.addPoint(intersects[0] + shape_center)
-                        deb.addPoint(intersects[1] + shape_center)
-                        deb.close()
-                        self.shapes.append(deb)
+                        # In case debugging is enabled, add new shapes that show
+                        # the intersections with the borders in the image.
+                        # Attention: debugging cannot be used in a productive mode.
+                        # Results in a bunch of new vertices.
+                        if debug:
+                            deb = Shape()
+                            deb.addPoint(intersects[0] + shape_center)
+                            deb.addPoint(intersects[1] + shape_center)
+                            deb.close()
+                            self.shapes.append(deb)
 
-                        deb = Shape()
-                        deb.addPoint(p_c + shape_center)
-                        deb.close()
-                        self.shapes.append(deb)
+                            deb = Shape()
+                            deb.addPoint(p_c + shape_center)
+                            deb.close()
+                            self.shapes.append(deb)
 
-                    # the corresponding angle is the angle between the
-                    # intersection point and the  vertex_point (shifted by
-                    # center)
-                    if len(intersects) == 2:
+                        # the corresponding angle is the angle between the
+                        # intersection point and the  vertex_point (shifted by
+                        # center)
+                        if len(intersects) == 2:
 
-                        angles = [[transform_angle(acos(
-                            QPointF.dotProduct(spwr - shape_center, a)
-                            / (len_p_c * eucl_sq(a)) **.5), spwr.x())
-                            for a in intersects] 
-                            for spwr in shape.pointsWithoutRotation]
+                            angles = [[transform_angle(acos(
+                                QPointF.dotProduct(spwr - shape_center, a)
+                                / (len_p_c * eucl_sq(a)) **.5), spwr.x())
+                                for a in intersects]
+                                for spwr in shape.pointsWithoutRotation]
 
-                        for i, (a, b) in enumerate(angles):
-                            # find the min and max value and compute the
-                            # min and max value that are still allowed.
-                            # if the angle might be affected by them
-                            t = 0
-                            if a < 0: a += 2*pi; 
-                            if b < 0: b += 2*pi
-                            mx, mi = max(a, b), min(a,b)
-                            if mx - mi > pi:
-                                forbiddenAngleIntervals.append([mx, 2*pi])
-                                forbiddenAngleIntervals.append([0, mi])
-                            else:
-                                forbiddenAngleIntervals.append([mi, mx])
+                            for i, (a, b) in enumerate(angles):
+                                # find the min and max value and compute the
+                                # min and max value that are still allowed.
+                                # if the angle might be affected by them
+                                t = 0
+                                if a < 0: a += 2*pi;
+                                if b < 0: b += 2*pi
+                                mx, mi = max(a, b), min(a,b)
+                                if mx - mi > pi:
+                                    forbiddenAngleIntervals.append([mx, 2*pi])
+                                    forbiddenAngleIntervals.append([0, mi])
+                                else:
+                                    forbiddenAngleIntervals.append([mi, mx])
 
-                            #if a < b:
-                            #    forbiddenAngleIntervals.append([a, b])
-                            #elif b < a:
-                            #    forbiddenAngleIntervals.append([a, 2*pi])
-                            #    forbiddenAngleIntervals.append([0, b])
+                                #if a < b:
+                                #    forbiddenAngleIntervals.append([a, b])
+                                #elif b < a:
+                                #    forbiddenAngleIntervals.append([a, 2*pi])
+                                #    forbiddenAngleIntervals.append([0, b])
 
-                            # paint vector (forbidden area) based on the
-                            # computed angle
-                            if debug:
-                                p1 = Shape.rotatePoint(
-                                        shape.pointsWithoutRotation[i], 
-                                        shape_center, a)
-                                p2 = Shape.rotatePoint(
-                                        shape.pointsWithoutRotation[i], 
-                                        shape_center, b)
+                                # paint vector (forbidden area) based on the
+                                # computed angle
+                                if debug:
+                                    p1 = Shape.rotatePoint(
+                                            shape.pointsWithoutRotation[i],
+                                            shape_center, a)
+                                    p2 = Shape.rotatePoint(
+                                            shape.pointsWithoutRotation[i],
+                                            shape_center, b)
 
-                                deb = Shape()
-                                deb.addPoint(p1)
-                                deb.addPoint(p2)
-                                deb.close()
-                                self.shapes.append(deb)
+                                    deb = Shape()
+                                    deb.addPoint(p1)
+                                    deb.addPoint(p2)
+                                    deb.close()
+                                    self.shapes.append(deb)
 
 
-            # XXX: There most likely is a better solution to this.
-            #      The code below is supposed to unite all forbidden intervals.
-            #      This is necessary for being able to pick the closest point
-            #      to the forbidden area.
-            if len(forbiddenAngleIntervals):
-                unionInterval = [forbiddenAngleIntervals[0]]
-                uiid = 0
-                # starts before other.end and stops after other.start
-                checkIntersect = lambda a, b: a[1] >= b[0] and a[0] <= b[1]
-                checkIntersectMutual = lambda a, b: checkIntersect(a, b) \
-                        or checkIntersect(b, a)
-                # need to check multiple times as there might be an array that
-                # unites two other arrays.
-                for k in range(len(forbiddenAngleIntervals)-1):
-                    for i in range(1, len(forbiddenAngleIntervals)):
-                        # check if there is already is an interval comprising me
-                        inters = False
-                        for ui in range(len(unionInterval)):
-                            # end union > start this
-                            if (checkIntersectMutual(
-                                unionInterval[ui], forbiddenAngleIntervals[i])):
-                                unionInterval[ui][0] = min(unionInterval[ui][0], 
-                                        forbiddenAngleIntervals[i][0])
-                                unionInterval[ui][1] = max(unionInterval[ui][1], 
-                                        forbiddenAngleIntervals[i][1])
-                                inters = True
-                                break;
-                        if not inters:
-                            unionInterval.append(forbiddenAngleIntervals[i])
+                # XXX: There most likely is a better solution to this.
+                #      The code below is supposed to unite all forbidden intervals.
+                #      This is necessary for being able to pick the closest point
+                #      to the forbidden area.
+                if len(forbiddenAngleIntervals):
+                    unionInterval = [forbiddenAngleIntervals[0]]
+                    uiid = 0
+                    # starts before other.end and stops after other.start
+                    checkIntersect = lambda a, b: a[1] >= b[0] and a[0] <= b[1]
+                    checkIntersectMutual = lambda a, b: checkIntersect(a, b) \
+                            or checkIntersect(b, a)
+                    # need to check multiple times as there might be an array that
+                    # unites two other arrays.
+                    for k in range(len(forbiddenAngleIntervals)-1):
+                        for i in range(1, len(forbiddenAngleIntervals)):
+                            # check if there is already is an interval comprising me
+                            inters = False
+                            for ui in range(len(unionInterval)):
+                                # end union > start this
+                                if (checkIntersectMutual(
+                                    unionInterval[ui], forbiddenAngleIntervals[i])):
+                                    unionInterval[ui][0] = min(unionInterval[ui][0],
+                                            forbiddenAngleIntervals[i][0])
+                                    unionInterval[ui][1] = max(unionInterval[ui][1],
+                                            forbiddenAngleIntervals[i][1])
+                                    inters = True
+                                    break;
+                            if not inters:
+                                unionInterval.append(forbiddenAngleIntervals[i])
 
-                print(forbiddenAngleIntervals, unionInterval)
+                    print(forbiddenAngleIntervals, unionInterval)
 
-                # Check if there is some intersection and use the closest point
-                # as corrected angle.
-                if angle < 0: angle += 2*pi
-                for i in unionInterval:
-                    if i[0] < angle and angle < i[1]:
-                        angle = i[0] if angle-i[0]< i[1]- angle else i[1]
-                        break
+                    # Check if there is some intersection and use the closest point
+                    # as corrected angle.
+                    if angle < 0: angle += 2*pi
+                    for i in unionInterval:
+                        if i[0] < angle and angle < i[1]:
+                            angle = i[0] if angle-i[0]< i[1]- angle else i[1]
+                            break
 
             # Apply the rotation for the shape (computes new location of rotated
             # values and stores the current angle for future reference):
