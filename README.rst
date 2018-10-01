@@ -57,7 +57,7 @@ Python 3 + Qt5
 .. code::
 
     sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install -r requirements-python3.txt
+    sudo pip3 install -r requirements/requirements-linux-python3.txt
     make qt5py3
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
@@ -72,7 +72,7 @@ Python 2 + Qt4
     brew install libxml2
     make qt4py2
     python labelImg.py
-    python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Python 3 + Qt5 (Works on macOS High Sierra)
 
@@ -81,8 +81,12 @@ Python 3 + Qt5 (Works on macOS High Sierra)
     brew install qt  # will install qt-5.x.x
     brew install libxml2
     make qt5py3
-    python labelImg.py
-    python  labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    python3 labelImg.py
+    python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
+    As a side note, if mssing pyrcc5 or lxml, try
+    pip3 install pyqt5 lxml
+
 
 **NEW** Python 3 Virtualenv + Binary
 This avoids a lot of the QT / Python version issues,
