@@ -184,6 +184,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.canvas = Canvas(parent=self)
         self.canvas.zoomRequest.connect(self.zoomRequest)
+        self.canvas.setDrawingShapeToSquare(settings.get(SETTING_DRAW_SQUARE, False))
 
         scroll = QScrollArea()
         scroll.setWidget(self.canvas)
@@ -332,6 +333,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.customContextMenuRequested.connect(
             self.popLabelListMenu)
 
+        # Draw squares/rectangles
+        self.drawSquaresOption = QAction('Draw Squares', self)
+        self.drawSquaresOption.setShortcut('Ctrl+Shift+R')
+        self.drawSquaresOption.setCheckable(True)
+        self.drawSquaresOption.setChecked(settings.get(SETTING_DRAW_SQUARE, False))
+        self.drawSquaresOption.triggered.connect(self.toogleDrawSquare)
+
         # Store actions for further handling.
         self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
@@ -344,7 +352,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                   open, opendir, save, saveAs, close, resetAll, quit),
                               beginner=(), advanced=(),
                               editMenu=(edit, copy, delete,
-                                        None, color1),
+                                        None, color1, self.drawSquaresOption),
                               beginnerContext=(create, edit, copy, delete),
                               advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
@@ -479,6 +487,15 @@ class MainWindow(QMainWindow, WindowMixin):
         # Open Dir if deafult file
         if self.filePath and os.path.isdir(self.filePath):
             self.openDirDialog(dirpath=self.filePath)
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Control:
+            self.canvas.setDrawingShapeToSquare(False)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Control:
+            # Draw rectangle if Ctrl is pressed
+            self.canvas.setDrawingShapeToSquare(True)
 
     ## Support Functions ##
     def set_format(self, save_format):
@@ -1099,6 +1116,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.paintLabelsOption.isChecked()
+        settings[SETTING_DRAW_SQUARE] = self.drawSquaresOption.isChecked()
         settings.save()
     ## User Dialogs ##
 
@@ -1171,6 +1189,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.mayContinue() or not dirpath:
             return
 
+
         self.lastOpenDir = dirpath
         self.dirname = dirpath
         self.filePath = None
@@ -1183,7 +1202,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def verifyImg(self, _value=False):
         # Proceding next image without dialog if having any label
-         if self.filePath is not None:
+        if self.filePath is not None:
             try:
                 self.labelFile.toggleVerify()
             except AttributeError:
@@ -1415,6 +1434,9 @@ class MainWindow(QMainWindow, WindowMixin):
         paintLabelsOptionChecked = self.paintLabelsOption.isChecked()
         for shape in self.canvas.shapes:
             shape.paintLabel = paintLabelsOptionChecked
+
+    def toogleDrawSquare(self):
+        self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
