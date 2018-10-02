@@ -61,6 +61,7 @@ class Canvas(QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
+        self.drawSquare = False
 
     def setDrawingColor(self, qColor):
         self.drawingLineColor = qColor
@@ -126,7 +127,18 @@ class Canvas(QWidget):
                     color = self.current.line_color
                     self.overrideCursor(CURSOR_POINT)
                     self.current.highlightVertex(0, Shape.NEAR_VERTEX)
-                self.line[1] = pos
+
+                if self.drawSquare:
+                    initPos = self.current[0]
+                    minX = initPos.x()
+                    minY = initPos.y()
+                    min_size = min(abs(pos.x() - minX), abs(pos.y() - minY))
+                    directionX = -1 if pos.x() - minX < 0 else 1
+                    directionY = -1 if pos.y() - minY < 0 else 1
+                    self.line[1] = QPointF(minX + directionX * min_size, minY + directionY * min_size)
+                else:
+                    self.line[1] = pos
+
                 self.line.line_color = color
                 self.prevPoint = QPointF()
                 self.current.highlightClear()
@@ -320,7 +332,18 @@ class Canvas(QWidget):
         if self.outOfPixmap(pos):
             pos = self.intersectionPoint(point, pos)
 
-        shiftPos = pos - point
+        if self.drawSquare:
+            opposite_point_index = (index + 2) % 4
+            opposite_point = shape[opposite_point_index]
+
+            min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
+            directionX = -1 if pos.x() - opposite_point.x() < 0 else 1
+            directionY = -1 if pos.y() - opposite_point.y() < 0 else 1
+            shiftPos = QPointF(opposite_point.x() + directionX * min_size - point.x(),
+                               opposite_point.y() + directionY * min_size - point.y())
+        else:
+            shiftPos = pos - point
+
         shape.moveVertexBy(index, shiftPos)
 
         lindex = (index + 1) % 4
@@ -678,3 +701,6 @@ class Canvas(QWidget):
         self.restoreCursor()
         self.pixmap = None
         self.update()
+
+    def setDrawingShapeToSquare(self, status):
+        self.drawSquare = status
