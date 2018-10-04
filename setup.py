@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages
 from libs.version import __version__
+from sys import platform
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -18,10 +19,15 @@ required_packages = find_packages()
 required_packages.append('labelImg')
 
 APP = ['labelImg.py']
-OPTIONS = {
-    'argv_emulation': True,
-    'iconfile': 'icons/app.icns'
-}
+
+# only support py2app for OS X
+support_py2app = {}
+if platform == "darwin":
+    support_py2app = {
+        'package_data': {'data/predefined_classes.txt': ['data/predefined_classes.txt']},
+        'options': {'py2app': { 'argv_emulation': True, 'iconfile': 'icons/app.icns' }},
+        'setup_requires': ['py2app']
+    }
 
 setup(
     app=APP,
@@ -58,7 +64,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
-    options={'py2app': OPTIONS},
-    setup_requires=['py2app']
+    **support_py2app
 )
