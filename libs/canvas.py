@@ -42,7 +42,7 @@ class Canvas(QWidget):
         self.selectedShape = None  # save the selected shape here
         self.selectedShapeCopy = None
         self.drawingLineColor = QColor(0, 0, 255)
-        self.drawingRectColor = QColor(0, 0, 255) 
+        self.drawingRectColor = QColor(0, 0, 255)
         self.line = Shape(line_color=self.drawingLineColor)
         self.prevPoint = QPointF()
         self.offsets = QPointF(), QPointF()
@@ -648,6 +648,10 @@ class Canvas(QWidget):
         self.pixmap = pixmap
         self.shapes = []
         self.repaint()
+        
+    def refreshPixmap(self, pixmap):
+        self.pixmap = pixmap
+        self.repaint() 
 
     def loadShapes(self, shapes):
         self.shapes = list(shapes)

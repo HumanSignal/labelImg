@@ -45,6 +45,7 @@ class Shape(object):
         self.selected = False
         self.difficult = difficult
         self.paintLabel = paintLabel
+        self.setLabelFontSize(16)
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -83,10 +84,14 @@ class Shape(object):
 
     def setOpen(self):
         self._closed = False
+        
+    def setLabelFontSize(self, labelFontSize):
+        self.labelFontSize = labelFontSize
 
     def paint(self, painter):
         if self.points:
             color = self.select_line_color if self.selected else self.line_color
+            
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
             pen.setWidth(max(1, int(round(2.0 / self.scale))))
@@ -120,7 +125,7 @@ class Shape(object):
                     min_y = min(min_y, point.y())
                 if min_x != sys.maxsize and min_y != sys.maxsize:
                     font = QFont()
-                    font.setPointSize(8)
+                    font.setPointSize(self.labelFontSize)
                     font.setBold(True)
                     painter.setFont(font)
                     if(self.label == None):
@@ -188,6 +193,7 @@ class Shape(object):
         shape.fill = self.fill
         shape.selected = self.selected
         shape._closed = self._closed
+        shape.setLabelFontSize(self.labelFontSize)
         if self.line_color != Shape.line_color:
             shape.line_color = self.line_color
         if self.fill_color != Shape.fill_color:
