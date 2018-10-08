@@ -102,6 +102,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.defaultSaveDir = defaultSaveDir
         self.usingPascalVocFormat = True
         self.usingYoloFormat = False
+        self.prev_xmlPath = None
 
         # For loading all image under a directory
         self.mImgList = []
@@ -1017,6 +1018,9 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.loadPascalXMLByFilename(xmlPath)
                 elif os.path.isfile(txtPath):
                     self.loadYOLOTXTByFilename(txtPath)
+                else:
+                    print('did not find any annotation..setting xml file to :'+self.prev_xmlPath)
+                    self.loadPascalXMLByFilename(self.prev_xmlPath)
             else:
                 xmlPath = os.path.splitext(filePath)[0] + XML_EXT
                 txtPath = os.path.splitext(filePath)[0] + TXT_EXT
@@ -1024,6 +1028,9 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.loadPascalXMLByFilename(xmlPath)
                 elif os.path.isfile(txtPath):
                     self.loadYOLOTXTByFilename(txtPath)
+                else:
+                    print('did not find any annotation..setting xml file')
+                    self.loadPascalXMLByFilename(xmlPath)                   
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1277,7 +1284,7 @@ class MainWindow(QMainWindow, WindowMixin):
             savedPath = os.path.join(imgFileDir, savedFileName)
             self._saveFile(savedPath if self.labelFile
                            else self.saveFileDialog())
-
+        
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
         self._saveFile(self.saveFileDialog())
@@ -1294,6 +1301,8 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
             fullFilePath = ustr(dlg.selectedFiles()[0])
+            self.prev_xmlPath = fullFilePath
+            #print('setting prev_xmlPath to saved location: '+fullFilePath)
             return os.path.splitext(fullFilePath)[0] # Return file path without the extension.
         return ''
 
@@ -1302,7 +1311,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)
             self.statusBar().show()
-
+            
     def closeFile(self, _value=False):
         if not self.mayContinue():
             return
@@ -1388,15 +1397,21 @@ class MainWindow(QMainWindow, WindowMixin):
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
             return
+
         if os.path.isfile(xmlPath) is False:
-            return
+            if self.prev_xmlPath is None:
+                return
+            else:
+                print('can not find xmlPath:'+xmlPath+' setting to prev path:'+self.prev_xmlPath)
+                xmlPath = self.prev_xmlPath
 
         self.set_format(FORMAT_PASCALVOC)
-
+        
         tVocParseReader = PascalVocReader(xmlPath)
         shapes = tVocParseReader.getShapes()
         self.loadLabels(shapes)
         self.canvas.verified = tVocParseReader.verified
+        self.prev_xmlPath = xmlPath
 
     def loadYOLOTXTByFilename(self, txtPath):
         if self.filePath is None:
