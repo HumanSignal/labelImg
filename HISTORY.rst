@@ -2,6 +2,13 @@
 History
 =======
 
+1.X.Y (2018-06-23)
+
+* Rejection of a picture (hotkey: ctrl-del. change the suffix)
+* Display of the labelled images in a different color (easier to retrieve the next image to work on)
+* Zoom in rectangle (hotkey: t). Center and zoom the selected shape. Usefull to fine-adjust the bounding boxes and create labels within labels
+* Hotkeys appear in alt text during rollover
+
 
 1.7.0 (2018-05-18)
 ------------------
