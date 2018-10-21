@@ -21,22 +21,39 @@ class AttributesManager( AbstractAttributesWidgets ):
     # just capture the destination
     def update_destination( self, destination ):
         self.destination = destination
+        return True     
+
+    def update_destination_class( self, destination_class_id ):
+        print( "destination_class={}".format( self.mainWindow.labelHist[ destination_class_id ] ) )
+        self.destination_class = self.mainWindow.labelHist[ destination_class_id ]
         return True          
         
     # try to copy the current image file and create a new label file at the destination
-    def copy_to_destination( self ):
+    def copy_to_destination_class( self ):
         if not hasattr(self, "destination") or self.destination is None:
+            self.mainWindow.errorMessage( "Copy to Destination", "Destination not defined!" )
             raise ValueError( "Destination not defined!" )
+        if not hasattr(self, "destination_class") or self.destination_class is None:
+            self.mainWindow.errorMessage( "Copy to Destination", "Destination Class not defined!" )
+            raise ValueError( "Destination Class not defined!" )
 
-        if not os.path.isdir( self.destination ):
-            raise ValueError( "Destination does not exist: {}".format( self.destination ) )
+        try:
+            destination_path = os.path.join( self.destination, self.destination_class )
+        except Exception as e:
+            print( "destination={}, class={}".format( self.destination, self.destination_class ) )
+            raise e
+            
+            
+        if not os.path.isdir( destination_path ):
+            self.mainWindow.errorMessage( "Copy to Destination", "Destination path does not exist: {}".format( destination_path )  )
+            raise ValueError( "Destination path does not exist: {}".format( destination_path ) )
             
         image_filename = os.path.basename( self.mainWindow.filePath )
         # only need the root
         classification_filename = image_filename.split(".")[0]
 
-        targetImagePath = os.path.join( self.destination, image_filename )
-        targetClassificationPath = os.path.join( self.destination, classification_filename )
+        targetImagePath = os.path.join( destination_path, image_filename )
+        targetClassificationPath = os.path.join( destination_path, classification_filename )
 
         print( "copy_to_destination: {}".format( targetImagePath )  )
 
@@ -51,22 +68,30 @@ class AttributesManager( AbstractAttributesWidgets ):
         return {
             "destination": {
                 "order": self.next_index(),
-                "tooltip": "The directory to which the current image and it's PASCAL VOC file will be copied",            
-                "default": "",
+                "tooltip": "The root directory for class directories (to which the current image and it's PASCAL VOC file will be copied)",            
+                "default": "X:\nutsack\ground-truth-data\nutsack_11_v8",
                 "type": "text",
                 "action": self.update_destination
             },
+            "class": {
+                "order": self.next_index(),
+                "tooltip": "The class directory (under the root directory) to which the current image and it's PASCAL VOC file will be copied",
+                "default": "unclassified",
+                "type": "combo",
+                "choices": [ c for c in self.mainWindow.labelHist ],
+                "action": self.update_destination_class
+            },            
             "copy": {
                 "order": self.next_index(),
                 "tooltip": "Copy the current image and it's PASCAL VOC file the to directory specified in 'destination'",            
                 "type": "button",
-                "action": self.copy_to_destination
+                "action": self.copy_to_destination_class
             },
-            "toggle defaults dirty": {
+            "set dirty": {
                 "order": self.next_index(),
                 "tooltip": "Whether the dirty flag should be set when assigning a default value (hence always saving when applied)",            
-                "type": "radio",
-                "default": self.defaults_dirty,
+                "type": "checkbox",
+                "default": "yes" if self.defaults_dirty else "no",
                 "action": self.toggle_defaults_dirty
             }
         }  
@@ -84,7 +109,7 @@ class AttributesManager( AbstractAttributesWidgets ):
                 "order": self.next_index(),
                 "tooltip": "Whether the full image is a candidate for training, or just crops of its objects",
                 "default": "no",
-                "type": "combo",
+                "type": "checkbox",
                 "choices": [ "no", "yes" ],
                 "action": self.update_image_attributes
             },
@@ -102,10 +127,10 @@ class AttributesManager( AbstractAttributesWidgets ):
                 ],
                 "action": self.update_image_attributes
             },
-            "weather": {
+            "light": {
                 "order": self.next_index(),
                 "tooltip": "The quality of light in the image",
-                "default": "cloudy",
+                "default": "",
                 "type": "combo",
                 "choices": [
                     "glary",                    
@@ -114,6 +139,18 @@ class AttributesManager( AbstractAttributesWidgets ):
                     "cloudy", 
                     "dull",
                     "twilight",
+                    "dark"
+                ],
+                "action": self.update_image_attributes
+            },
+            "weather": {
+                "order": self.next_index(),
+                "tooltip": "The quality of light in the image",
+                "default": "",
+                "type": "combo",
+                "choices": [
+                    "sunny",
+                    "overcast", 
                     "rainy", 
                     "snowy"
                 ],
@@ -123,7 +160,7 @@ class AttributesManager( AbstractAttributesWidgets ):
                 "order": self.next_index(),
                 "tooltip": "Is this image an effective duplicate of another",
                 "default": "no",
-                "type": "combo",
+                "type": "checkbox",
                 "choices": [ "no", "yes" ],
                 "action": self.update_image_attributes
             }
@@ -179,6 +216,25 @@ class AttributesManager( AbstractAttributesWidgets ):
                     "5" 
                 ],
                 "action": self.update_label_attributes
+            },
+            "box-score": {
+                "order": self.next_index(),
+                "default": "",
+                "type": "text",
+                "action": self.update_image_attributes
+            },
+            "class-error": {
+                "order": self.next_index(),
+                "default": "",
+                "type": "text",
+                "action": self.update_image_attributes
+            },
+            "class-score": {
+                "order": self.next_index(),
+                "default": "",
+                "type": "text",
+                "action": self.update_image_attributes
             }
+
         }  
         
