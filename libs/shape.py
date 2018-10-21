@@ -124,16 +124,19 @@ class Shape(object):
                 painter.setFont(font)
                 if(self.label == None):
                     self.label = ""
-                
-                if self.score is not None:
-                    painter.drawText(min_x, min_y, "{} [ {} % ]".format( self.label, round( 100 * self.score, 2 ) ) )
-                else:
-                    painter.drawText(min_x, min_y, self.label)
+                painter.drawText(min_x, min_y, self.getTitle() )
 
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color
                 painter.fillPath(line_path, color)
 
+    def getTitle( self ):
+        if self.score is not None:
+            return "{} [ {} % ]".format( self.label, round( 100 * self.score, 2 ) )
+        else:
+            return self.label                  
+                
+                
     def drawVertex(self, path, i):
         d = self.point_size / self.scale
         shape = self.point_type

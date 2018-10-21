@@ -1,5 +1,6 @@
 # base implementation for AttributesManager
 
+import copy
 from PyQt4.QtGui import *
 from xml.etree.ElementTree import SubElement
 
@@ -35,7 +36,7 @@ class AttributesWidgets():
 
     # if default attributes are applied then the current image meta-data is marked as dirty
     # switch this on/off to avoid always updating XML files that are ONLY missing default values
-    defaults_dirty = True
+    defaults_dirty = False
 
     def get_global_attribute_definitions(self):
         pass
@@ -241,7 +242,13 @@ class AbstractAttributesWidgets( AttributesWidgets ):
 
     def loadImageAttributes(self, image_attributes):
         self.mainWindow.attributes = image_attributes
-        self.loadAttributes( image_attributes, self.imageAttributeWidgets)
+        self.loadAttributes( image_attributes, self.imageAttributeWidgets )
 
     def loadLabelAttributes( self, label_attributes ):
-        self.loadAttributes( label_attributes, self.labelAttributeWidgets)
+        copied_attrs = copy.deepcopy( label_attributes )
+        self.loadAttributes( copied_attrs, self.labelAttributeWidgets )
+        
+        
+        
+        
+        
