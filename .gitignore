@@ -17,3 +17,5 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+/.eggs/
+/__pycache__/
