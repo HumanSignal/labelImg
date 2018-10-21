@@ -717,7 +717,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
-        item = HashableQListWidgetItem(shape.label)
+        item = HashableQListWidgetItem( shape.getTitle() )
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
         item.setBackground(generateColorByText(shape.label))
@@ -738,7 +738,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, difficult, score, attributes in shapes:
+        
+        sorted_shapes = sorted( shapes, key = lambda x: 0 if not hasattr( x, "score") or x.score is None else x.score, reverse=True )
+        
+        for label, points, line_color, fill_color, difficult, score, attributes in sorted_shapes:
             shape = Shape(label=label)
             for x, y in points:
                 shape.addPoint(QPointF(x, y))
@@ -822,6 +825,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
         label = item.text()
+        #print( "labelItemChanged: " + label )
         if label != shape.label:
             shape.label = item.text()
             shape.line_color = generateColorByText(shape.label)
@@ -1033,10 +1037,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
-            # Default : select last item if there is at least one item
+            # Default : select first item if there is at least one item
             if self.labelList.count():
-                self.labelList.setCurrentItem(self.labelList.item(self.labelList.count()-1))
-                self.labelList.item(self.labelList.count()-1).setSelected(True)
+                listItem = self.labelList.item(0)
+                self.labelList.setCurrentItem(listItem)
+                listItem.setSelected(True)
 
             self.canvas.setFocus(True)
             return True
