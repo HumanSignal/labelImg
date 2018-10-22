@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages
 from libs.version import __version__
+from sys import platform as _platform
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -13,6 +14,15 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     # TODO: Different OS have different requirements
 ]
+
+# OS specific settings
+SET_REQUIRES = []
+if _platform == "linux" or _platform == "linux2":
+   # linux
+   print('linux')
+elif _platform == "darwin":
+   # MAC OS X
+   SET_REQUIRES.append('py2app')
 
 required_packages = find_packages()
 required_packages.append('labelImg')
@@ -60,5 +70,5 @@ setup(
     ],
     package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
     options={'py2app': OPTIONS},
-    setup_requires=['py2app']
+    setup_requires= SET_REQUIRES
 )
