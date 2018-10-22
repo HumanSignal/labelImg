@@ -3,3 +3,5 @@ resources.py
 libs
 dist
 build-tools/
+build
+test*
