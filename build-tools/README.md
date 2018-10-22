@@ -26,7 +26,6 @@ sh build-windows-binary.sh
 ### Build for macOS High Sierra
 ```
 cd build-tools
-chmod +x ./build-for-macos.sh
 ./build-for-macos.sh
 ```
 
