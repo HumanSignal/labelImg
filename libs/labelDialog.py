@@ -15,10 +15,18 @@ class LabelDialog(QDialog):
 
     def __init__(self, text="Enter object label", parent=None, listItem=None):
         super(LabelDialog, self).__init__(parent)
+
         self.edit = QLineEdit()
         self.edit.setText(text)
         self.edit.setValidator(labelValidator())
         self.edit.editingFinished.connect(self.postProcess)
+
+        model = QStringListModel()
+        model.setStringList(listItem)
+        completer = QCompleter()
+        completer.setModel(model)
+        self.edit.setCompleter(completer)
+
         layout = QVBoxLayout()
         layout.addWidget(self.edit)
         self.buttonBox = bb = BB(BB.Ok | BB.Cancel, Qt.Horizontal, self)
@@ -32,7 +40,8 @@ class LabelDialog(QDialog):
             self.listWidget = QListWidget(self)
             for item in listItem:
                 self.listWidget.addItem(item)
-            self.listWidget.itemDoubleClicked.connect(self.listItemClick)
+            self.listWidget.itemClicked.connect(self.listItemClick)
+            self.listWidget.itemDoubleClicked.connect(self.listItemDoubleClick)
             layout.addWidget(self.listWidget)
 
         self.setLayout(layout)
@@ -68,4 +77,7 @@ class LabelDialog(QDialog):
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
             text = tQListWidgetItem.text().strip()
         self.edit.setText(text)
+        
+    def listItemDoubleClick(self, tQListWidgetItem):
+        self.listItemClick(tQListWidgetItem)
         self.validate()

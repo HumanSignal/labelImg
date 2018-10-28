@@ -2,7 +2,7 @@
 <qresource>
 
 <file alias="help">icons/help.png</file>
-<file alias="app">icons/expert2.png</file>
+<file alias="app">icons/app.png</file>
 <file alias="expert">icons/expert2.png</file>
 <file alias="done">icons/done.png</file>
 <file alias="file">icons/file.png</file>
@@ -18,6 +18,8 @@
 <file alias="edit">icons/edit.png</file>
 <file alias="open">icons/open.png</file>
 <file alias="save">icons/save.png</file>
+<file alias="format_voc">icons/format_voc.png</file>
+<file alias="format_yolo">icons/format_yolo.png</file>
 <file alias="save-as">icons/save-as.png</file>
 <file alias="color">icons/color.png</file>
 <file alias="color_line">icons/color_line.png</file>
@@ -27,6 +29,7 @@
 <file alias="delete">icons/cancel.png</file>
 <file alias="next">icons/next.png</file>
 <file alias="prev">icons/prev.png</file>
-
+<file alias="resetall">icons/resetall.png</file>
+<file alias="verify">icons/verify.png</file>
 </qresource>
 </RCC>

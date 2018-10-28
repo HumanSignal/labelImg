@@ -41,8 +41,9 @@ class Canvas(QWidget):
         self.current = None
         self.selectedShape = None  # save the selected shape here
         self.selectedShapeCopy = None
-        self.lineColor = QColor(0, 0, 255)
-        self.line = Shape(line_color=self.lineColor)
+        self.drawingLineColor = QColor(0, 0, 255)
+        self.drawingRectColor = QColor(0, 0, 255) 
+        self.line = Shape(line_color=self.drawingLineColor)
         self.prevPoint = QPointF()
         self.offsets = QPointF(), QPointF()
         self.scale = 1.0
@@ -60,6 +61,11 @@ class Canvas(QWidget):
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
+        self.drawSquare = False
+
+    def setDrawingColor(self, qColor):
+        self.drawingLineColor = qColor
+        self.drawingRectColor = qColor
 
     def enterEvent(self, ev):
         self.overrideCursor(self._cursor)
@@ -84,6 +90,8 @@ class Canvas(QWidget):
         if not value:  # Create
             self.unHighlight()
             self.deSelectShape()
+        self.prevPoint = QPointF()
+        self.repaint()
 
     def unHighlight(self):
         if self.hShape:
@@ -97,13 +105,17 @@ class Canvas(QWidget):
         """Update line with last point and current coordinates."""
         pos = self.transformPos(ev.pos())
 
-        self.restoreCursor()
+        # Update coordinates in status bar if image is opened
+        window = self.parent().window()
+        if window.filePath is not None:
+            self.parent().window().labelCoordinates.setText(
+                'X: %d; Y: %d' % (pos.x(), pos.y()))
 
         # Polygon drawing.
         if self.drawing():
             self.overrideCursor(CURSOR_DRAW)
             if self.current:
-                color = self.lineColor
+                color = self.drawingLineColor
                 if self.outOfPixmap(pos):
                     # Don't allow the user to draw outside the pixmap.
                     # Project the point to the pixmap's edges.
@@ -115,10 +127,24 @@ class Canvas(QWidget):
                     color = self.current.line_color
                     self.overrideCursor(CURSOR_POINT)
                     self.current.highlightVertex(0, Shape.NEAR_VERTEX)
-                self.line[1] = pos
+
+                if self.drawSquare:
+                    initPos = self.current[0]
+                    minX = initPos.x()
+                    minY = initPos.y()
+                    min_size = min(abs(pos.x() - minX), abs(pos.y() - minY))
+                    directionX = -1 if pos.x() - minX < 0 else 1
+                    directionY = -1 if pos.y() - minY < 0 else 1
+                    self.line[1] = QPointF(minX + directionX * min_size, minY + directionY * min_size)
+                else:
+                    self.line[1] = pos
+
                 self.line.line_color = color
-                self.repaint()
+                self.prevPoint = QPointF()
                 self.current.highlightClear()
+            else:
+                self.prevPoint = pos
+            self.repaint()
             return
 
         # Polygon copy moving.
@@ -179,6 +205,7 @@ class Canvas(QWidget):
                 self.hShape.highlightClear()
                 self.update()
             self.hVertex, self.hShape = None, None
+            self.overrideCursor(CURSOR_DEFAULT)
 
     def mousePressEvent(self, ev):
         pos = self.transformPos(ev.pos())
@@ -205,7 +232,10 @@ class Canvas(QWidget):
                 self.selectedShapeCopy = None
                 self.repaint()
         elif ev.button() == Qt.LeftButton and self.selectedShape:
-            self.overrideCursor(CURSOR_GRAB)
+            if self.selectedVertex():
+                self.overrideCursor(CURSOR_POINT)
+            else:
+                self.overrideCursor(CURSOR_GRAB)
         elif ev.button() == Qt.LeftButton:
             pos = self.transformPos(ev.pos())
             if self.drawing():
@@ -244,10 +274,7 @@ class Canvas(QWidget):
             self.current.addPoint(QPointF(maxX, minY))
             self.current.addPoint(targetPos)
             self.current.addPoint(QPointF(minX, maxY))
-            self.current.addPoint(initPos)
-            self.line[0] = self.current[-1]
-            if self.current.isClosed():
-                self.finalise()
+            self.finalise()
         elif not self.outOfPixmap(pos):
             self.current = Shape()
             self.current.addPoint(pos)
@@ -283,14 +310,12 @@ class Canvas(QWidget):
         if self.selectedVertex():  # A vertex is marked for selection.
             index, shape = self.hVertex, self.hShape
             shape.highlightVertex(index, shape.MOVE_VERTEX)
+            self.selectShape(shape)
             return
         for shape in reversed(self.shapes):
             if self.isVisible(shape) and shape.containsPoint(point):
-                shape.selected = True
-                self.selectedShape = shape
+                self.selectShape(shape)
                 self.calculateOffsets(shape, point)
-                self.setHiding()
-                self.selectionChanged.emit(True)
                 return
 
     def calculateOffsets(self, shape, point):
@@ -307,7 +332,18 @@ class Canvas(QWidget):
         if self.outOfPixmap(pos):
             pos = self.intersectionPoint(point, pos)
 
-        shiftPos = pos - point
+        if self.drawSquare:
+            opposite_point_index = (index + 2) % 4
+            opposite_point = shape[opposite_point_index]
+
+            min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
+            directionX = -1 if pos.x() - opposite_point.x() < 0 else 1
+            directionY = -1 if pos.y() - opposite_point.y() < 0 else 1
+            shiftPos = QPointF(opposite_point.x() + directionX * min_size - point.x(),
+                               opposite_point.y() + directionY * min_size - point.y())
+        else:
+            shiftPos = pos - point
+
         shape.moveVertexBy(index, shiftPos)
 
         lindex = (index + 1) % 4
@@ -412,11 +448,15 @@ class Canvas(QWidget):
             rightBottom = self.line[1]
             rectWidth = rightBottom.x() - leftTop.x()
             rectHeight = rightBottom.y() - leftTop.y()
-            color = QColor(0, 220, 0)
-            p.setPen(color)
+            p.setPen(self.drawingRectColor)
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
             p.drawRect(leftTop.x(), leftTop.y(), rectWidth, rectHeight)
+
+        if self.drawing() and not self.prevPoint.isNull() and not self.outOfPixmap(self.prevPoint):
+            p.setPen(QColor(0, 0, 0))
+            p.drawLine(self.prevPoint.x(), 0, self.prevPoint.x(), self.pixmap.height())
+            p.drawLine(0, self.prevPoint.y(), self.pixmap.width(), self.prevPoint.y())
 
         self.setAutoFillBackground(True)
         if self.verified:
@@ -449,6 +489,12 @@ class Canvas(QWidget):
 
     def finalise(self):
         assert self.current
+        if self.current.points[0] == self.current.points[-1]:
+            self.current = None
+            self.drawingPolygon.emit(False)
+            self.update()
+            return
+
         self.current.close()
         self.shapes.append(self.current)
         self.current = None
@@ -593,9 +639,15 @@ class Canvas(QWidget):
         points = [p1+p2 for p1, p2 in zip(self.selectedShape.points, [step]*4)]
         return True in map(self.outOfPixmap, points)
 
-    def setLastLabel(self, text):
+    def setLastLabel(self, text, line_color  = None, fill_color = None):
         assert text
         self.shapes[-1].label = text
+        if line_color:
+            self.shapes[-1].line_color = line_color
+        
+        if fill_color:
+            self.shapes[-1].fill_color = fill_color
+
         return self.shapes[-1]
 
     def undoLastLine(self):
@@ -629,10 +681,18 @@ class Canvas(QWidget):
         self.visible[shape] = value
         self.repaint()
 
+    def currentCursor(self):
+        cursor = QApplication.overrideCursor()
+        if cursor is not None:
+            cursor = cursor.shape()
+        return cursor
+
     def overrideCursor(self, cursor):
-        self.restoreCursor()
         self._cursor = cursor
-        QApplication.setOverrideCursor(cursor)
+        if self.currentCursor() is None:
+            QApplication.setOverrideCursor(cursor)
+        else:
+            QApplication.changeOverrideCursor(cursor)
 
     def restoreCursor(self):
         QApplication.restoreOverrideCursor()
@@ -641,3 +701,6 @@ class Canvas(QWidget):
         self.restoreCursor()
         self.pixmap = None
         self.update()
+
+    def setDrawingShapeToSquare(self, status):
+        self.drawSquare = status

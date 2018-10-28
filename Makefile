@@ -24,6 +24,6 @@ qt5py3:
 	pyrcc5 -o resources.py resources.qrc
 
 clean:
-	rm -f .settings.pkl resources.pyc
+	rm -f ~/.labelImgSettings.pkl resources.pyc
 
 .PHONY: test

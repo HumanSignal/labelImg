@@ -66,5 +66,23 @@ matrix:
         - make qt5py3
         - xvfb-run make testpy3
 
+    # Pipenv Python 3 + QT5 - Build .app
+    - os: osx
+      language: generic
+      python: "3.6"
+      env:
+        - PIPENV_VENV_IN_PROJECT=1
+        - PIPENV_IGNORE_VIRTUALENVS=1
+      before_install:
+        - brew install python
+      install:
+        - pip3 install pipenv
+        - pipenv --three
+        - pipenv run pip install pyqt5 lxml
+        - pipenv run make qt5py3
+        - rm -rf build dist
+        - pipenv run python setup.py py2app
+        - open dist/labelImg.app
+
 script:
   - exit 0

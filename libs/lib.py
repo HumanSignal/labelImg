@@ -1,5 +1,6 @@
 from math import sqrt
-
+from libs.ustr import ustr
+import hashlib
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -71,3 +72,12 @@ def distance(p):
 def fmtShortcut(text):
     mod, key = text.split('+', 1)
     return '<b>%s</b>+<b>%s</b>' % (mod, key)
+
+
+def generateColorByText(text):
+    s = str(ustr(text))
+    hashCode = int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16)
+    r = int((hashCode / 255) % 255)
+    g = int((hashCode / 65025)  % 255)
+    b = int((hashCode / 16581375)  % 255)
+    return QColor(r, g, b, 100)
