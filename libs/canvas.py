@@ -448,7 +448,10 @@ class Canvas(QWidget):
             rightBottom = self.line[1]
             rectWidth = rightBottom.x() - leftTop.x()
             rectHeight = rightBottom.y() - leftTop.y()
-            p.setPen(self.drawingRectColor)
+            # Use configured line width while drawing rect
+            pen = QPen(self.drawingRectColor)
+            pen.setWidth(max(Shape.line_width, int(round(2.0 / self.scale))))
+            p.setPen(pen)
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
             p.drawRect(leftTop.x(), leftTop.y(), rectWidth, rectHeight)

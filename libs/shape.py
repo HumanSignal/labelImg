@@ -18,6 +18,7 @@ DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
+DEFAULT_LINE_WIDTH = 3
 MIN_Y_LABEL = 10
 
 
@@ -29,6 +30,7 @@ class Shape(object):
     # The following class variables influence the drawing
     # of _all_ shape objects.
     line_color = DEFAULT_LINE_COLOR
+    line_width = DEFAULT_LINE_WIDTH
     fill_color = DEFAULT_FILL_COLOR
     select_line_color = DEFAULT_SELECT_LINE_COLOR
     select_fill_color = DEFAULT_SELECT_FILL_COLOR
@@ -89,7 +91,7 @@ class Shape(object):
             color = self.select_line_color if self.selected else self.line_color
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
-            pen.setWidth(max(1, int(round(2.0 / self.scale))))
+            pen.setWidth(max(self.line_width, int(round(2.0 / self.scale))))
             painter.setPen(pen)
 
             line_path = QPainterPath()
