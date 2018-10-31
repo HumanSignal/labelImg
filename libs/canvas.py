@@ -594,16 +594,17 @@ class Canvas(QWidget):
 
         mods = ev.modifiers()
         if Qt.ControlModifier == int(mods) and v_delta:
-            self.zoomRequest.emit(v_delta)
+            # In case using **touch pad**, which can detect both vertical and horizontal delta
+            v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
+            h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
         elif Qt.ShiftModifier== int(mods) and v_delta:
             # since this framework can only detect vertical delta of **mouse** wheel,
             # thus use vertical delta in place of horizontal delta
             # when pressing shift+mouse wheel
             v_delta and self.scrollRequest.emit(v_delta, Qt.Horizontal)
         else:
-            # In case using **touch pad**, which can detect both vertical and horizontal delta
-            v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
-            h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
+            # Zoom IN/OUT
+            self.zoomRequest.emit(v_delta / 2)
         ev.accept()
 
     def keyPressEvent(self, ev):
