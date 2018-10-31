@@ -30,6 +30,7 @@ class Canvas(QWidget):
     drawingPolygon = pyqtSignal(bool)
 
     CREATE, EDIT = list(range(2))
+    DRAGGING_DISTANCE = 5
 
     epsilon = 11.0
 
@@ -169,6 +170,14 @@ class Canvas(QWidget):
                 self.boundedMoveShape(self.selectedShape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
+            elif self.prevPoint:
+                # When pressing left button and move, drag the canvas with scrollbar
+                self.overrideCursor(CURSOR_MOVE)
+                # using delta pos, the step is by default DRAGGING_DISTANCE, which can be optimized
+                delta = pos - self.prevPoint
+                self.scrollRequest.emit(delta.y() * self.scale * self.DRAGGING_DISTANCE, Qt.Vertical)
+                self.scrollRequest.emit(delta.x() * self.scale * self.DRAGGING_DISTANCE, Qt.Horizontal)
+                self.prevPoint = pos
             return
 
         # Just hovering over the canvas, 2 posibilities:
