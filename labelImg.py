@@ -771,7 +771,7 @@ class MainWindow(QMainWindow, WindowMixin):
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
             else:
-                shape.fill_color = generateColorByText(label)
+                shape.fill_color = generateColorByText(label, alpha=100)
 
             self.addLabel(shape)
 
@@ -862,8 +862,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.setChecked(False)
         if text is not None:
             self.prevLabelText = text
-            generate_color = generateColorByText(text)
-            shape = self.canvas.setLastLabel(text, generate_color, generate_color)
+            # Set the stroke alpha to be opaque and fill alpha transparent
+            generate_line_color = generateColorByText(text)
+            generate_fill_color = generateColorByText(text, alpha=100)
+            shape = self.canvas.setLastLabel(text, line_color=generate_line_color, fill_color=generate_fill_color)
             self.addLabel(shape)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.setEditing(True)
