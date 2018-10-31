@@ -88,6 +88,7 @@ class HashableQListWidgetItem(QListWidgetItem):
 
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
+    LABEL_LIST_HEIGHT = 35
 
     def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None, defaultSaveDir=None):
         super(MainWindow, self).__init__()
@@ -738,6 +739,8 @@ class MainWindow(QMainWindow, WindowMixin):
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
         item.setBackground(generateColorByText(shape.label))
+        # Set default label list height
+        item.setSizeHint(QSize(item.sizeHint().width(), self.LABEL_LIST_HEIGHT))
         self.itemsToShapes[item] = shape
         self.shapesToItems[shape] = item
         self.labelList.addItem(item)
