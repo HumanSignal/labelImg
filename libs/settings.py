@@ -30,8 +30,18 @@ class Settings(object):
     def load(self):
         if os.path.exists(self.path):
             with open(self.path, 'rb') as f:
-                self.data = pickle.load(f)
-                return True
+                try:
+                    self.data = pickle.load(f)
+                except ModuleNotFoundError:
+                    help(f.name)
+                    print("Error reading the configuration file:\n"
+                          "It seems like you already have launched the program with a different python version \n"
+                          "or that you just switched to a new version of qt.\n"
+                          "The corresponding configuration file encodes some version-specific information and \n"
+                          "therefore cannot be restored. Please remove the conrfiguration file located at \n",
+                          f.name, "or launch again with a different python version.")
+                    exit(-1)
+
         return False
 
     def reset(self):
