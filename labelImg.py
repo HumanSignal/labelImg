@@ -108,6 +108,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = []
         self.dirname = None
         self.labelHist = []
+        self.labelColor = defaultdict(tuple)
         self.lastOpenDir = None
 
         # Whether we need to save or not.
@@ -679,8 +680,13 @@ class MainWindow(QMainWindow, WindowMixin):
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
-            item.setBackground(generateColorByText(text))
+            item.setBackground(self.labelColor[text][0])
             self.setDirty()
+        # modify all label colors
+        for item_idx in range(self.labelList.count()):
+            self.labelList.item(item_idx).setBackground(
+                self.labelColor[self.labelList.item(item_idx).text()][0]
+            )
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
@@ -738,7 +744,7 @@ class MainWindow(QMainWindow, WindowMixin):
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
-        item.setBackground(generateColorByText(shape.label))
+        item.setBackground(self.labelColor[shape.label][0])
         # Set default label list height
         item.setSizeHint(QSize(item.sizeHint().width(), self.LABEL_LIST_HEIGHT))
         self.itemsToShapes[item] = shape
@@ -836,7 +842,7 @@ class MainWindow(QMainWindow, WindowMixin):
         label = item.text()
         if label != shape.label:
             shape.label = item.text()
-            shape.line_color = generateColorByText(shape.label)
+            shape.line_color = self.labelColor[shape.label][0]
             self.setDirty()
         else:  # User probably changed item visibility
             self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
@@ -864,11 +870,13 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.diffcButton.setChecked(False)
         if text is not None:
+            # append new label and generate default color
+            if text not in self.labelHist:
+                self.labelHist.append(text)
+                self.labelColor[text] = (generateColorByText(text), generateColorByText(text, 100))
             self.prevLabelText = text
-            # Set the stroke alpha to be opaque and fill alpha transparent
-            generate_line_color = generateColorByText(text)
-            generate_fill_color = generateColorByText(text, alpha=100)
-            shape = self.canvas.setLastLabel(text, line_color=generate_line_color, fill_color=generate_fill_color)
+            shape = self.canvas.setLastLabel(text, line_color=self.labelColor[text][0],
+                                             fill_color=self.labelColor[text][1])
             self.addLabel(shape)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.setEditing(True)
@@ -877,8 +885,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.actions.editMode.setEnabled(True)
             self.setDirty()
 
-            if text not in self.labelHist:
-                self.labelHist.append(text)
         else:
             # self.canvas.undoLastLine()
             self.canvas.resetAllLines()
@@ -1404,10 +1410,13 @@ class MainWindow(QMainWindow, WindowMixin):
             with codecs.open(predefClassesFile, 'r', 'utf8') as f:
                 for line in f:
                     line = line.strip()
+                    # temp set color to be generated
+                    self.labelColor[line] = (generateColorByText(line), generateColorByText(line, 100))
                     if self.labelHist is None:
                         self.labelHist = [line]
                     else:
                         self.labelHist.append(line)
+                print(self.labelColor)
 
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
