@@ -38,8 +38,11 @@ class YOLOWriter:
 
         w = float((xmax - xmin)) / self.imgSize[1]
         h = float((ymax - ymin)) / self.imgSize[0]
+        if box['name'] not in classList:
+            classList.append(box['name'])
 
         classIndex = classList.index(box['name'])
+
 
         return classIndex, xcen, ycen, w, h
 
