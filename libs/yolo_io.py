@@ -6,9 +6,10 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
 import codecs
+from libs.constants import DEFAULT_ENCODING
 
 TXT_EXT = '.txt'
-ENCODE_METHOD = 'utf-8'
+ENCODE_METHOD = DEFAULT_ENCODING
 
 class YOLOWriter:
 
@@ -39,7 +40,12 @@ class YOLOWriter:
         w = float((xmax - xmin)) / self.imgSize[1]
         h = float((ymax - ymin)) / self.imgSize[0]
 
-        classIndex = classList.index(box['name'])
+        # PR387
+        boxName = box['name']
+        if boxName not in classList:
+            classList.append(boxName)
+
+        classIndex = classList.index(boxName)
 
         return classIndex, xcen, ycen, w, h
 
@@ -62,11 +68,11 @@ class YOLOWriter:
 
         for box in self.boxlist:
             classIndex, xcen, ycen, w, h = self.BndBox2YoloLine(box, classList)
-            print (classIndex, xcen, ycen, w, h)
+            # print (classIndex, xcen, ycen, w, h)
             out_file.write("%d %.6f %.6f %.6f %.6f\n" % (classIndex, xcen, ycen, w, h))
 
-        print (classList)
-        print (out_class_file)
+        # print (classList)
+        # print (out_class_file)
         for c in classList:
             out_class_file.write(c+'\n')
 
@@ -89,12 +95,12 @@ class YoloReader:
         else:
             self.classListPath = classListPath
 
-        print (filepath, self.classListPath)
+        # print (filepath, self.classListPath)
 
         classesFile = open(self.classListPath, 'r')
         self.classes = classesFile.read().strip('\n').split('\n')
 
-        print (self.classes)
+        # print (self.classes)
 
         imgSize = [image.height(), image.width(),
                       1 if image.isGrayscale() else 3]

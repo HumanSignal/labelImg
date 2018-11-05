@@ -1,4 +1,5 @@
 import sys
+from libs.constants import DEFAULT_ENCODING
 
 def ustr(x):
     '''py2/py3 unicode helper'''
@@ -6,9 +7,9 @@ def ustr(x):
     if sys.version_info < (3, 0, 0):
         from PyQt4.QtCore import QString
         if type(x) == str:
-            return x.decode('utf-8')
+            return x.decode(DEFAULT_ENCODING)
         if type(x) == QString:
-            return unicode(x)
+            return unicode(x, DEFAULT_ENCODING)
         return x
     else:
-        return x  # py3
+        return x
