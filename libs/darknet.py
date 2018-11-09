@@ -225,7 +225,7 @@ def classify(net, meta, im):
     return res
 
 
-def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45, debug=False):
+def detect(net, num_classes, image, thresh=.5, hier_thresh=.5, nms=.45, debug=False):
     """
     Performs the meat of the detection
     """
@@ -251,24 +251,18 @@ def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45, debug=False):
     num = pnum[0]
     if debug: print("got zeroth index of pnum")
     if nms:
-        do_nms_sort(dets, num, meta.classes, nms)
+        do_nms_sort(dets, num, c_int(num_classes), nms)
     if debug: print("did sort")
     res = []
     if debug: print("about to range")
     for j in range(num):
         if debug: print("Ranging on " + str(j) + " of " + str(num))
-        if debug: print("Classes: " + str(meta), meta.classes, meta.names)
-        for i in range(meta.classes):
-            if debug: print("Class-ranging on " + str(i) + " of " + str(meta.classes) + "= " + str(dets[j].prob[i]))
+        for i in range(num_classes):
+            if debug: print("Class-ranging on " + str(i) + " of " + str(num_classes) + "= " + str(dets[j].prob[i]))
             if dets[j].prob[i] > 0:
                 b = dets[j].bbox
-                if altNames is None:
-                    nameTag = meta.names[i]
-                else:
-                    nameTag = altNames[i]
                 if debug:
                     print("Got bbox", b)
-                    print(nameTag)
                     print(dets[j].prob[i])
                     print((b.x, b.y, b.w, b.h))
                 res.append((i, dets[j].prob[i], (b.x / im.w, b.y / im.h, b.w / im.w, b.h / im.h)))
@@ -453,7 +447,7 @@ if __name__ == "__main__":
         with open(os.path.join(img_root, img[:img.rfind('.')] + '.txt'), 'w') as annotation_file:
             bnd_boxs = detect(
                 net=netMain,
-                meta=metaMain,
+                num_classes=6,
                 image=os.path.join(img_root, img).encode("ascii"),
                 thresh=0.9,
             )
