@@ -121,7 +121,7 @@ class CustomQWidget(QWidget):
             line_color = color
             fill_color = QColor(color)
             fill_color.setAlpha(100)
-            self.parent.labelColor[self.label.text()] = (line_color, fill_color)
+            self.parent.update_label_color(self.label.text(), line_color, fill_color)
             for shape in self.parent.canvas.shapes:
                 if shape.label == self.label.text():
                     shape.line_color = line_color

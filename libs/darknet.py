@@ -271,7 +271,7 @@ def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45, debug=False):
                     print(nameTag)
                     print(dets[j].prob[i])
                     print((b.x, b.y, b.w, b.h))
-                res.append((nameTag, dets[j].prob[i], (b.x, b.y, b.w, b.h)))
+                res.append((i, dets[j].prob[i], (b.x / im.w, b.y / im.h, b.w / im.w, b.h / im.h)))
     if debug: print("did range")
     res = sorted(res, key=lambda x: -x[1])
     if debug: print("did sort")
@@ -446,16 +446,17 @@ if __name__ == "__main__":
         metaPath=root + '../samples/cfg/trafficlight.data',
         initOnly=True,
     ),
-    for img in os.listdir(img_root):
+    for img in sorted(os.listdir(img_root)):
         if '.jpg' not in img:
             continue
-        print(
-            performDetect(
+        # 打开标注文件
+        with open(os.path.join(img_root, img[:img.rfind('.')] + '.txt'), 'w') as annotation_file:
+            bnd_boxs = detect(
+                net=netMain,
+                meta=metaMain,
+                image=os.path.join(img_root, img).encode("ascii"),
                 thresh=0.9,
-                imagePath=os.path.join(img_root, img),
-                configPath=root + '../samples/cfg/yolov3-tiny.cfg',
-                weightPath=root + '../samples/cfg/yolov3-tiny_85428.weights',
-                metaPath=root + '../samples/cfg/trafficlight.data',
-                showImage=False,
-            ),
-        )
+            )
+            annotations = ['{} {} {} {} {}\n'.format(bnd_box[0], *bnd_box[2]) for bnd_box in bnd_boxs]
+            print(annotations)
+            annotation_file.writelines(annotations)

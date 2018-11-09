@@ -7,6 +7,7 @@ import platform
 import re
 import sys
 import subprocess
+import pickle
 
 from functools import partial
 from collections import defaultdict
@@ -121,6 +122,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Load predefined classes to the list
         self.loadPredefinedClasses(defaultPrefdefClassFile)
+        self.defaultPrefdefClassFile = defaultPrefdefClassFile
 
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
@@ -873,7 +875,7 @@ class MainWindow(QMainWindow, WindowMixin):
             # append new label and generate default color
             if text not in self.labelHist:
                 self.labelHist.append(text)
-                self.labelColor[text] = (generateColorByText(text), generateColorByText(text, 100))
+                self.update_label_color(text, generateColorByText(text), generateColorByText(text, 100))
             self.prevLabelText = text
             shape = self.canvas.setLastLabel(text, line_color=self.labelColor[text][0],
                                              fill_color=self.labelColor[text][1])
@@ -1416,7 +1418,6 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.labelHist = [line]
                     else:
                         self.labelHist.append(line)
-                print(self.labelColor)
 
     def loadPascalXMLByFilename(self, xmlPath):
         if self.filePath is None:
@@ -1438,7 +1439,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         self.set_format(FORMAT_YOLO)
-        tYoloParseReader = YoloReader(txtPath, self.image)
+        tYoloParseReader = YoloReader(txtPath, self.image, self.defaultPrefdefClassFile)
         shapes = tYoloParseReader.getShapes()
         print (shapes)
         self.loadLabels(shapes)
@@ -1451,6 +1452,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toogleDrawSquare(self):
         self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
+
+    def update_label_color(self, label, line_color, fill_color):
+        self.labelColor[label] = (line_color, fill_color)
+        with open(os.path.join(os.path.abspath(self.defaultPrefdefClassFile) + '.pkl'), 'wb') as f:
+            pickle.dump(self.labelColor, f)
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
