@@ -36,6 +36,7 @@ from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.canvas import Canvas
 from libs.zoomWidget import ZoomWidget
 from libs.labelDialog import LabelDialog
+from libs.automationDIalog import AutomationDialog
 from libs.colorDialog import ColorDialog
 from libs.labelFile import LabelFile, LabelFileError
 from libs.toolBar import ToolBar
@@ -91,7 +92,8 @@ class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
     LABEL_LIST_HEIGHT = 35
 
-    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None, defaultSaveDir=None):
+    def __init__(self, defaultFilename=None, defaultPrefdefClassFile=None, defaultSaveDir=None,
+                 defaultDetectorModelDir=None):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__appname__)
 
@@ -123,6 +125,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Load predefined classes to the list
         self.loadPredefinedClasses(defaultPrefdefClassFile)
         self.defaultPrefdefClassFile = defaultPrefdefClassFile
+        self.detectorModelDir = defaultDetectorModelDir
 
         # Main widgets and related state.
         self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
@@ -225,8 +228,8 @@ class MainWindow(QMainWindow, WindowMixin):
         opendir = action('&Open Dir', self.openDirDialog,
                          'Ctrl+u', 'open', u'Open Dir')
 
-        changeSavedir = action('&Change Save Dir', self.changeSavedirDialog,
-                               'Ctrl+r', 'open', u'Change default saved Annotation dir')
+        automation = action('&Automation', self.chooseAutomationCfg,
+                               'Ctrl+r', 'resetall', u'Change default saved Annotation dir')
 
         openAnnotation = action('&Open Annotation', self.openAnnotationDialog,
                                 'Ctrl+Shift+O', 'open', u'Open Annotation')
@@ -390,7 +393,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.paintLabelsOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
+                   (open, opendir, automation, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -411,11 +414,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
+            open, opendir, automation, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
+            open, opendir, automation, openNextImg, openPrevImg, save, save_format, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -1150,22 +1153,28 @@ class MainWindow(QMainWindow, WindowMixin):
         images.sort(key=lambda x: x.lower())
         return images
 
-    def changeSavedirDialog(self, _value=False):
-        if self.defaultSaveDir is not None:
-            path = ustr(self.defaultSaveDir)
-        else:
-            path = '.'
-
-        dirpath = ustr(QFileDialog.getExistingDirectory(self,
-                                                       '%s - Save annotations to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
-                                                       | QFileDialog.DontResolveSymlinks))
-
-        if dirpath is not None and len(dirpath) > 1:
-            self.defaultSaveDir = dirpath
-
-        self.statusBar().showMessage('%s . Annotation will be saved to %s' %
-                                     ('Change saved folder', self.defaultSaveDir))
-        self.statusBar().show()
+    def chooseAutomationCfg(self, _value=False):
+        self.automationDialog = AutomationDialog(
+            modelRoot=self.detectorModelDir,
+            imgList=self.mImgList,
+            parent=self
+        )
+        self.automationDialog.show()
+        # if self.defaultSaveDir is not None:
+        #     path = ustr(self.defaultSaveDir)
+        # else:
+        #     path = '.'
+        #
+        # dirpath = ustr(QFileDialog.getExistingDirectory(self,
+        #                                                '%s - Save annotations to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
+        #                                                | QFileDialog.DontResolveSymlinks))
+        #
+        # if dirpath is not None and len(dirpath) > 1:
+        #     self.defaultSaveDir = dirpath
+        #
+        # self.statusBar().showMessage('%s . Annotation will be saved to %s' %
+        #                              ('Change saved folder', self.defaultSaveDir))
+        # self.statusBar().show()
 
     def openAnnotationDialog(self, _value=False):
         if self.filePath is None:
@@ -1238,7 +1247,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.changeSavedirDialog()
+                self.chooseAutomationCfg()
                 return
 
         if not self.mayContinue():
@@ -1263,7 +1272,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.changeSavedirDialog()
+                self.chooseAutomationCfg()
                 return
 
         if not self.mayContinue():
@@ -1484,7 +1493,11 @@ def get_main_app(argv=[]):
                      argv[2] if len(argv) >= 3 else os.path.join(
                          os.path.dirname(sys.argv[0]),
                          'data', 'predefined_classes.txt'),
-                     argv[3] if len(argv) >= 4 else None)
+                     argv[3] if len(argv) >= 4 else None,
+                     argv[4] if len(argv) >= 5 else os.path.join(
+                         os.path.dirname(sys.argv[0]),
+                         'data', 'Automation', ''),
+    )
     win.show()
     return app, win
 
