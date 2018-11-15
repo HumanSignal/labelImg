@@ -29,7 +29,8 @@ class AutomationDialog(QDialog):
         # 添加项目
         if modelRoot:
             for model_path in os.listdir(modelRoot):
-                self.model_list.addItem(QListWidgetItem(model_path))
+                if os.path.isdir(os.path.join(modelRoot, model_path)):
+                    self.model_list.addItem(QListWidgetItem(model_path))
         self.model_list.setCurrentRow(0)
         self.model_list.itemSelectionChanged.connect(self.updateStatus)
         left_side.addWidget(self.model_list)
