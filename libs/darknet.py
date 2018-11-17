@@ -81,6 +81,9 @@ class METADATA(Structure):
 # lib = CDLL("/home/pjreddie/documents/darknet/libdarknet.so", RTLD_GLOBAL)
 # lib = CDLL("darknet.so", RTLD_GLOBAL)
 hasGPU = True
+# Darknet library path
+# DARKNET_PATH='./libs/libdarknet/darknet_cpu.so'
+DARKNET_PATH = './libs/libdarknet/darknet_cpu.so'
 if os.name == "nt":
     cwd = os.path.dirname(__file__)
     os.environ['PATH'] = cwd + ';' + os.environ['PATH']
@@ -124,7 +127,7 @@ if os.name == "nt":
             print(
                 "Environment variables indicated a CPU run, but we didn't find `" + winNoGPUdll + "`. Trying a GPU run anyway.")
 else:
-    lib = CDLL("./darknet.so", RTLD_GLOBAL)
+    lib = CDLL(DARKNET_PATH, RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]
@@ -430,27 +433,39 @@ def performDetect(imagePath="data/dog.jpg", thresh=0.25, configPath="./cfg/yolov
     return detections
 
 
-if __name__ == "__main__":
-    root = '../../'
-    img_root = '/home/hviktortsoi/Research/Auto/samples'
-    # init weight
+def detect_generate(img_abspath_list, configPath, weightPath, metaPath):
+    # 初始化网络
     performDetect(
-        configPath=root + '../samples/cfg/yolov3-tiny.cfg',
-        weightPath=root + '../samples/cfg/yolov3-tiny_85428.weights',
-        metaPath=root + '../samples/cfg/trafficlight.data',
+        configPath=configPath,  # 网络架构
+        weightPath=weightPath,  # 权重文件
+        metaPath=metaPath,  # data元文件
         initOnly=True,
     ),
-    for img in sorted(os.listdir(img_root)):
-        if '.jpg' not in img:
+    # 给每个图片生成标注文件
+    for img in img_abspath_list:
+        if '.jpg' not in img and '.jpeg' not in img:
             continue
         # 打开标注文件
-        with open(os.path.join(img_root, img[:img.rfind('.')] + '.txt'), 'w') as annotation_file:
+        with open(img[:img.rfind('.')] + '.txt', 'w') as annotation_file:
             bnd_boxs = detect(
                 net=netMain,
                 num_classes=6,
-                image=os.path.join(img_root, img).encode("ascii"),
+                image=img.encode("ascii"),
                 thresh=0.9,
             )
             annotations = ['{} {} {} {} {}\n'.format(bnd_box[0], *bnd_box[2]) for bnd_box in bnd_boxs]
             print(annotations)
             annotation_file.writelines(annotations)
+
+
+if __name__ == "__main__":
+    detect_generate(
+        img_abspath_list=['/home/hviktortsoi/Research/Auto/samples/image.0009.jpg',
+                          '/home/hviktortsoi/Research/Auto/samples/image.0008.jpg'],
+        configPath='/home/hviktortsoi/Research/Auto/LabelMarker/labelImg/data/Automation/trafficlightWPI/yolov3-tiny.cfg',
+        # 网络架构
+        weightPath='/home/hviktortsoi/Research/Auto/LabelMarker/labelImg/data/Automation/trafficlightWPI/yolov3-tiny_85428.weights',
+        # 权重文件
+        metaPath='/home/hviktortsoi/Research/Auto/LabelMarker/labelImg/data/Automation/trafficlightWPI/trafficlight.data',
+        # data元文件
+    )
