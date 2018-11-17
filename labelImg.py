@@ -104,8 +104,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Save as Pascal voc xml
         self.defaultSaveDir = defaultSaveDir
-        self.usingPascalVocFormat = True
-        self.usingYoloFormat = False
+        self.usingPascalVocFormat = False
+        self.usingYoloFormat = True
 
         # For loading all image under a directory
         self.mImgList = []
@@ -246,11 +246,14 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action('&Save', self.saveFile,
                       'Ctrl+S', 'save', u'Save labels to file', enabled=False)
 
-        save_format = action('&PascalVOC', self.change_format,
-                      'Ctrl+', 'format_voc', u'Change save format', enabled=True)
+        save_format = action('&YOLO', self.change_format,
+                      'Ctrl+', 'format_yolo', u'Change save format', enabled=True)
 
         saveAs = action('&Save As', self.saveFileAs,
                         'Ctrl+Shift+S', 'save-as', u'Save labels to a different file', enabled=False)
+
+        export = action('&Export', self.export_data_set,
+                        'Ctrl+Shift+E', 'save-as', u'Export dataset with annotations', enabled=True)
 
         close = action('&Close', self.closeFile, 'Ctrl+W', 'close', u'Close current file')
 
@@ -393,7 +396,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.paintLabelsOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, automation, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
+                   (open, opendir, automation, openAnnotation, self.menus.recentFiles, save, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -414,11 +417,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, automation, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
+            opendir, automation, openNextImg, openPrevImg, save, export, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, automation, openNextImg, openPrevImg, save, save_format, None,
+            opendir, automation, openNextImg, openPrevImg, save, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -695,7 +698,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def fileitemDoubleClicked(self, item=None):
-        currIndex = self.mImgList.index(ustr(item.text()))
+        currIndex = self.mImgList.index(ustr(item.data(1)))
         if currIndex < len(self.mImgList):
             filename = self.mImgList[currIndex]
             if filename:
@@ -780,12 +783,12 @@ class MainWindow(QMainWindow, WindowMixin):
             if line_color:
                 shape.line_color = QColor(*line_color)
             else:
-                shape.line_color = generateColorByText(label)
+                shape.line_color = self.labelColor[label][0]
 
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
             else:
-                shape.fill_color = generateColorByText(label, alpha=100)
+                shape.fill_color = self.labelColor[label][1]
 
             self.addLabel(shape)
 
@@ -1219,7 +1222,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
         for imgPath in self.mImgList:
-            item = QListWidgetItem(imgPath)
+            # just show filename without path
+            item = QListWidgetItem(os.path.split(imgPath)[1])
+            item.setData(1, imgPath)
             self.fileListWidget.addItem(item)
 
     def verifyImg(self, _value=False):
@@ -1330,7 +1335,7 @@ class MainWindow(QMainWindow, WindowMixin):
         dlg = QFileDialog(self, caption, openDialogPath, filters)
         dlg.setDefaultSuffix(LabelFile.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
-        filenameWithoutExtension = os.path.splitext(self.filePath)[0]
+        filenameWithoutExtension = os.path.splitext(self.filePath)[0] + '.txt'
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
         if dlg.exec_():
@@ -1467,6 +1472,41 @@ class MainWindow(QMainWindow, WindowMixin):
         with open(os.path.join(os.path.abspath(self.defaultPrefdefClassFile) + '.pkl'), 'wb') as f:
             pickle.dump(self.labelColor, f)
 
+    def export_data_set(self):
+        if self.dirname:
+            meta_dir = os.path.join(self.dirname, 'meta')
+            # create meta path to save dataset info
+            if not os.path.exists(meta_dir):
+                os.mkdir(meta_dir)
+                print('meta_dir %s created.' % meta_dir)
+            # data
+            with open(os.path.join(meta_dir, 'meta.data'), 'w') as f_data:
+                f_data.writelines([
+                    'classes= %d\n' % len(self.labelHist),
+                    'train  = %s/train.list\n' % meta_dir,
+                    'valid  = %s/test.list\n' % meta_dir,
+                    'names =  %s/names.list\n' % meta_dir,
+                    'labels =  %s/labels.list\n' % meta_dir,
+                    '# results = \n',
+                    '# backup = \n',
+                ])
+            # names and labels
+            with open(os.path.join(meta_dir, 'names.list'), 'w') as f_name, open(
+                    os.path.join(meta_dir, 'labels.list'), 'w') as f_label:
+                for idx, name in enumerate(self.labelHist):
+                    f_name.write(name + '\n')
+                    f_label.write(str(idx) + '\n')
+            # train.list
+            with open(os.path.join(meta_dir, 'train.list'), 'w') as f_train:
+                for img_path in self.mImgList:
+                    f_train.write(img_path + '\n')
+            # test.list
+            # TODO train test split
+            with open(os.path.join(meta_dir, 'test.list'), 'w') as f_test:
+                for img_path in self.mImgList:
+                    f_test.write(img_path + '\n')
+            print('saving at %s' % meta_dir)
+
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
 
@@ -1492,7 +1532,7 @@ def get_main_app(argv=[]):
     win = MainWindow(argv[1] if len(argv) >= 2 else None,
                      argv[2] if len(argv) >= 3 else os.path.join(
                          os.path.dirname(sys.argv[0]),
-                         'data', 'predefined_classes.txt'),
+                         'data', 'names.list'),
                      argv[3] if len(argv) >= 4 else None,
                      argv[4] if len(argv) >= 5 else os.path.join(
                          os.path.dirname(sys.argv[0]),
