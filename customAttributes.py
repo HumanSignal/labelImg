@@ -61,7 +61,46 @@ class AttributesManager( AbstractAttributesWidgets ):
         self.mainWindow.saveLabels( targetClassificationPath )
         
         return True     
+
+    # just capture rejects
+    def update_rejects( self, rejects ):
+        self.rejects = rejects
+        return True          
         
+    # move the current image file and label file to rejected
+    def reject( self ):
+        if not hasattr(self, "rejects") or self.rejects is None:
+            self.mainWindow.errorMessage( "Copy to Rejects", "Rejects not defined!" )
+            raise ValueError( "Rejects not defined!" )
+        if not hasattr(self, "destination_class") or self.destination_class is None:
+            self.mainWindow.errorMessage( "Copy to Rejects", "Destination Class not defined!" )
+            raise ValueError( "Rejects Class not defined!" )
+
+        try:
+            rejects_path = os.path.join( self.rejects, self.destination_class )
+        except Exception as e:
+            print( "rejects={}, class={}".format( self.rejects, self.destination_class ) )
+            raise e
+            
+            
+        if not os.path.isdir( rejects_path ):
+            self.mainWindow.errorMessage( "Copy to Rejects", "Rejects path does not exist: {}".format( rejects_path )  )
+            raise ValueError( "Rejects path does not exist: {}".format( rejects_path ) )
+            
+        image_filename = os.path.basename( self.mainWindow.filePath )
+        targetImagePath = os.path.join( rejects_path, image_filename )
+
+        classification_root = self.mainWindow.filePath.split(".")[0] + ".xml"
+        classification_filename = image_filename.split(".")[0] + ".xml"
+        targetClassificationPath = os.path.join( rejects_path, classification_filename )
+        
+        shutil.move( self.mainWindow.filePath, targetImagePath )
+        shutil.move( classification_root, targetClassificationPath )
+
+        print( "rejected: {}".format( targetImagePath )  )
+
+        
+        return True             
 
     # specific actions specified above
     def get_global_attribute_definitions( self ):
@@ -69,7 +108,7 @@ class AttributesManager( AbstractAttributesWidgets ):
             "destination": {
                 "order": self.next_index(),
                 "tooltip": "The root directory for class directories (to which the current image and it's PASCAL VOC file will be copied)",            
-                "default": "X:\nutsack\ground-truth-data\nutsack_11_v8",
+                "default": "D:/animals-count/data/estuarybank_12_v06/(pending)",
                 "type": "text",
                 "action": self.update_destination
             },
@@ -80,7 +119,7 @@ class AttributesManager( AbstractAttributesWidgets ):
                 "type": "combo",
                 "choices": [ c for c in self.mainWindow.labelHist ],
                 "action": self.update_destination_class
-            },            
+            },
             "copy": {
                 "order": self.next_index(),
                 "tooltip": "Copy the current image and it's PASCAL VOC file the to directory specified in 'destination'",            
@@ -93,6 +132,19 @@ class AttributesManager( AbstractAttributesWidgets ):
                 "type": "checkbox",
                 "default": "yes" if self.defaults_dirty else "no",
                 "action": self.toggle_defaults_dirty
+            },
+            "rejects": {
+                "order": self.next_index(),
+                "tooltip": "The root directory for class directories (to which the current image and it's PASCAL VOC file will be rejected)",            
+                "default": "D:/animals-count/data/estuarybank_12_v06/(rejects)",
+                "type": "text",
+                "action": self.update_rejects
+            },
+            "reject": {
+                "order": self.next_index(),
+                "tooltip": "Reject the current image and it's PASCAL VOC file the to rejection specified in 'rejects'",            
+                "type": "button",
+                "action": self.reject
             }
         }  
 
