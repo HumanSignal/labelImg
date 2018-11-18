@@ -2,6 +2,7 @@ import pickle
 import os
 import sys
 
+
 class Settings(object):
     def __init__(self):
         # Be default, the home will be in the same folder as labelImg
@@ -28,15 +29,18 @@ class Settings(object):
         return False
 
     def load(self):
-        if os.path.exists(self.path):
-            with open(self.path, 'rb') as f:
-                self.data = pickle.load(f)
-                return True
+        try:
+            if os.path.exists(self.path):
+                with open(self.path, 'rb') as f:
+                    self.data = pickle.load(f)
+                    return True
+        except:
+            print('Loading setting failed')
         return False
 
     def reset(self):
         if os.path.exists(self.path):
             os.remove(self.path)
-            print ('Remove setting pkl file ${0}'.format(self.path))
+            print('Remove setting pkl file ${0}'.format(self.path))
         self.data = {}
         self.path = None
