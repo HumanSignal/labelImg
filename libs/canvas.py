@@ -30,6 +30,7 @@ class Canvas(QWidget):
     drawingPolygon = pyqtSignal(bool)
 
     CREATE, EDIT = list(range(2))
+    DRAGGING_DISTANCE = 5
 
     epsilon = 11.0
 
@@ -169,6 +170,14 @@ class Canvas(QWidget):
                 self.boundedMoveShape(self.selectedShape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
+            elif self.prevPoint:
+                # When pressing left button and move, drag the canvas with scrollbar
+                self.overrideCursor(CURSOR_MOVE)
+                # using delta pos, the step is by default DRAGGING_DISTANCE, which can be optimized
+                delta = pos - self.prevPoint
+                self.scrollRequest.emit(delta.y() * self.scale * self.DRAGGING_DISTANCE, Qt.Vertical)
+                self.scrollRequest.emit(delta.x() * self.scale * self.DRAGGING_DISTANCE, Qt.Horizontal)
+                self.prevPoint = pos
             return
 
         # Just hovering over the canvas, 2 posibilities:
@@ -448,7 +457,10 @@ class Canvas(QWidget):
             rightBottom = self.line[1]
             rectWidth = rightBottom.x() - leftTop.x()
             rectHeight = rightBottom.y() - leftTop.y()
-            p.setPen(self.drawingRectColor)
+            # Use configured line width while drawing rect
+            pen = QPen(self.drawingRectColor)
+            pen.setWidth(max(Shape.line_width, int(round(2.0 / self.scale))))
+            p.setPen(pen)
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
             p.drawRect(leftTop.x(), leftTop.y(), rectWidth, rectHeight)
@@ -582,10 +594,17 @@ class Canvas(QWidget):
 
         mods = ev.modifiers()
         if Qt.ControlModifier == int(mods) and v_delta:
-            self.zoomRequest.emit(v_delta)
-        else:
+            # In case using **touch pad**, which can detect both vertical and horizontal delta
             v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
             h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
+        elif Qt.ShiftModifier== int(mods) and v_delta:
+            # since this framework can only detect vertical delta of **mouse** wheel,
+            # thus use vertical delta in place of horizontal delta
+            # when pressing shift+mouse wheel
+            v_delta and self.scrollRequest.emit(v_delta, Qt.Horizontal)
+        else:
+            # Zoom IN/OUT
+            self.zoomRequest.emit(v_delta / 2)
         ev.accept()
 
     def keyPressEvent(self, ev):

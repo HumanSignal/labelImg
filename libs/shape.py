@@ -18,7 +18,9 @@ DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
+DEFAULT_LINE_WIDTH = 3
 MIN_Y_LABEL = 10
+LABEL_FONT_SIZE = 16
 
 
 class Shape(object):
@@ -29,6 +31,7 @@ class Shape(object):
     # The following class variables influence the drawing
     # of _all_ shape objects.
     line_color = DEFAULT_LINE_COLOR
+    line_width = DEFAULT_LINE_WIDTH
     fill_color = DEFAULT_FILL_COLOR
     select_line_color = DEFAULT_SELECT_LINE_COLOR
     select_fill_color = DEFAULT_SELECT_FILL_COLOR
@@ -89,7 +92,7 @@ class Shape(object):
             color = self.select_line_color if self.selected else self.line_color
             pen = QPen(color)
             # Try using integer sizes for smoother drawing(?)
-            pen.setWidth(max(1, int(round(2.0 / self.scale))))
+            pen.setWidth(max(self.line_width, int(round(2.0 / self.scale))))
             painter.setPen(pen)
 
             line_path = QPainterPath()
@@ -119,15 +122,21 @@ class Shape(object):
                     min_x = min(min_x, point.x())
                     min_y = min(min_y, point.y())
                 if min_x != sys.maxsize and min_y != sys.maxsize:
+                    # draw text background rect
+                    painter.fillRect(min_x, min_y - (LABEL_FONT_SIZE + 4), len(self.label) * LABEL_FONT_SIZE,
+                                     LABEL_FONT_SIZE + 4, color)
+                    # draw text
+                    # set background to be white if not selected else black
+                    painter.setPen(QPen(QColor(255, 255, 255, 255) if not self.selected else QColor(0, 0, 0, 255)))
                     font = QFont()
-                    font.setPointSize(8)
-                    font.setBold(True)
+                    font.setPointSize(LABEL_FONT_SIZE)
+                    # font.setBold(True)
                     painter.setFont(font)
                     if(self.label == None):
                         self.label = ""
                     if(min_y < MIN_Y_LABEL):
                         min_y += MIN_Y_LABEL
-                    painter.drawText(min_x, min_y, self.label)
+                    painter.drawText(min_x, min_y - 2, self.label)
 
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color
