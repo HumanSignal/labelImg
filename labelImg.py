@@ -439,7 +439,13 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.recentFiles = recentFileQStringList = settings.get(SETTING_RECENT_FILES)
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
-        position = settings.get(SETTING_WIN_POSE, QPoint(0, 0))
+        position = QPoint(0, 0)
+        saved_position = settings.get(SETTING_WIN_POSE, position)
+        # Fix the multiple monitors issue
+        for i in range(QApplication.desktop().screenCount()):
+            if QApplication.desktop().availableGeometry(i).contains(saved_position):
+                position = saved_position
+                break
         self.resize(size)
         self.move(position)
         saveDir = ustr(settings.get(SETTING_SAVE_DIR, None))
