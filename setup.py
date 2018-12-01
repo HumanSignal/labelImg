@@ -30,7 +30,7 @@ required_packages.append('labelImg')
 APP = ['labelImg.py']
 OPTIONS = {
     'argv_emulation': True,
-    'iconfile': 'icons/app.icns'
+    'iconfile': 'resources/icons/app.icns'
 }
 
 setup(
