@@ -9,7 +9,7 @@ def ustr(x):
         if type(x) == str:
             return x.decode(DEFAULT_ENCODING)
         if type(x) == QString:
-            return unicode(x, DEFAULT_ENCODING)
+            return unicode(x)
         return x
     else:
         return x
