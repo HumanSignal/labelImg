@@ -4,7 +4,9 @@ import re
 import resources
 import os
 import sys
+import locale
 from libs.ustr import ustr
+
 try:
     from PyQt5.QtCore import *
 except ImportError:
@@ -13,6 +15,7 @@ except ImportError:
         sip.setapi('QVariant', 2)
     from PyQt4.QtCore import *
 
+DEFAULT_LOCALE = locale.getlocale()[0] if locale.getlocale() and len(locale.getlocale()) > 0 else os.getenv('LANG')
 
 class StringBundle:
 
@@ -26,7 +29,7 @@ class StringBundle:
             self.__loadBundle(path)
 
     @classmethod
-    def getBundle(cls, localeStr=os.getenv('LANG')):
+    def getBundle(cls, localeStr=DEFAULT_LOCALE):
         return StringBundle(cls.__create_key, localeStr)
 
     def getString(self, stringId):
@@ -37,11 +40,12 @@ class StringBundle:
         resultPaths = []
         basePath = ":/strings"
         resultPaths.append(basePath)
-        # Don't follow standard BCP47. Simple fallback
-        tags = re.split('[^a-zA-Z]', localeStr)
-        for tag in tags:
-            lastPath = resultPaths[-1]
-            resultPaths.append(lastPath + '-' + tag)
+        if localeStr is not None:
+            # Don't follow standard BCP47. Simple fallback
+            tags = re.split('[^a-zA-Z]', localeStr)
+            for tag in tags:
+                lastPath = resultPaths[-1]
+                resultPaths.append(lastPath + '-' + tag)
 
         return resultPaths
 
