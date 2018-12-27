@@ -758,6 +758,15 @@ class MainWindow(QMainWindow, WindowMixin):
         for label, points, line_color, fill_color, difficult in shapes:
             shape = Shape(label=label)
             for x, y in points:
+
+                # Ensure the labels are within the bounds of the image. If not, fix them.
+                if x < 0 or x > self.canvas.pixmap.width() or y < 0 or y > self.canvas.pixmap.height():
+                    x = max(x, 0)
+                    y = max(y, 0)
+                    x = min(x, self.canvas.pixmap.width())
+                    y = min(y, self.canvas.pixmap.height())
+                    self.setDirty()
+
                 shape.addPoint(QPointF(x, y))
             shape.difficult = difficult
             shape.close()
