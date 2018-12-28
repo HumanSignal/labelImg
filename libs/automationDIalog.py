@@ -130,3 +130,5 @@ class AutomationDialog(QDialog):
         QMessageBox.information(self, 'Ok', self.tr('Generate annotation done.'),
                                 QMessageBox.Ok)
         self.close()
+        self.parent.openNextImg()
+        self.parent.openPrevImg()

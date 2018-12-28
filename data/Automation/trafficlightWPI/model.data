@@ -1,0 +1,3 @@
+classes = 6
+labels = /home/hviktortsoi/Research/Auto/LabelMarker/labelImg/data/Automation/trafficlightWPI/labels.list
+names = /home/hviktortsoi/Research/Auto/LabelMarker/labelImg/data/Automation/trafficlightWPI/names.list
