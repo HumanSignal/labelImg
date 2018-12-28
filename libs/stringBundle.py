@@ -15,7 +15,6 @@ except ImportError:
         sip.setapi('QVariant', 2)
     from PyQt4.QtCore import *
 
-DEFAULT_LOCALE = locale.getlocale()[0] if locale.getlocale() and len(locale.getlocale()) > 0 else os.getenv('LANG')
 
 class StringBundle:
 
@@ -29,7 +28,14 @@ class StringBundle:
             self.__loadBundle(path)
 
     @classmethod
-    def getBundle(cls, localeStr=DEFAULT_LOCALE):
+    def getBundle(cls, localeStr=None):
+        if localeStr is None:
+            try:
+                localeStr = locale.getlocale()[0] if locale.getlocale() and len(
+                    locale.getlocale()) > 0 else os.getenv('LANG')
+            except:
+                print('Invalid locale')
+                locale = 'en'
         return StringBundle(cls.__create_key, localeStr)
 
     def getString(self, stringId):
