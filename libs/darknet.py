@@ -82,8 +82,8 @@ class METADATA(Structure):
 # lib = CDLL("darknet.so", RTLD_GLOBAL)
 hasGPU = True
 # Darknet library path
-# DARKNET_PATH='./libs/libdarknet/darknet_cpu.so'
-DARKNET_PATH = './libs/libdarknet/darknet_cpu.so'
+DARKNET_PATH='./libs/libdarknet/darknet_cpu.so'
+# DARKNET_PATH = './libs/libdarknet/darknet_gpu.so'
 if os.name == "nt":
     cwd = os.path.dirname(__file__)
     os.environ['PATH'] = cwd + ';' + os.environ['PATH']
@@ -433,7 +433,7 @@ def performDetect(imagePath="data/dog.jpg", thresh=0.25, configPath="./cfg/yolov
     return detections
 
 
-def detect_generate(img_abspath_list, configPath, weightPath, metaPath):
+def detect_generate(img_abspath_list, configPath, weightPath, metaPath, origin_mapping):
     # 初始化网络
     performDetect(
         configPath=configPath,  # 网络架构
@@ -443,7 +443,8 @@ def detect_generate(img_abspath_list, configPath, weightPath, metaPath):
     ),
     # 给每个图片生成标注文件
     for img in img_abspath_list:
-        if '.jpg' not in img and '.jpeg' not in img:
+        # 仅仅处理指定的图像格式
+        if '.jpg' not in img and '.jpeg' not in img and '.png' not in img:
             continue
         # 打开标注文件
         with open(img[:img.rfind('.')] + '.txt', 'w') as annotation_file:
@@ -451,9 +452,9 @@ def detect_generate(img_abspath_list, configPath, weightPath, metaPath):
                 net=netMain,
                 num_classes=6,
                 image=img.encode("ascii"),
-                thresh=0.9,
+                thresh=0.3,
             )
-            annotations = ['{} {} {} {} {}\n'.format(bnd_box[0], *bnd_box[2]) for bnd_box in bnd_boxs]
+            annotations = ['{} {} {} {} {}\n'.format(origin_mapping[bnd_box[0]], *bnd_box[2]) for bnd_box in bnd_boxs]
             print(annotations)
             annotation_file.writelines(annotations)
 

@@ -8,6 +8,7 @@ import re
 import sys
 import subprocess
 import pickle
+import json
 
 from functools import partial
 from collections import defaultdict
@@ -104,14 +105,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.settings = Settings()
         self.settings.load()
         settings = self.settings
+        self.curMetaPath = None
 
         # Save as Pascal voc xml
-        self.defaultSaveDir = defaultSaveDir
+        self.defaultSaveDir = None  # defaultSaveDir
         self.usingPascalVocFormat = False
         self.usingYoloFormat = True
 
         # For loading all image under a directory
         self.mImgList = []
+        self.labeledImgList = []
         self.dirname = None
         self.labelHist = []
         self.labelColor = defaultdict(tuple)
@@ -460,7 +463,7 @@ class MainWindow(QMainWindow, WindowMixin):
         saveDir = ustr(settings.get(SETTING_SAVE_DIR, None))
         self.lastOpenDir = ustr(settings.get(SETTING_LAST_OPEN_DIR, None))
         if self.defaultSaveDir is None and saveDir is not None and os.path.exists(saveDir):
-            self.defaultSaveDir = saveDir
+            self.defaultSaveDir = None  # saveDir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
                                          (__appname__, self.defaultSaveDir))
             self.statusBar().show()
@@ -1048,26 +1051,28 @@ class MainWindow(QMainWindow, WindowMixin):
 
             # Label xml file and show bound box according to its filename
             # if self.usingPascalVocFormat is True:
-            if self.defaultSaveDir is not None:
-                basename = os.path.basename(
-                    os.path.splitext(self.filePath)[0])
-                xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
-                txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
+            if self.labeledImgList and filePath in self.labeledImgList:
+                # Only load labeled img's annotation in this session a
+                if self.defaultSaveDir is not None:
+                    basename = os.path.basename(
+                        os.path.splitext(self.filePath)[0])
+                    xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
+                    txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
 
-                """Annotation file priority:
-                PascalXML > YOLO
-                """
-                if os.path.isfile(xmlPath):
-                    self.loadPascalXMLByFilename(xmlPath)
-                elif os.path.isfile(txtPath):
-                    self.loadYOLOTXTByFilename(txtPath)
-            else:
-                xmlPath = os.path.splitext(filePath)[0] + XML_EXT
-                txtPath = os.path.splitext(filePath)[0] + TXT_EXT
-                if os.path.isfile(xmlPath):
-                    self.loadPascalXMLByFilename(xmlPath)
-                elif os.path.isfile(txtPath):
-                    self.loadYOLOTXTByFilename(txtPath)
+                    """Annotation file priority:
+                    PascalXML > YOLO
+                    """
+                    if os.path.isfile(xmlPath):
+                        self.loadPascalXMLByFilename(xmlPath)
+                    elif os.path.isfile(txtPath):
+                        self.loadYOLOTXTByFilename(txtPath)
+                else:
+                    xmlPath = os.path.splitext(filePath)[0] + XML_EXT
+                    txtPath = os.path.splitext(filePath)[0] + TXT_EXT
+                    if os.path.isfile(xmlPath):
+                        self.loadPascalXMLByFilename(xmlPath)
+                    elif os.path.isfile(txtPath):
+                        self.loadYOLOTXTByFilename(txtPath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1224,10 +1229,20 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         # check if there is session files
-        if os.path.exists(os.path.join(dirpath, '.meta')):
-            pass
+        self.curMetaPath = os.path.join(dirpath, '.meta')
+        if os.path.exists(self.curMetaPath):
+            with open(os.path.join(self.curMetaPath, 'labeled_imgs.json'), 'r') as f_labeled:
+                cfg = json.loads(f_labeled.read())
+                self.labeledImgList = cfg['labeled']
+                self.breakpoint = cfg['breakpoint']
+            with open(os.path.join(self.curMetaPath, 'labels.pkl'), 'rb') as f:
+                cfg = pickle.load(f)
+                self.labelHist = cfg['labels']
+                self.labelColor = cfg['colors']
         else:
-            pass
+            os.mkdir(self.curMetaPath)
+            self.persistLabeledImgList([], 0)
+            self.persistLabelList()
 
         self.lastOpenDir = dirpath
         self.dirname = dirpath
@@ -1240,6 +1255,23 @@ class MainWindow(QMainWindow, WindowMixin):
             item = QListWidgetItem(os.path.split(imgPath)[1])
             item.setData(1, imgPath)
             self.fileListWidget.addItem(item)
+
+    def persistLabeledImgList(self, img_list, bkpt):
+        # save labeled img list
+        with open(os.path.join(self.curMetaPath, 'labeled_imgs.json'), 'w') as f_labeled:
+            f_labeled.write(
+                json.dumps({
+                    'labeled': img_list,
+                    'breakpoint': bkpt
+                })
+            )
+
+    def persistLabelList(self):
+        with open(os.path.join(self.curMetaPath, 'labels.pkl'), 'wb') as f:
+            pickle.dump({
+                'labels': self.labelHist,
+                'colors': self.labelColor,
+            }, f)
 
     def verifyImg(self, _value=False):
         # Proceding next image without dialog if having any label
@@ -1260,6 +1292,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.saveFile()
 
     def openPrevImg(self, _value=False):
+        # save file
+        if self.filePath and self.dirty:
+            filenameWithoutExtension = os.path.splitext(self.filePath)[0] + '.txt'
+            self._saveFile(filenameWithoutExtension)
+
         # Proceding prev image without dialog if having any label
         if self.autoSaving.isChecked():
             if self.defaultSaveDir is not None:
@@ -1285,13 +1322,18 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.loadFile(filename)
 
     def openNextImg(self, _value=False):
+        # save file
+        if self.filePath and self.dirty:
+            filenameWithoutExtension = os.path.splitext(self.filePath)[0] + '.txt'
+            self._saveFile(filenameWithoutExtension)
+
         # Proceding prev image without dialog if having any label
         if self.autoSaving.isChecked():
             if self.defaultSaveDir is not None:
                 if self.dirty is True:
                     self.saveFile()
             else:
-                self.chooseAutomationCfg()
+                # self.chooseAutomationCfg()
                 return
 
         if not self.mayContinue():
@@ -1352,6 +1394,7 @@ class MainWindow(QMainWindow, WindowMixin):
         filenameWithoutExtension = os.path.splitext(self.filePath)[0] + '.txt'
         dlg.selectFile(filenameWithoutExtension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
+        dlg.setOption(QFileDialog.DontConfirmOverwrite, True)
         if dlg.exec_():
             fullFilePath = ustr(dlg.selectedFiles()[0])
             return os.path.splitext(fullFilePath)[0]  # Return file path without the extension.
@@ -1362,6 +1405,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)
             self.statusBar().show()
+            # add path to labeled list
+            if not self.filePath in self.labeledImgList:
+                self.labeledImgList.append(self.filePath)
+                self.persistLabeledImgList(self.labeledImgList, 0)
+            print(self.labeledImgList)
 
     def closeFile(self, _value=False):
         if not self.mayContinue():
@@ -1467,7 +1515,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         self.set_format(FORMAT_YOLO)
-        tYoloParseReader = YoloReader(txtPath, self.image, self.defaultPrefdefClassFile)
+        tYoloParseReader = YoloReader(txtPath, self.image, self.labelHist)
         shapes = tYoloParseReader.getShapes()
         print(shapes)
         self.loadLabels(shapes)
@@ -1483,8 +1531,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def update_label_color(self, label, line_color, fill_color):
         self.labelColor[label] = (line_color, fill_color)
-        with open(os.path.join(os.path.abspath(self.defaultPrefdefClassFile) + '.pkl'), 'wb') as f:
-            pickle.dump(self.labelColor, f)
+        self.persistLabelList()
 
     def export_data_set(self):
         if self.dirname:

@@ -18,6 +18,7 @@ class AutomationDialog(QDialog):
 
     def __init__(self, text='Automation', modelRoot=None, imgList=None, parent=None):
         super(AutomationDialog, self).__init__(parent)
+        self.parent = parent
         # 布局
         container = QVBoxLayout()
         list_container = QHBoxLayout()
@@ -34,11 +35,6 @@ class AutomationDialog(QDialog):
         self.model_list.setCurrentRow(0)
         self.model_list.itemSelectionChanged.connect(self.updateStatus)
         left_side.addWidget(self.model_list)
-        self.txt_total_classes = QLineEdit()
-        self.txt_total_classes.setValidator(QIntValidator())
-        self.txt_total_classes.setText('1')
-        left_side.addWidget(QLabel('Total Label Num'))
-        left_side.addWidget(self.txt_total_classes)
         self.lbl_status = QTextBrowser()
         left_side.addWidget(self.lbl_status)
         # 右侧文件列表
@@ -81,10 +77,6 @@ class AutomationDialog(QDialog):
         if not self.model:
             QMessageBox.warning(self, 'Warning', self.tr('No detector model chosen!!'), QMessageBox.Ok)
             return
-        if self.txt_total_classes.text() == '' or int(self.txt_total_classes.text()) < 1:
-            QMessageBox.warning(self, 'Warning', self.tr('Please input correct label num(total label num >=1)!!'),
-                                QMessageBox.Ok)
-            return
         labels_list_path = os.path.join(self.mode_root, self.model, 'labels.list')
         names_list_path = os.path.join(self.mode_root, self.model, 'names.list')
         cfg_path = os.path.join(self.mode_root, self.model, 'model.cfg')
@@ -96,20 +88,45 @@ class AutomationDialog(QDialog):
                 QMessageBox.warning(self, 'Warning', self.tr('Can\'t find "%s"' % path),
                                     QMessageBox.Ok)
                 return
+        num_classes = 0
+        # 获取类别数目 以及类别列表
+        origin_mapping = {}
+        with open(names_list_path, 'r') as f_name:
+            for line in f_name.readlines():
+                if line != '\n':
+                    new_label = line.replace('\n', '')
+                    # 模型中的同名label在原用户标注中的位置 同名则融合进去 否则添加
+                    if self.parent.labelHist.count(new_label) > 0:
+                        origin_position = self.parent.labelHist.index(new_label)
+                        origin_mapping[num_classes] = origin_position
+                    else:
+                        origin_mapping[num_classes] = len(self.parent.labelHist)
+                        # 将模型中的新label添加到原本的label中去
+                        self.parent.labelHist.append(new_label)
+                        self.parent.labelColor[new_label] = (generateColorByText(new_label),
+                                                             generateColorByText(new_label, 100))
+                    num_classes += 1
+
+            self.parent.persistLabelList()
+
         # 写入data配置文件 用于模型读取类别数 以及标签位置
         with open(meta_path, 'w') as f_data:
             f_data.writelines([
-                "classes = %s\n" % int(self.txt_total_classes.text()),
+                "classes = %s\n" % num_classes,
                 "labels = %s\n" % labels_list_path,
                 "names = %s\n" % names_list_path,
             ])
-        # 初始化模型并检测
+        # 初始化模型并检测 这里offset是原有的用户添加的类别数目
         detect_generate(
             img_abspath_list=self.img_list,
             configPath=cfg_path,
             weightPath=weight_path,
             metaPath=meta_path,
+            origin_mapping=origin_mapping
         )
+        self.parent.labeledImgList += self.img_list
+        self.parent.persistLabeledImgList(self.parent.labeledImgList, 0)
+        print('Done.')
         QMessageBox.information(self, 'Ok', self.tr('Generate annotation done.'),
                                 QMessageBox.Ok)
         self.close()
