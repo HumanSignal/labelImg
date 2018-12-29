@@ -760,11 +760,8 @@ class MainWindow(QMainWindow, WindowMixin):
             for x, y in points:
 
                 # Ensure the labels are within the bounds of the image. If not, fix them.
-                if x < 0 or x > self.canvas.pixmap.width() or y < 0 or y > self.canvas.pixmap.height():
-                    x = max(x, 0)
-                    y = max(y, 0)
-                    x = min(x, self.canvas.pixmap.width())
-                    y = min(y, self.canvas.pixmap.height())
+                x, y, snapped = self.canvas.snapPointToCanvas(x, y)
+                if snapped:
                     self.setDirty()
 
                 shape.addPoint(QPointF(x, y))
