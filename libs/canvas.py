@@ -326,6 +326,20 @@ class Canvas(QWidget):
         y2 = (rect.y() + rect.height()) - point.y()
         self.offsets = QPointF(x1, y1), QPointF(x2, y2)
 
+    def snapPointToCanvas(self, x, y):
+        """
+        Moves a point x,y to within the boundaries of the canvas.
+        :return: (x,y,snapped) where snapped is True if x or y were changed, False if not.
+        """
+        if x < 0 or x > self.pixmap.width() or y < 0 or y > self.pixmap.height():
+            x = max(x, 0)
+            y = max(y, 0)
+            x = min(x, self.pixmap.width())
+            y = min(y, self.pixmap.height())
+            return x, y, True
+
+        return x, y, False
+
     def boundedMoveVertex(self, pos):
         index, shape = self.hVertex, self.hShape
         point = shape[index]
@@ -528,6 +542,10 @@ class Canvas(QWidget):
                 return QPointF(x3, min(max(0, y2), max(y3, y4)))
             else:  # y3 == y4
                 return QPointF(min(max(0, x2), max(x3, x4)), y3)
+
+        # Ensure the labels are within the bounds of the image. If not, fix them.
+        x, y, _ = self.snapPointToCanvas(x, y)
+
         return QPointF(x, y)
 
     def intersectingEdges(self, x1y1, x2y2, points):
