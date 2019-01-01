@@ -698,6 +698,10 @@ class MainWindow(QMainWindow, WindowMixin):
         item = self.currentItem()
         text = self.labelDialog.popUp(item.text())
         if text is not None:
+            # 如果修改的label不在labelHist中 则添加到其中
+            if text not in self.labelHist:
+                self.labelHist.append(text)
+                self.update_label_color(text, generateColorByText(text), generateColorByText(text, 100))
             item.setText(text)
             item.setBackground(self.labelColor[text][0])
             self.setDirty()

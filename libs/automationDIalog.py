@@ -122,7 +122,8 @@ class AutomationDialog(QDialog):
             configPath=cfg_path,
             weightPath=weight_path,
             metaPath=meta_path,
-            origin_mapping=origin_mapping
+            origin_mapping=origin_mapping,
+            num_classes=num_classes
         )
         self.parent.labeledImgList += self.img_list
         self.parent.persistLabeledImgList(self.parent.labeledImgList, 0)

@@ -82,8 +82,8 @@ class METADATA(Structure):
 # lib = CDLL("darknet.so", RTLD_GLOBAL)
 hasGPU = True
 # Darknet library path
-DARKNET_PATH='./libs/libdarknet/darknet_cpu.so'
-# DARKNET_PATH = './libs/libdarknet/darknet_gpu.so'
+# DARKNET_PATH='./libs/libdarknet/darknet_cpu.so'
+DARKNET_PATH = './libs/libdarknet/darknet_gpu.so'
 if os.name == "nt":
     cwd = os.path.dirname(__file__)
     os.environ['PATH'] = cwd + ';' + os.environ['PATH']
@@ -433,7 +433,7 @@ def performDetect(imagePath="data/dog.jpg", thresh=0.25, configPath="./cfg/yolov
     return detections
 
 
-def detect_generate(img_abspath_list, configPath, weightPath, metaPath, origin_mapping):
+def detect_generate(img_abspath_list, configPath, weightPath, metaPath, origin_mapping, num_classes):
     # 初始化网络
     performDetect(
         configPath=configPath,  # 网络架构
@@ -450,9 +450,9 @@ def detect_generate(img_abspath_list, configPath, weightPath, metaPath, origin_m
         with open(img[:img.rfind('.')] + '.txt', 'w') as annotation_file:
             bnd_boxs = detect(
                 net=netMain,
-                num_classes=6,
+                num_classes=num_classes,
                 image=img.encode("ascii"),
-                thresh=0.3,
+                thresh=0.2,
             )
             annotations = ['{} {} {} {} {}\n'.format(origin_mapping[bnd_box[0]], *bnd_box[2]) for bnd_box in bnd_boxs]
             print(annotations)
