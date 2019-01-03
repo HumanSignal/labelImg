@@ -91,9 +91,9 @@ class PascalVocWriter:
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
-            if int(each_object['ymax']) == int(self.imgSize[0]) or (int(each_object['ymin'])== 1):
+            if int(float(each_object['ymax'])) == int(float(self.imgSize[0])) or (int(float(each_object['ymin']))== 1):
                 truncated.text = "1" # max == height or min
-            elif (int(each_object['xmax'])==int(self.imgSize[1])) or (int(each_object['xmin'])== 1):
+            elif (int(float(each_object['xmax']))==int(float(self.imgSize[1]))) or (int(float(each_object['xmin']))== 1):
                 truncated.text = "1" # max == width or min
             else:
                 truncated.text = "0"
@@ -141,10 +141,10 @@ class PascalVocReader:
         return self.shapes
 
     def addShape(self, label, bndbox, difficult):
-        xmin = int(bndbox.find('xmin').text)
-        ymin = int(bndbox.find('ymin').text)
-        xmax = int(bndbox.find('xmax').text)
-        ymax = int(bndbox.find('ymax').text)
+        xmin = int(float(bndbox.find('xmin').text))
+        ymin = int(float(bndbox.find('ymin').text))
+        xmax = int(float(bndbox.find('xmax').text))
+        ymax = int(float(bndbox.find('ymax').text))
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None, difficult))
 
