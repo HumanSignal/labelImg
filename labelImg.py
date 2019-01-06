@@ -340,6 +340,12 @@ class MainWindow(QMainWindow, WindowMixin):
         self.drawSquaresOption.setChecked(settings.get(SETTING_DRAW_SQUARE, False))
         self.drawSquaresOption.triggered.connect(self.toogleDrawSquare)
 
+        # hot-key for choosing the shape which we want.
+        highlight = QAction("High light", self)
+        highlight.setShortcut("b")
+        highlight.triggered.connect(self.chooseHighlight)
+        self.addAction(highlight)
+
         # Store actions for further handling.
         self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
@@ -1443,6 +1449,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toogleDrawSquare(self):
         self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
+
+    def chooseHighlight(self):
+        if self.canvas.isEnabled():
+            self.canvas.chooseHighlight.emit()
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
