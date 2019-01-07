@@ -441,6 +441,9 @@ class Canvas(QWidget):
         if self.selectedShape:
             shape = self.selectedShape
             self.shapes.remove(self.selectedShape)
+            # remove from list
+            if self.selectedShape in self.shape_contains_point_list:
+                self.shape_contains_point_list.remove(self.selectedShape)
             self.selectedShape = None
             self.update()
             return shape
