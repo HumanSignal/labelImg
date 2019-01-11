@@ -18,6 +18,7 @@ DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
+AUTO_LABEL = "auto"
 MIN_Y_LABEL = 10
 
 
@@ -38,13 +39,14 @@ class Shape(object):
     point_size = 8
     scale = 1.0
 
-    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False):
+    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False, manual=True):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
         self.paintLabel = paintLabel
+        self.manual = manual
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -114,10 +116,14 @@ class Shape(object):
             # Draw text at the top-left
             if self.paintLabel:
                 min_x = sys.maxsize
+                max_x = 0
+                max_y = 0
                 min_y = sys.maxsize
                 for point in self.points:
                     min_x = min(min_x, point.x())
                     min_y = min(min_y, point.y())
+                    max_x = min(max(max_x, point.x()), sys.maxsize)
+                    max_y = min(max(max_y, point.y()), sys.maxsize)
                 if min_x != sys.maxsize and min_y != sys.maxsize:
                     font = QFont()
                     font.setPointSize(8)
@@ -128,6 +134,13 @@ class Shape(object):
                     if(min_y < MIN_Y_LABEL):
                         min_y += MIN_Y_LABEL
                     painter.drawText(min_x, min_y, self.label)
+                if not self.manual:
+                    afont = QFont()
+                    afont.setPointSize(10)
+                    afont.setBold(True)
+                    painter.setFont(afont)
+                    coordx, coordy = min_x, max_y
+                    painter.drawText(coordx, coordy, AUTO_LABEL)
 
             if self.fill:
                 color = self.select_fill_color if self.selected else self.fill_color
