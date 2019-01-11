@@ -110,6 +110,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self._noSelectionSlot = False
         self._beginner = True
+        self.videoframemode = False
         self.screencastViewer = self.getAvailableScreencastViewer()
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
@@ -221,6 +222,15 @@ class MainWindow(QMainWindow, WindowMixin):
         openAnnotation = action(getStr('openAnnotation'), self.openAnnotationDialog,
                                 'Ctrl+Shift+O', 'open', getStr('openAnnotationDetail'))
 
+        setCurrentBase = action(getStr('setCurrentBase'), self.setCurrentBase,
+                             'Ctrl+Alt+s', 'save-as', getStr('setCurrentBaseDetail'))
+
+        applyCurrentBase = action(getStr('applyCurrentBase'), self.applyCurrentBase,
+                             'Ctrl+Alt+a', 'verify', getStr('applyCurrentBaseDetail'))
+
+        applyBaseToNextPicture = action(getStr('applyBaseToNextPicture'), self.applyBaseToNextPicture,
+                             'Ctrl+Alt+n', 'next', getStr('applyBaseToNextPictureDetail'))
+
         openNextImg = action(getStr('nextImg'), self.openNextImg,
                              'd', 'next', getStr('nextImgDetail'))
 
@@ -261,6 +271,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         advancedMode = action(getStr('advancedMode'), self.toggleAdvancedMode,
                               'Ctrl+Shift+A', 'expert', getStr('advancedModeDetail'),
+                              checkable=True)
+
+        videoFrameMode = action(getStr('videoFrameMode'), self.toggleVideoFrameMode,
+                              'Ctrl+Shift+V', 'videoframe', getStr('videoFrameModeDetail'),
                               checkable=True)
 
         hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
@@ -337,19 +351,21 @@ class MainWindow(QMainWindow, WindowMixin):
         # Store actions for further handling.
         self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
-                              createMode=createMode, editMode=editMode, advancedMode=advancedMode,
+                              createMode=createMode, editMode=editMode, advancedMode=advancedMode, videoFrameMode=videoFrameMode,
+                              setCurrentBase=setCurrentBase, applyCurrentBase=applyCurrentBase, applyBaseToNextPicture=applyBaseToNextPicture, 
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                               fitWindow=fitWindow, fitWidth=fitWidth,
                               zoomActions=zoomActions,
                               fileMenuActions=(
                                   open, opendir, save, saveAs, close, resetAll, quit),
-                              beginner=(), advanced=(),
+                              beginner=(), advanced=(), videoFrame=(),
                               editMenu=(edit, copy, delete,
                                         None, color1, self.drawSquaresOption),
                               beginnerContext=(create, edit, copy, delete),
                               advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
+                              videoFrameContext=(setCurrentBase, applyCurrentBase, applyBaseToNextPicture),
                               onLoadActive=(
                                   close, create, createMode, editMode),
                               onShapesPresent=(saveAs, hideAll, showAll))
@@ -386,7 +402,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.autoSaving,
             self.singleClassMode,
             self.displayLabelOption,
-            labels, advancedMode, None,
+            labels, advancedMode, videoFrameMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
             fitWindow, fitWidth))
@@ -408,6 +424,8 @@ class MainWindow(QMainWindow, WindowMixin):
             open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
             createMode, editMode, None,
             hideAll, showAll)
+
+        self.actions.videoFrame = (setCurrentBase, applyCurrentBase, applyBaseToNextPicture)
 
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
@@ -465,6 +483,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
             self.actions.advancedMode.setChecked(True)
             self.toggleAdvancedMode()
+
+        if xbool(settings.get(SETTING_VIDEOFRAME_MODE, False)):
+            self.actions.videoFrameMode.setChecked(True)
+            self.toggleVideoFrameMode()
 
         # Populate the File menu dynamically.
         self.updateFileMenu()
@@ -532,11 +554,35 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
+    def toggleVideoFrameMode(self, value=True):
+        self.videoframemode = value
+        self.populateModeActions()
+        if value:
+            self.displayLabelOption.setChecked(True)
+            self.togglePaintLabelsOption()
+
+    def setCurrentBase(self):
+        return
+
+    def applyCurrentBase(self):
+        return
+
+    def applyBaseToNextPicture(self):
+        return
+
+
     def populateModeActions(self):
         if self.beginner():
             tool, menu = self.actions.beginner, self.actions.beginnerContext
         else:
             tool, menu = self.actions.advanced, self.actions.advancedContext
+        if self.videoframemode:
+            tool, menu = list(tool), list(menu)
+            for act in reversed(self.actions.videoFrame):
+                tool.insert(3, act)
+            for con in reversed(self.actions.videoFrameContext):
+                menu.insert(3,  con)
+            tool, menu = tuple(tool), tuple(menu)
         self.tools.clear()
         addActions(self.tools, tool)
         self.canvas.menus[0].clear()
@@ -1108,6 +1154,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_FILL_COLOR] = self.fillColor
         settings[SETTING_RECENT_FILES] = self.recentFiles
         settings[SETTING_ADVANCE_MODE] = not self._beginner
+        settings[SETTING_VIDEOFRAME_MODE] = self.videoframemode = False
         if self.defaultSaveDir and os.path.exists(self.defaultSaveDir):
             settings[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
         else:
