@@ -122,6 +122,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.itemsToShapes = {}
         self.shapesToItems = {}
+        # self.itemsToShapesBase = {}
+        self.shapesBase = {}
+        self.lastManualFile = None
         self.prevLabelText = ''
 
         listLayout = QVBoxLayout()
@@ -561,7 +564,48 @@ class MainWindow(QMainWindow, WindowMixin):
             self.displayLabelOption.setChecked(True)
             self.togglePaintLabelsOption()
 
+    def clearManualHistory(self):
+        self.shapesBase.clear()
+        # self.itemsToShapesBase.clear()
+
+    def addShapeToBase(self, shape):
+        if shape in self.shapesBase:
+           return
+        self.shapesBase[shape] = shape 
+    
+    def findRepresentativeInBase(self, curshape, dic=None):
+        if dic is None:
+            dic = self.shapesBase
+        # if len(self.shapesBase)         
+        return dic[curshape]
+
+    '''TODO: 
+        Think of this again!
+        Possiblity 1
+            Make all (auto and manual) shapes to current base. 
+            Pro: Get rid of now unnecesary auto shapes for future.
+            Contra: 
+                Maybe I only want to delete this shape in only this frame?
+                AND: Since we vary the new position a little, the new base might be a little offsetted.
+        Possibility 2 - Opposite
+            Make only manual shapes to current base.
+            Contra: Lots of overhead for correct auto shapes from before to do again.
+
+        Try Possibility 1, where auto shapes are searched in the previous base and reused there.
+    '''    
     def setCurrentBase(self):
+        if self.videoframemode and len(self.shapesToItems) > 0:
+            currentHistory = self.shapesBase.copy()
+            self.clearManualHistory()
+            for shape in self.shapesToItems:
+                if shape.manual:
+                    self.addShapeToBase(shape)
+                else:
+                    foundRepresentative = self.findRepresentativeInBase(shape, dic=currentHistory)
+                    if foundRepresentative is None:
+                        self.addShapeToBase(shape)
+                    else:
+                        self.addShapeToBase(foundRepresentative)
         return
 
     def applyCurrentBase(self):
