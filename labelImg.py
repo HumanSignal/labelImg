@@ -219,6 +219,9 @@ class MainWindow(QMainWindow, WindowMixin):
         opendir = action(getStr('openDir'), self.openDirDialog,
                          'Ctrl+u', 'open', getStr('openDir'))
 
+        refreshdir = action(getStr('refreshDir'), self.refreshDirAction,
+                        'Ctrl+Alt+R', 'refresh', getStr('refreshDirDetail'))
+
         changeSavedir = action(getStr('changeSaveDir'), self.changeSavedirDialog,
                                'Ctrl+r', 'open', getStr('changeSavedAnnotationDir'))
 
@@ -399,7 +402,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
+                   (open, opendir, refreshdir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -1311,6 +1314,20 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.verified = self.labelFile.verified
             self.paintCanvas()
             self.saveFile()
+
+    def refreshDirAction(self, _value=False):
+        if not self.mayContinue():
+            return
+
+        dirpath=self.lastOpenDir
+
+        defaultOpenDirPath = dirpath if dirpath else '.'
+        if self.lastOpenDir and os.path.exists(self.lastOpenDir):
+            defaultOpenDirPath = self.lastOpenDir
+        else:
+            defaultOpenDirPath = os.path.dirname(self.filePath) if self.filePath else '.'
+
+        self.importDirImages(defaultOpenDirPath)
 
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label
