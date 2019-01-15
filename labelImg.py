@@ -579,8 +579,8 @@ class MainWindow(QMainWindow, WindowMixin):
     def findRepresentativeInBase(self, curshape, dic=None):
         if dic is None:
             dic = self.shapesBase
-        # if len(self.shapesBase)         
-        return dic[curshape]
+        # if len(self.shapesBase)      
+        return dic[dic.index(curshape)]
 
     '''TODO: 
         Think of this again!
@@ -604,19 +604,82 @@ class MainWindow(QMainWindow, WindowMixin):
                 if shape.manual:
                     self.addShapeToBase(shape)
                 else:
-                    foundRepresentative = self.findRepresentativeInBase(shape, dic=currentHistory)
-                    if foundRepresentative is None:
+                    # foundRepresentative = self.findRepresentativeInBase(shape, dic=currentHistory)
+                    if shape not in currentHistory:
                         self.addShapeToBase(shape)
                     else:
-                        self.addShapeToBase(foundRepresentative)
+                        self.addShapeToBase(shape)
         return
 
     def applyCurrentBase(self):
+        if len(self.shapesToItems) > 0:
+            yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
+            """ TODO: Finish this block of code!!! """
+            msgbox = QMessageBox.question(self, "Overwrite or keep", "If you want to keep the existing labels, click yes:",
+                yes | no | cancel
+            )
+            print("Img already has shapes. Ask if user wants to add or to overwrite")
+            """ Ask the user, if he wants to add the base to the current shapes, 
+            or if he wants to overwrite current """
+        if len(self.shapesBase) > 0:
+            shapes = []
+            for shape in self.shapesBase:
+                shape.manual = False
+                if shape in self.itemsToShapes:
+                    continue
+                print("Added Shape ", shape.label, " to current img")
+                shapes.append(shape)
+            self.addAutoLabels(shapes)
+            if len(shapes) > 0:
+                self.setDirty()
+        else:
+            print("No shapes in base")
+            """ Prompt info that there is no base """
         return
 
     def applyBaseToNextPicture(self):
         return
+    
+    # def addAutoLabels(self, shapes):
+        
 
+    def addAutoLabels(self, shapes, keep=True):
+        s = []
+        line_color, fill_color = None, None
+        if keep:
+            for existingshape in self.shapesToItems:
+                s.insert(0,existingshape)
+
+        for currentshape in shapes:
+            shape = Shape(label=currentshape.label)
+            points = map(lambda p: (p.x(), p.y()), currentshape.points)
+            for x, y in points:
+
+                # Ensure the labels are within the bounds of the image. If not, fix them.
+                x, y, snapped = self.canvas.snapPointToCanvas(x, y)
+                if snapped:
+                    self.setDirty()
+
+                shape.addPoint(QPointF(x, y))
+            shape.difficult = currentshape.difficult
+            shape.manual = currentshape.manual
+            shape.close()
+            s.append(shape)
+
+            if line_color:
+                shape.line_color = QColor(*line_color)
+            else:
+                shape.line_color = generateColorByText(shape.label)
+
+            if fill_color:
+                shape.fill_color = QColor(*fill_color)
+            else:
+                shape.fill_color = generateColorByText(shape.label)
+
+            self.addLabel(shape)
+
+        self.canvas.loadShapes(s)
+        # self.canvas.repaint()
 
     def populateModeActions(self):
         if self.beginner():
@@ -845,6 +908,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.takeItem(self.labelList.row(item))
         del self.shapesToItems[shape]
         del self.itemsToShapes[item]
+        if not shape.manual:
+            # del self.shapesBase[shape]
+            """ TODO: Ask user for keeping or deleting from base. """
+            pass
 
     def loadLabels(self, shapes):
         s = []
