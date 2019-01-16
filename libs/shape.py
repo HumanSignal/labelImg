@@ -10,6 +10,7 @@ except ImportError:
     from PyQt4.QtCore import *
 
 from libs.lib import distance
+from copy import copy
 import sys
 
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
@@ -206,6 +207,12 @@ class Shape(object):
         if self.fill_color != Shape.fill_color:
             shape.fill_color = self.fill_color
         shape.difficult = self.difficult
+        shape.manual = self.manual
+        return shape
+
+    def deepCopy(self):
+        shape = copy(self)
+        shape.points = [copy(p) for p in shape.points]
         return shape
 
     def __len__(self):

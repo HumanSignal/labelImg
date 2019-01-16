@@ -7,6 +7,7 @@ import platform
 import re
 import sys
 import subprocess
+import random
 
 from functools import partial
 from collections import defaultdict
@@ -29,7 +30,7 @@ except ImportError:
 import resources
 # Add internal libs
 from libs.constants import *
-from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText
+from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText, randomizationValidator
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.stringBundle import StringBundle
@@ -139,7 +140,28 @@ class MainWindow(QMainWindow, WindowMixin):
         useDefaultLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
         useDefaultLabelContainer = QWidget()
         useDefaultLabelContainer.setLayout(useDefaultLabelQHBoxLayout)
-
+        
+        # Create Widget for randomization of points
+        self.randomization = type('', (), {})()
+        self.randomization.layout = type('', (), {})()
+        self.randomization.layout.label = QLabel('Randomization [px]')
+        self.randomization.layout.frame = QWidget()
+        self.randomization.input = type('', (), {})()
+        self.randomization.input.x = QLineEdit()
+        self.randomization.input.y = QLineEdit()
+        self.randomization.input.x.setValidator(randomizationValidator())
+        self.randomization.input.y.setValidator(randomizationValidator())
+        randomizationFrameLayout = QHBoxLayout()
+        randomizationFrameLayout.addWidget(QLabel('X:'))
+        randomizationFrameLayout.addWidget(self.randomization.input.x)
+        randomizationFrameLayout.addWidget(QLabel('Y:'))
+        randomizationFrameLayout.addWidget(self.randomization.input.y)
+        self.randomization.layout.frame.setLayout(randomizationFrameLayout)
+        self.randomization.layout.label.setVisible(False)
+        self.randomization.layout.frame.setVisible(False)
+        self.randomization.input.x.setText(str(settings.get(DEFAULT_PIXEL_RANDOM_X, 3)))
+        self.randomization.input.y.setText(str(settings.get(DEFAULT_PIXEL_RANDOM_Y, 3)))
+ 
         # Create a widget for edit and diffc button
         self.diffcButton = QCheckBox(getStr('useDifficult'))
         self.diffcButton.setChecked(False)
@@ -151,6 +173,9 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
         listLayout.addWidget(useDefaultLabelContainer)
+        # Add Randomization to layout
+        listLayout.addWidget(self.randomization.layout.label)
+        listLayout.addWidget(self.randomization.layout.frame)
 
         # Create and add a widget for showing current label items
         self.labelList = QListWidget()
@@ -566,6 +591,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if value:
             self.displayLabelOption.setChecked(True)
             self.togglePaintLabelsOption()
+        self.randomization.layout.label.setVisible(value)
+        self.randomization.layout.frame.setVisible(value)
+
 
     def clearManualHistory(self):
         self.shapesBase.clear()
@@ -611,6 +639,19 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.addShapeToBase(shape)
         return
 
+    def generateRandomization(self, shape):
+        randmax = [1,1]
+        try:
+            x, y = self.randomization.input.x, self.randomization.input.y
+            randmax = list(map(lambda x: int(x.text()), [x, y]))
+        except:
+            pass
+        rand = []
+        for i in range(2):
+            rand.append(random.randint(-randmax[i], randmax[i]))
+        for point in shape.points:
+            point += QPointF(rand[0], rand[1])
+
     def applyCurrentBase(self):
         if len(self.shapesBase) > 0:
             if len(self.shapesToItems) > 0:
@@ -633,11 +674,13 @@ class MainWindow(QMainWindow, WindowMixin):
                 else:
                     return
             shapes = []
-            for shape in self.shapesBase:
+            for oshape in self.shapesBase:
+                shape = oshape.deepCopy()
                 shape.manual = False
                 if shape in self.itemsToShapes:
                     continue
                 print("Added Shape ", shape.label, " to current img")
+                self.generateRandomization(shape)
                 shapes.append(shape)
             self.addAutoLabels(shapes)
             if len(shapes) > 0:
