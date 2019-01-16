@@ -612,16 +612,26 @@ class MainWindow(QMainWindow, WindowMixin):
         return
 
     def applyCurrentBase(self):
-        if len(self.shapesToItems) > 0:
-            yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
-            """ TODO: Finish this block of code!!! """
-            msgbox = QMessageBox.question(self, "Overwrite or keep", "If you want to keep the existing labels, click yes:",
-                yes | no | cancel
-            )
-            print("Img already has shapes. Ask if user wants to add or to overwrite")
-            """ Ask the user, if he wants to add the base to the current shapes, 
-            or if he wants to overwrite current """
         if len(self.shapesBase) > 0:
+            if len(self.shapesToItems) > 0:
+                yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
+                """ TODO: Maybe try to change those buttons to customized ones!!! """
+                answer = QMessageBox.question(self, "Overwrite existing labels?", 
+                    ("You already have labels in this frame.\n"
+                    "[Yes]: Would you like to overwrite the labels in this frame,\n"
+                    "[No]: would you like to keep the current labels and apply the base to it,\n"
+                    "or would you like to cancel?\n\n"
+                    "Please keep in mind that clicking no could lead to duplicates."),
+                    yes | no | cancel
+                )
+                if answer == yes:
+                    tmp = self.shapesToItems.copy()
+                    for shape in tmp:
+                        self.remLabel(shape)
+                elif answer == no:
+                    pass
+                else:
+                    return
             shapes = []
             for shape in self.shapesBase:
                 shape.manual = False
@@ -638,10 +648,17 @@ class MainWindow(QMainWindow, WindowMixin):
         return
 
     def applyBaseToNextPicture(self):
+        # Apply changes directly to next picture
+        if len(self.shapesBase) <= 0:
+            QMessageBox.question(self, "No Base selected", 
+                    ("You are trying to use the next Frame Feature, but you haven't set a base, yet.\n\n"
+                    "This Feature only works, when you have set a base, because it automatically applies the current base to the next frame."),
+                    QMessageBox.Ok
+                )
+            return
+        self.openNextImg()
+        self.applyCurrentBase()
         return
-    
-    # def addAutoLabels(self, shapes):
-        
 
     def addAutoLabels(self, shapes, keep=True):
         s = []
@@ -680,7 +697,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.canvas.loadShapes(s)
         # self.canvas.repaint()
-
+        
     def populateModeActions(self):
         if self.beginner():
             tool, menu = self.actions.beginner, self.actions.beginnerContext
@@ -908,10 +925,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.takeItem(self.labelList.row(item))
         del self.shapesToItems[shape]
         del self.itemsToShapes[item]
-        if not shape.manual:
-            # del self.shapesBase[shape]
-            """ TODO: Ask user for keeping or deleting from base. """
-            pass
 
     def loadLabels(self, shapes):
         s = []
