@@ -28,6 +28,8 @@
 <file alias="zoom-out">resources/icons/zoom-out.png</file>
 <file alias="delete">resources/icons/cancel.png</file>
 <file alias="next">resources/icons/next.png</file>
+<file alias="fastforward">resources/icons/fastforward.png</file>
+<file alias="saveBase">resources/icons/saveBase.png</file>
 <file alias="prev">resources/icons/prev.png</file>
 <file alias="resetall">resources/icons/resetall.png</file>
 <file alias="verify">resources/icons/verify.png</file>

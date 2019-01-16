@@ -254,13 +254,13 @@ class MainWindow(QMainWindow, WindowMixin):
                                 'Ctrl+Shift+O', 'open', getStr('openAnnotationDetail'))
 
         setCurrentBase = action(getStr('setCurrentBase'), self.setCurrentBase,
-                             'Ctrl+Alt+s', 'save-as', getStr('setCurrentBaseDetail'))
+                             'Ctrl+Alt+s', 'saveBase', getStr('setCurrentBaseDetail'))
 
         applyCurrentBase = action(getStr('applyCurrentBase'), self.applyCurrentBase,
                              'Ctrl+Alt+a', 'verify', getStr('applyCurrentBaseDetail'))
 
         applyBaseToNextPicture = action(getStr('applyBaseToNextPicture'), self.applyBaseToNextPicture,
-                             'Ctrl+Alt+n', 'next', getStr('applyBaseToNextPictureDetail'))
+                             'Ctrl+Alt+n', 'fastforward', getStr('applyBaseToNextPictureDetail'))
 
         openNextImg = action(getStr('nextImg'), self.openNextImg,
                              'd', 'next', getStr('nextImgDetail'))
