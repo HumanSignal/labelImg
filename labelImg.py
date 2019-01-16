@@ -305,7 +305,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               checkable=True)
 
         videoFrameMode = action(getStr('videoFrameMode'), self.toggleVideoFrameMode,
-                              'Ctrl+Shift+V', 'videoframe', getStr('videoFrameModeDetail'),
+                              'Ctrl+Alt+v', 'videoframe', getStr('videoFrameModeDetail'),
                               checkable=True)
 
         hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
@@ -679,15 +679,17 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.manual = False
                 if shape in self.itemsToShapes:
                     continue
-                print("Added Shape ", shape.label, " to current img")
                 self.generateRandomization(shape)
                 shapes.append(shape)
             self.addAutoLabels(shapes)
             if len(shapes) > 0:
                 self.setDirty()
         else:
-            print("No shapes in base")
-            """ Prompt info that there is no base """
+            QMessageBox.question(self, "No Base selected", 
+                    ("To apply a Base, you have to select one first. This can be done by having at least 1 Label in the picture "
+                    "and then hitting the Save as base button."),
+                    QMessageBox.Ok
+                )
         return
 
     def applyBaseToNextPicture(self):
