@@ -675,6 +675,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.canvas.editing():
             return
         item = self.currentItem()
+        if not item:
+            return
         text = self.labelDialog.popUp(item.text())
         if text is not None:
             item.setText(text)
