@@ -591,6 +591,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if value:
             self.displayLabelOption.setChecked(True)
             self.togglePaintLabelsOption()
+            self.autoSaving.setChecked(True)
         self.randomization.layout.label.setVisible(value)
         self.randomization.layout.frame.setVisible(value)
 
