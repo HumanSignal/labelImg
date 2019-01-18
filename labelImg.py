@@ -59,6 +59,17 @@ def util_qt_strlistclass():
     return QStringList if have_qstring() else list
 
 
+def natural_sort(list, key=lambda s:s):
+    """
+    Sort the list into natural alphanumeric order.
+    """
+    def get_alphanum_key_func(key):
+        convert = lambda text: int(text) if text.isdigit() else text
+        return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
+    sort_key = get_alphanum_key_func(key)
+    list.sort(key=sort_key)
+
+
 class WindowMixin(object):
 
     def menu(self, title, actions=None):
@@ -1138,7 +1149,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     relativePath = os.path.join(root, file)
                     path = ustr(os.path.abspath(relativePath))
                     images.append(path)
-        images.sort(key=lambda x: x.lower())
+        natural_sort(images, key=lambda x: x.lower())
         return images
 
     def changeSavedirDialog(self, _value=False):
