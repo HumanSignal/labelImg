@@ -214,34 +214,55 @@ You can edit the
 `data/predefined\_classes.txt <https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt>`__
 to load pre-defined classes
 
+Video Frame Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you have frames of a video, you might encounter a lot of similar pictures. This would be the mode of your choice then.
+Just go to View and activate Video Frame Mode, or simply hit Ctrl + Alt + v.
+You are now provided with extra buttons in the left Panel. You will find
+"Save as base" - which will allow you, to memorize the currently set labels as base
+"Apply base" - which will insert the last memorized labels into the current frame
+"Next Frame" - which will combine Next Image and Apply base. So if you want to go through the frames rather quick, this will be your choice.
+
+Additionally you will find a Randomization input in the right Panel. This allows you to set a randomization maximum in x and y direction, 
+so if you apply a base to the current frame, each label will be slightly moved from its original position in the base. 
+This will help in many Machine Learning Applications.
+
 Hotkeys
 ~~~~~~~
 
-+------------+--------------------------------------------+
-| Ctrl + u   | Load all of the images from a directory    |
-+------------+--------------------------------------------+
-| Ctrl + r   | Change the default annotation target dir   |
-+------------+--------------------------------------------+
-| Ctrl + s   | Save                                       |
-+------------+--------------------------------------------+
-| Ctrl + d   | Copy the current label and rect box        |
-+------------+--------------------------------------------+
-| Space      | Flag the current image as verified         |
-+------------+--------------------------------------------+
-| w          | Create a rect box                          |
-+------------+--------------------------------------------+
-| d          | Next image                                 |
-+------------+--------------------------------------------+
-| a          | Previous image                             |
-+------------+--------------------------------------------+
-| del        | Delete the selected rect box               |
-+------------+--------------------------------------------+
-| Ctrl++     | Zoom in                                    |
-+------------+--------------------------------------------+
-| Ctrl--     | Zoom out                                   |
-+------------+--------------------------------------------+
-| ↑→↓←       | Keyboard arrows to move selected rect box  |
-+------------+--------------------------------------------+
++-----------------+----------------------------------------------------------+
+| Ctrl + u        | Load all of the images from a directory                  |
++-----------------+----------------------------------------------------------+
+| Ctrl + r        | Change the default annotation target dir                 |
++-----------------+----------------------------------------------------------+
+| Ctrl + s        | Save                                                     |
++-----------------+----------------------------------------------------------+
+| Ctrl + d        | Copy the current label and rect box                      |
++-----------------+----------------------------------------------------------+
+| Ctrl + Alt + v  | Activate Video Frame Mode                                |
++-----------------+----------------------------------------------------------+
+| Ctrl + Alt + s  | Save Base of current frame [Video Frame Mode]            |
++-----------------+----------------------------------------------------------+
+| Ctrl + Alt + a  | Apply Base to current frame [Video Frame Mode]           |
++-----------------+----------------------------------------------------------+
+| Ctrl + Alt + n  | Save, open next frame and apply Base [Video Frame Mode]  |
++-----------------+----------------------------------------------------------+
+| Space           | Flag the current image as verified                       |
++-----------------+----------------------------------------------------------+
+| w               | Create a rect box                                        |
++-----------------+----------------------------------------------------------+
+| d               | Next image                                               |
++-----------------+----------------------------------------------------------+
+| a               | Previous image                                           |
++-----------------+----------------------------------------------------------+
+| del             | Delete the selected rect box                             |
++-----------------+----------------------------------------------------------+
+| Ctrl++          | Zoom in                                                  |
++-----------------+----------------------------------------------------------+
+| Ctrl--          | Zoom out                                                 |
++-----------------+----------------------------------------------------------+
+| ↑→↓←            | Keyboard arrows to move selected rect box                |
++-----------------+----------------------------------------------------------+
 
 How to contribute
 ~~~~~~~~~~~~~~~~~

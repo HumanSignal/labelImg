@@ -17,3 +17,6 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+
+testdata/
+.spyproject/

@@ -7,6 +7,7 @@ import platform
 import re
 import sys
 import subprocess
+import random
 
 from functools import partial
 from collections import defaultdict
@@ -29,7 +30,7 @@ except ImportError:
 import resources
 # Add internal libs
 from libs.constants import *
-from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText
+from libs.lib import struct, newAction, newIcon, addActions, fmtShortcut, generateColorByText, randomizationValidator
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
 from libs.stringBundle import StringBundle
@@ -121,6 +122,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self._noSelectionSlot = False
         self._beginner = True
+        self.videoframemode = False
         self.screencastViewer = self.getAvailableScreencastViewer()
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
@@ -132,6 +134,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.itemsToShapes = {}
         self.shapesToItems = {}
+        # self.itemsToShapesBase = {}
+        self.shapesBase = {}
+        self.lastManualFile = None
         self.prevLabelText = ''
 
         listLayout = QVBoxLayout()
@@ -146,7 +151,28 @@ class MainWindow(QMainWindow, WindowMixin):
         useDefaultLabelQHBoxLayout.addWidget(self.defaultLabelTextLine)
         useDefaultLabelContainer = QWidget()
         useDefaultLabelContainer.setLayout(useDefaultLabelQHBoxLayout)
-
+        
+        # Create Widget for randomization of points
+        self.randomization = type('', (), {})()
+        self.randomization.layout = type('', (), {})()
+        self.randomization.layout.label = QLabel('Randomization [px]')
+        self.randomization.layout.frame = QWidget()
+        self.randomization.input = type('', (), {})()
+        self.randomization.input.x = QLineEdit()
+        self.randomization.input.y = QLineEdit()
+        self.randomization.input.x.setValidator(randomizationValidator())
+        self.randomization.input.y.setValidator(randomizationValidator())
+        randomizationFrameLayout = QHBoxLayout()
+        randomizationFrameLayout.addWidget(QLabel('X:'))
+        randomizationFrameLayout.addWidget(self.randomization.input.x)
+        randomizationFrameLayout.addWidget(QLabel('Y:'))
+        randomizationFrameLayout.addWidget(self.randomization.input.y)
+        self.randomization.layout.frame.setLayout(randomizationFrameLayout)
+        self.randomization.layout.label.setVisible(False)
+        self.randomization.layout.frame.setVisible(False)
+        self.randomization.input.x.setText(str(settings.get(DEFAULT_PIXEL_RANDOM_X, 3)))
+        self.randomization.input.y.setText(str(settings.get(DEFAULT_PIXEL_RANDOM_Y, 3)))
+ 
         # Create a widget for edit and diffc button
         self.diffcButton = QCheckBox(getStr('useDifficult'))
         self.diffcButton.setChecked(False)
@@ -158,6 +184,9 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
         listLayout.addWidget(useDefaultLabelContainer)
+        # Add Randomization to layout
+        listLayout.addWidget(self.randomization.layout.label)
+        listLayout.addWidget(self.randomization.layout.frame)
 
         # Create and add a widget for showing current label items
         self.labelList = QListWidget()
@@ -226,11 +255,23 @@ class MainWindow(QMainWindow, WindowMixin):
         opendir = action(getStr('openDir'), self.openDirDialog,
                          'Ctrl+u', 'open', getStr('openDir'))
 
+        refreshdir = action(getStr('refreshDir'), self.refreshDirAction,
+                        'Ctrl+Alt+R', 'refresh', getStr('refreshDirDetail'))
+
         changeSavedir = action(getStr('changeSaveDir'), self.changeSavedirDialog,
                                'Ctrl+r', 'open', getStr('changeSavedAnnotationDir'))
 
         openAnnotation = action(getStr('openAnnotation'), self.openAnnotationDialog,
                                 'Ctrl+Shift+O', 'open', getStr('openAnnotationDetail'))
+
+        setCurrentBase = action(getStr('setCurrentBase'), self.setCurrentBase,
+                             'Ctrl+Alt+s', 'saveBase', getStr('setCurrentBaseDetail'))
+
+        applyCurrentBase = action(getStr('applyCurrentBase'), self.applyCurrentBase,
+                             'Ctrl+Alt+a', 'verify', getStr('applyCurrentBaseDetail'))
+
+        applyBaseToNextPicture = action(getStr('applyBaseToNextPicture'), self.applyBaseToNextPicture,
+                             'Ctrl+Alt+n', 'fastforward', getStr('applyBaseToNextPictureDetail'))
 
         openNextImg = action(getStr('nextImg'), self.openNextImg,
                              'd', 'next', getStr('nextImgDetail'))
@@ -272,6 +313,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         advancedMode = action(getStr('advancedMode'), self.toggleAdvancedMode,
                               'Ctrl+Shift+A', 'expert', getStr('advancedModeDetail'),
+                              checkable=True)
+
+        videoFrameMode = action(getStr('videoFrameMode'), self.toggleVideoFrameMode,
+                              'Ctrl+Alt+v', 'videoframe', getStr('videoFrameModeDetail'),
                               checkable=True)
 
         hideAll = action('&Hide\nRectBox', partial(self.togglePolygons, False),
@@ -348,19 +393,21 @@ class MainWindow(QMainWindow, WindowMixin):
         # Store actions for further handling.
         self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
-                              createMode=createMode, editMode=editMode, advancedMode=advancedMode,
+                              createMode=createMode, editMode=editMode, advancedMode=advancedMode, videoFrameMode=videoFrameMode,
+                              setCurrentBase=setCurrentBase, applyCurrentBase=applyCurrentBase, applyBaseToNextPicture=applyBaseToNextPicture, 
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                               fitWindow=fitWindow, fitWidth=fitWidth,
                               zoomActions=zoomActions,
                               fileMenuActions=(
                                   open, opendir, save, saveAs, close, resetAll, quit),
-                              beginner=(), advanced=(),
+                              beginner=(), advanced=(), videoFrame=(),
                               editMenu=(edit, copy, delete,
                                         None, color1, self.drawSquaresOption),
                               beginnerContext=(create, edit, copy, delete),
                               advancedContext=(createMode, editMode, edit, copy,
                                                delete, shapeLineColor, shapeFillColor),
+                              videoFrameContext=(setCurrentBase, applyCurrentBase, applyBaseToNextPicture),
                               onLoadActive=(
                                   close, create, createMode, editMode),
                               onShapesPresent=(saveAs, hideAll, showAll))
@@ -391,13 +438,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
+                   (open, opendir, refreshdir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
             self.singleClassMode,
             self.displayLabelOption,
-            labels, advancedMode, None,
+            labels, advancedMode, videoFrameMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
             fitWindow, fitWidth))
@@ -419,6 +466,8 @@ class MainWindow(QMainWindow, WindowMixin):
             open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
             createMode, editMode, None,
             hideAll, showAll)
+
+        self.actions.videoFrame = (setCurrentBase, applyCurrentBase, applyBaseToNextPicture)
 
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
@@ -476,6 +525,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
             self.actions.advancedMode.setChecked(True)
             self.toggleAdvancedMode()
+
+        if xbool(settings.get(SETTING_VIDEOFRAME_MODE, False)):
+            self.actions.videoFrameMode.setChecked(True)
+            self.toggleVideoFrameMode()
 
         # Populate the File menu dynamically.
         self.updateFileMenu()
@@ -543,11 +596,177 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
+    def toggleVideoFrameMode(self, value=True):
+        self.videoframemode = value
+        self.populateModeActions()
+        if value:
+            self.displayLabelOption.setChecked(True)
+            self.togglePaintLabelsOption()
+            self.autoSaving.setChecked(True)
+        self.randomization.layout.label.setVisible(value)
+        self.randomization.layout.frame.setVisible(value)
+
+
+    def clearManualHistory(self):
+        self.shapesBase.clear()
+        # self.itemsToShapesBase.clear()
+
+    def addShapeToBase(self, shape):
+        if shape in self.shapesBase:
+           return
+        self.shapesBase[shape] = shape 
+    
+    def findRepresentativeInBase(self, curshape, dic=None):
+        if dic is None:
+            dic = self.shapesBase
+        # if len(self.shapesBase)      
+        return dic[dic.index(curshape)]
+
+    '''TODO: 
+        Think of this again!
+        Possiblity 1
+            Make all (auto and manual) shapes to current base. 
+            Pro: Get rid of now unnecesary auto shapes for future.
+            Contra: 
+                Maybe I only want to delete this shape in only this frame?
+                AND: Since we vary the new position a little, the new base might be a little offsetted.
+        Possibility 2 - Opposite
+            Make only manual shapes to current base.
+            Contra: Lots of overhead for correct auto shapes from before to do again.
+
+        Try Possibility 1, where auto shapes are searched in the previous base and reused there.
+    '''    
+    def setCurrentBase(self):
+        if self.videoframemode and len(self.shapesToItems) > 0:
+            currentHistory = self.shapesBase.copy()
+            self.clearManualHistory()
+            for shape in self.shapesToItems:
+                if shape.manual:
+                    self.addShapeToBase(shape)
+                else:
+                    # foundRepresentative = self.findRepresentativeInBase(shape, dic=currentHistory)
+                    if shape not in currentHistory:
+                        self.addShapeToBase(shape)
+                    else:
+                        self.addShapeToBase(shape)
+        return
+
+    def generateRandomization(self, shape):
+        randmax = [1,1]
+        try:
+            x, y = self.randomization.input.x, self.randomization.input.y
+            randmax = list(map(lambda x: int(x.text()), [x, y]))
+        except:
+            pass
+        rand = []
+        for i in range(2):
+            rand.append(random.randint(-randmax[i], randmax[i]))
+        for point in shape.points:
+            point += QPointF(rand[0], rand[1])
+
+    def applyCurrentBase(self):
+        if len(self.shapesBase) > 0:
+            if len(self.shapesToItems) > 0:
+                yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
+                """ TODO: Maybe try to change those buttons to customized ones!!! """
+                answer = QMessageBox.question(self, "Overwrite existing labels?", 
+                    ("You already have labels in this frame.\n"
+                    "[Yes]: Would you like to overwrite the labels in this frame,\n"
+                    "[No]: would you like to keep the current labels and apply the base to it,\n"
+                    "or would you like to cancel?\n\n"
+                    "Please keep in mind that clicking no could lead to duplicates."),
+                    yes | no | cancel
+                )
+                if answer == yes:
+                    tmp = self.shapesToItems.copy()
+                    for shape in tmp:
+                        self.remLabel(shape)
+                elif answer == no:
+                    pass
+                else:
+                    return
+            shapes = []
+            for oshape in self.shapesBase:
+                shape = oshape.deepCopy()
+                shape.manual = False
+                if shape in self.itemsToShapes:
+                    continue
+                self.generateRandomization(shape)
+                shapes.append(shape)
+            self.addAutoLabels(shapes)
+            if len(shapes) > 0:
+                self.setDirty()
+        else:
+            QMessageBox.question(self, "No Base selected", 
+                    ("To apply a Base, you have to select one first. This can be done by having at least 1 Label in the picture "
+                    "and then hitting the Save as base button."),
+                    QMessageBox.Ok
+                )
+        return
+
+    def applyBaseToNextPicture(self):
+        # Apply changes directly to next picture
+        if len(self.shapesBase) <= 0:
+            QMessageBox.question(self, "No Base selected", 
+                    ("You are trying to use the next Frame Feature, but you haven't set a base, yet.\n\n"
+                    "This Feature only works, when you have set a base, because it automatically applies the current base to the next frame."),
+                    QMessageBox.Ok
+                )
+            return
+        self.openNextImg()
+        self.applyCurrentBase()
+        return
+
+    def addAutoLabels(self, shapes, keep=True):
+        s = []
+        line_color, fill_color = None, None
+        if keep:
+            for existingshape in self.shapesToItems:
+                s.insert(0,existingshape)
+
+        for currentshape in shapes:
+            shape = Shape(label=currentshape.label)
+            points = map(lambda p: (p.x(), p.y()), currentshape.points)
+            for x, y in points:
+
+                # Ensure the labels are within the bounds of the image. If not, fix them.
+                x, y, snapped = self.canvas.snapPointToCanvas(x, y)
+                if snapped:
+                    self.setDirty()
+
+                shape.addPoint(QPointF(x, y))
+            shape.difficult = currentshape.difficult
+            shape.manual = currentshape.manual
+            shape.close()
+            s.append(shape)
+
+            if line_color:
+                shape.line_color = QColor(*line_color)
+            else:
+                shape.line_color = generateColorByText(shape.label)
+
+            if fill_color:
+                shape.fill_color = QColor(*fill_color)
+            else:
+                shape.fill_color = generateColorByText(shape.label)
+
+            self.addLabel(shape)
+
+        self.canvas.loadShapes(s)
+        # self.canvas.repaint()
+        
     def populateModeActions(self):
         if self.beginner():
             tool, menu = self.actions.beginner, self.actions.beginnerContext
         else:
             tool, menu = self.actions.advanced, self.actions.advancedContext
+        if self.videoframemode:
+            tool, menu = list(tool), list(menu)
+            for act in reversed(self.actions.videoFrame):
+                tool.insert(3, act)
+            for con in reversed(self.actions.videoFrameContext):
+                menu.insert(3,  con)
+            tool, menu = tuple(tool), tuple(menu)
         self.tools.clear()
         addActions(self.tools, tool)
         self.canvas.menus[0].clear()
@@ -1121,6 +1340,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_FILL_COLOR] = self.fillColor
         settings[SETTING_RECENT_FILES] = self.recentFiles
         settings[SETTING_ADVANCE_MODE] = not self._beginner
+        settings[SETTING_VIDEOFRAME_MODE] = self.videoframemode = False
         if self.defaultSaveDir and os.path.exists(self.defaultSaveDir):
             settings[SETTING_SAVE_DIR] = ustr(self.defaultSaveDir)
         else:
@@ -1233,6 +1453,20 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.verified = self.labelFile.verified
             self.paintCanvas()
             self.saveFile()
+
+    def refreshDirAction(self, _value=False):
+        if not self.mayContinue():
+            return
+
+        dirpath=self.lastOpenDir
+
+        defaultOpenDirPath = dirpath if dirpath else '.'
+        if self.lastOpenDir and os.path.exists(self.lastOpenDir):
+            defaultOpenDirPath = self.lastOpenDir
+        else:
+            defaultOpenDirPath = os.path.dirname(self.filePath) if self.filePath else '.'
+
+        self.importDirImages(defaultOpenDirPath)
 
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label

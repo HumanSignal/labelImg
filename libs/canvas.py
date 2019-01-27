@@ -233,6 +233,10 @@ class Canvas(QWidget):
                 self.repaint()
         elif ev.button() == Qt.LeftButton and self.selectedShape:
             if self.selectedVertex():
+                newpos = self.transformPos(ev.pos())
+                diff = abs(self.prevPoint.x() - newpos.x()) + abs(self.prevPoint.y() - newpos.y())
+                if diff != 0:
+                    self.setManual(self.selectedShape)
                 self.overrideCursor(CURSOR_POINT)
             else:
                 self.overrideCursor(CURSOR_GRAB)
@@ -254,6 +258,7 @@ class Canvas(QWidget):
         else:
             self.selectedShape.points = [p for p in shape.points]
         self.selectedShapeCopy = None
+        self.setManual(shape)
 
     def hideBackroundShapes(self, value):
         self.hideBackround = value
@@ -303,6 +308,15 @@ class Canvas(QWidget):
         self.setHiding()
         self.selectionChanged.emit(True)
         self.update()
+
+    def setManual(self, shape=None):
+        try:
+            if shape is None:
+                shape = self.selectedShape
+            if not shape.manual:
+                shape.manual = True
+        except:
+            pass
 
     def selectShapePoint(self, point):
         """Select the first shape created which contains this point."""
@@ -392,6 +406,7 @@ class Canvas(QWidget):
         if dp:
             shape.moveBy(dp)
             self.prevPoint = pos
+            self.setManual(shape)
             return True
         return False
 
@@ -651,6 +666,7 @@ class Canvas(QWidget):
             self.selectedShape.points[2] += QPointF(0, 1.0)
             self.selectedShape.points[3] += QPointF(0, 1.0)
         self.shapeMoved.emit()
+        self.setManual()
         self.repaint()
 
     def moveOutOfBound(self, step):
