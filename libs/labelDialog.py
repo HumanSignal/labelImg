@@ -6,7 +6,7 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from libs.lib import newIcon, labelValidator
+from libs.utils import newIcon, labelValidator
 
 BB = QDialogButtonBox
 
@@ -77,7 +77,7 @@ class LabelDialog(QDialog):
             # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
             text = tQListWidgetItem.text().strip()
         self.edit.setText(text)
-        
+
     def listItemDoubleClick(self, tQListWidgetItem):
         self.listItemClick(tQListWidgetItem)
         self.validate()

@@ -1,6 +1,9 @@
 from math import sqrt
 from libs.ustr import ustr
 import hashlib
+import re
+import sys
+
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -81,3 +84,20 @@ def generateColorByText(text):
     g = int((hashCode / 65025)  % 255)
     b = int((hashCode / 16581375)  % 255)
     return QColor(r, g, b, 100)
+
+def have_qstring():
+    '''p3/qt5 get rid of QString wrapper as py3 has native unicode str type'''
+    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
+
+def util_qt_strlistclass():
+    return QStringList if have_qstring() else list
+
+def natural_sort(list, key=lambda s:s):
+    """
+    Sort the list into natural alphanumeric order.
+    """
+    def get_alphanum_key_func(key):
+        convert = lambda text: int(text) if text.isdigit() else text
+        return lambda s: [convert(c) for c in re.split('([0-9]+)', key(s))]
+    sort_key = get_alphanum_key_func(key)
+    list.sort(key=sort_key)
