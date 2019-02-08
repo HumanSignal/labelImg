@@ -243,6 +243,16 @@ Hotkeys
 | ↑→↓←       | Keyboard arrows to move selected rect box  |
 +------------+--------------------------------------------+
 
+**Verify Image:**
+
+When pressing space, the user can flag the image as verified, a green background will appear.
+This is used when creating a dataset automatically, the user can then through all the pictures and flag them instead of annotate them.
+
+**Difficult:**
+
+The difficult field being set to 1 indicates that the object has been annotated as "difficult", for example an object which is clearly visible but difficult to recognize without substantial use of context.
+According to your deep neural network implementation, you can include or exclude difficult objects during training. 
+
 How to contribute
 ~~~~~~~~~~~~~~~~~
 
