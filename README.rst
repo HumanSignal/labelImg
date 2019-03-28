@@ -106,6 +106,18 @@ in your /Applications folder. You can consider this script: build-tools/build-fo
     rm -rf build dist
     python setup.py py2app -A
     mv "dist/labelImg.app" /Applications
+    
+Alternate    
+Mac OS easiest way to install and run 
+STEPS
+
+git clone https://github.com/tzutalin/labelImg
+pip install PyQt5 lxml
+cd labelImg    ##(enter the labelImg directory)
+make qt5py3
+python3 labelImg.py
+
+
 
 Windows
 ^^^^^^^
