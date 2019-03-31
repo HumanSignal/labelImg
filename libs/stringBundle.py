@@ -45,7 +45,7 @@ class StringBundle:
 
     def __createLookupFallbackList(self, localeStr):
         resultPaths = []
-        basePath = ":/strings"
+        basePath = ":/strings-zh-CN"
         resultPaths.append(basePath)
         if localeStr is not None:
             # Don't follow standard BCP47. Simple fallback

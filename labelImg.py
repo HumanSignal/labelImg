@@ -47,7 +47,7 @@ from libs.ustr import ustr
 from libs.version import __version__
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
-__appname__ = 'labelImg'
+__appname__ = r'专用标注软件......'
 
 class WindowMixin(object):
 
@@ -345,11 +345,11 @@ class MainWindow(QMainWindow, WindowMixin):
                               onShapesPresent=(saveAs, hideAll, showAll))
 
         self.menus = struct(
-            file=self.menu('&File'),
-            edit=self.menu('&Edit'),
-            view=self.menu('&View'),
-            help=self.menu('&Help'),
-            recentFiles=QMenu('Open &Recent'),
+            file=self.menu('文件'),
+            edit=self.menu('编辑'),
+            view=self.menu('显示'),
+            help=self.menu('帮助'),
+            recentFiles=QMenu('最近打开...'),
             labelList=labelMenu)
 
         # Auto saving : Enable auto saving if pressing next
