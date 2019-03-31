@@ -1,3 +1,15 @@
+Additional for Chinese support (启用中文支持）：
+1. use "pyrcc5 -o resources.py resources.qrc" or "pyrcc4 -o resources.py resources.qrc" to compile the resource to get resources.py in your environment. 
+
+2. change libs\stringBundle.py,line #48 to use basePath = ":/strings-zh-CN".
+    def __createLookupFallbackList(self, localeStr):
+        resultPaths = []
+  >>      basePath = ":/strings-zh-CN"
+        resultPaths.append(basePath)
+        if localeStr is not None:
+            # Don't follow standard BCP47. Simple fallback
+            
+
 LabelImg
 ========
 
