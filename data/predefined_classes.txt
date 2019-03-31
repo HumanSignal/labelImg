@@ -1,15 +1,14 @@
-dog
-person
-cat
-tv
-car
-meatballs
-marinara sauce
-tomato soup
-chicken noodle soup
-french onion soup
-chicken breast
-ribs
-pulled pork
-hamburger
-cavity
+1.钙化
+2.结节
+3.纤维条索
+4.斑片
+5.干酪
+6.浸润
+7.空洞
+8.胸膜病变
+活动性
+非活动性
+炎症
+肿瘤
+先天性
+其他
