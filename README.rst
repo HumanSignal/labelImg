@@ -1,4 +1,9 @@
-LabelImg
+
+
+.. image:: logo/horizontal.png
+    :width: 200px
+    :align: center
+    
 ========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
