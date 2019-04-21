@@ -1,6 +1,7 @@
+LabeImg
+========
 
-
-.. image:: logo/horizontal.png
+.. image:: logo/logomark.png
     :width: 200px
     :align: center
     
