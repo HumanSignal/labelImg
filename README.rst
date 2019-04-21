@@ -1,8 +1,8 @@
-LabeImg
+LabelImg
 ========
 
 .. image:: logo/logomark.png
-    :width: 200px
+    :width: 250px
     :align: center
     
 ========
