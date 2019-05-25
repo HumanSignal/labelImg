@@ -1,6 +1,7 @@
 import os
 import sys
 import unittest
+import resources
 from stringBundle import StringBundle
 
 class TestStringBundle(unittest.TestCase):

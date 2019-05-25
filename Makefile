@@ -1,8 +1,8 @@
 # ex: set ts=8 noet:
 
-all: qt4
+all: qt5
 
-test: testpy2
+test: testpy3
 
 testpy2:
 	python -m unittest discover tests
