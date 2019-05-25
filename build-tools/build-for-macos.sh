@@ -1,9 +1,9 @@
 #!/bin/sh
 
 brew install python@2
-pip install --upgrade virtualenv 
+pip install --upgrade virtualenv
 
-# clonde labelimg source
+# clone labelimg source
 rm -rf /tmp/labelImgSetup
 mkdir /tmp/labelImgSetup
 cd /tmp/labelImgSetup
