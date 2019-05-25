@@ -75,7 +75,7 @@ matrix:
         - PIPENV_IGNORE_VIRTUALENVS=1
       install:
         - pip3 install pipenv
-        - pipenv --three
+        - pipenv install pyqt5 lxml
         - pipenv run pip install pyqt5 lxml
         - pipenv run make qt5py3
         - rm -rf build dist
