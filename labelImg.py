@@ -26,8 +26,7 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-import resources
-# Add internal libs
+from libs.resources import *
 from libs.constants import *
 from libs.utils import *
 from libs.settings import Settings
@@ -44,7 +43,6 @@ from libs.pascal_voc_io import XML_EXT
 from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
-from libs.version import __version__
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
 __appname__ = 'labelImg'
@@ -603,7 +601,7 @@ class MainWindow(QMainWindow, WindowMixin):
         elif osName == 'Linux':
             return ['xdg-open']
         elif osName == 'Darwin':
-            return ['open', '-a', 'Safari']
+            return ['open']
 
     ## Callbacks ##
     def showTutorialDialog(self):
