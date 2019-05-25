@@ -41,7 +41,7 @@ elif _platform == "darwin":
 required_packages = find_packages()
 required_packages.append('labelImg')
 
-APP = [NAME]
+APP = [NAME + '.py']
 OPTIONS = {
     'argv_emulation': True,
     'iconfile': 'resources/icons/app.icns'
