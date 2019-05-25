@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
-from libs.version import __version__
+from setuptools import setup, find_packages, Command
 from sys import platform as _platform
+from shutil import rmtree
+import sys
+import os
+
+here = os.path.abspath(os.path.dirname(__file__))
+NAME = 'labelImg'
+about = {}
+
+with open(os.path.join(here, 'libs', '__init__.py')) as f:
+    exec(f.read(), about)
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -11,9 +20,14 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    # TODO: Different OS have different requirements
-]
+
+REQUIRED = []
+
+if (sys.version_info > (3, 0)):
+    REQUIRED = ['pyqt5', 'lxml']
+else:
+    print('\033[93m For py2, you are unable to installl pyqt4 by pip \033[0m')
+    REQUIRED = ['lxml']
 
 # OS specific settings
 SET_REQUIRES = []
@@ -27,7 +41,7 @@ elif _platform == "darwin":
 required_packages = find_packages()
 required_packages.append('labelImg')
 
-APP = ['labelImg.py']
+APP = [NAME]
 OPTIONS = {
     'argv_emulation': True,
     'iconfile': 'resources/icons/app.icns'
@@ -35,8 +49,8 @@ OPTIONS = {
 
 setup(
     app=APP,
-    name='labelImg',
-    version=__version__,
+    name=NAME,
+    version=about['__version__'],
     description="LabelImg is a graphical image annotation tool and label object bounding boxes in images",
     long_description=readme + '\n\n' + history,
     author="TzuTa Lin",
@@ -50,7 +64,7 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=REQUIRED,
     license="MIT license",
     zip_safe=False,
     keywords='labelImg labelTool development annotation deeplearning',
