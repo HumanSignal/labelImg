@@ -9,6 +9,8 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 NAME = 'labelImg'
+REQUIRES_PYTHON = '>=3.0.0'
+REQUIRED_DEP = ['pyqt5', 'lxml']
 about = {}
 
 with open(os.path.join(here, 'libs', '__init__.py')) as f:
@@ -20,14 +22,6 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-
-REQUIRED = []
-
-if (sys.version_info > (3, 0)):
-    REQUIRED = ['pyqt5', 'lxml']
-else:
-    print('\033[93m For py2, you are unable to installl pyqt4 by pip \033[0m')
-    REQUIRED = ['lxml']
 
 # OS specific settings
 SET_REQUIRES = []
@@ -47,6 +41,47 @@ OPTIONS = {
     'iconfile': 'resources/icons/app.icns'
 }
 
+class UploadCommand(Command):
+    """Support setup.py upload."""
+
+    description=readme + '\n\n' + history,
+
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status('Removing previous builds…')
+            rmtree(os.path.join(here, 'dist'))
+        except OSError:
+            self.status('Fail to remove previous builds..')
+            pass
+
+        self.status('Building Source and Wheel (universal) distribution…')
+        os.system(
+            '{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+
+        self.status('Uploading the package to PyPI via Twine…')
+        os.system('twine upload dist/*')
+
+        self.status('Pushing git tags…')
+        os.system('git tag -d v{0}'.format(about['__version__']))
+        os.system('git tag v{0}'.format(about['__version__']))
+        # os.system('git push --tags')
+
+        sys.exit()
+
+
 setup(
     app=APP,
     name=NAME,
@@ -56,6 +91,7 @@ setup(
     author="TzuTa Lin",
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
+    python_requires=REQUIRES_PYTHON,
     package_dir={'labelImg': '.'},
     packages=required_packages,
     entry_points={
@@ -64,7 +100,7 @@ setup(
         ]
     },
     include_package_data=True,
-    install_requires=REQUIRED,
+    install_requires=REQUIRED_DEP,
     license="MIT license",
     zip_safe=False,
     keywords='labelImg labelTool development annotation deeplearning',
@@ -73,16 +109,18 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
     options={'py2app': OPTIONS},
-    setup_requires= SET_REQUIRES
+    setup_requires=SET_REQUIRES,
+    # $ setup.py publish support.
+    cmdclass={
+        'upload': UploadCommand,
+    }
 )

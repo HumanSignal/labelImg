@@ -1,6 +1,6 @@
 # ex: set ts=8 noet:
 
-all: qt5
+all: qt5 test
 
 test: testpy3
 
@@ -24,6 +24,12 @@ qt5py3:
 	pyrcc5 -o libs/resources.py resources.qrc
 
 clean:
-	rm -f ~/.labelImgSettings.pkl resources.pyc
+	rm -rf ~/.labelImgSettings.pkl *.pyc dist labelImg.egg-info __pycache__ build
 
-.PHONY: test
+pip_upload:
+	python3 setup.py upload
+
+long_description:
+	restview --long-description
+
+.PHONY: all
