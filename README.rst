@@ -272,5 +272,5 @@ Related
 3. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
 4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
 5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
-
+6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
 
