@@ -43,7 +43,7 @@ History
 1.5.2 (2017-10-24)
 ------------------
 
-* Assig different colors to different lablels
+* Assign different colors to different lablels
 
 1.5.1 (2017-9-27)
 ------------------
