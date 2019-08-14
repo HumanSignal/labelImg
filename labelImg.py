@@ -15,7 +15,7 @@ try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
     from PyQt5.QtWidgets import *
-except ImportError:
+except ImportError as e:
     # needed for py3+qt4
     # Ref:
     # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
@@ -23,8 +23,10 @@ except ImportError:
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+        
+    raise ValueError("Import error: {}".format( e ) )
+    #from PyQt4.QtGui import *
+    #from PyQt4.QtCore import *
 
 import resources
 # Add internal libs
@@ -1177,6 +1179,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                                      QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
         self.importDirImages(targetDirPath)
 
+            
     def importDirImages(self, dirpath):
         if not self.mayContinue() or not dirpath:
             return
@@ -1184,7 +1187,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.lastOpenDir = dirpath
         self.dirname = dirpath
         self.filePath = None
-        self.fileListWidget.clear()
+        self.fileListWidget.clear()        
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
         for imgPath in self.mImgList:
