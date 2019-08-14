@@ -1,8 +1,16 @@
 # base implementation for AttributesManager
 
 import copy
-from PyQt4.QtGui import *
 from xml.etree.ElementTree import SubElement
+
+try:
+    from PyQt5.QtGui import *
+    from PyQt5.QtCore import *
+    from PyQt5.QtWidgets import *
+except ImportError:
+    from PyQt4.QtGui import *
+    from PyQt4.QtCore import *
+
 
 # imported by pascal_voc_io.py
 def write_attributes_to_element( parent_element, attributes, use_attributes_element = True, use_attribute_element = True ):
@@ -64,6 +72,8 @@ class AttributesWidgets():
     def set_widget_value( self, widget, value):
         if type(widget) is QLineEdit:
             widget.setText( value )
+        elif type( widget ) is QLabel:
+            widget.setText( value )           
         elif type( widget ) is QCheckBox:
             widget.setChecked( value == "yes" )
         elif type( widget ) is QRadioButton:
@@ -77,6 +87,8 @@ class AttributesWidgets():
     def get_widget_value( self, widget ):
         if type(widget) is QLineEdit:
             return widget.text()
+        elif type(widget) is QLabel:
+            return widget.text()            
         elif type( widget ) is QCheckBox:
             if widget.isChecked():
                 return "yes"
@@ -92,6 +104,8 @@ class AttributesWidgets():
         else:
             print( "get_widget_value: Unexpected type: {}".format( type( widget ) ) )
 
+        
+            
     def build_widget( self, key, definition ):
         if "type" in definition:
             type = definition[ "type" ]
@@ -99,7 +113,16 @@ class AttributesWidgets():
             type = "text"
 
         if "action" in definition:
-            action = definition["action"]
+            def action_wrapper( func ):
+                def call( *args, **kwargs ):
+                    try:
+                        return func( *args, **kwargs )
+                    except Exception as e:
+                        print( "Error calling action with args: {} {}; {}".format( args, kwargs, e ) )
+                        return None
+                return call
+        
+            action = action_wrapper( definition["action"] )
         else:
             action = None
 
@@ -107,7 +130,10 @@ class AttributesWidgets():
             widget = QLineEdit( self.mainWindow )
             if action is not None:
                 widget.textEdited.connect( action )
-
+                
+        elif type == "label":
+            widget = QLabel( self.mainWindow )
+                
         elif type == "button":
             widget = QPushButton( self.mainWindow )
             widget.setText( key )
@@ -116,13 +142,15 @@ class AttributesWidgets():
 
         elif type == "radio":
             widget = QRadioButton( self.mainWindow )
-            #widget.setText( key )
+            if "default" in definition:
+                widget.setChecked( definition["default"] == "yes" )
             if action is not None:
                 widget.toggled.connect( action )
 
         elif type == "checkbox":
             widget = QCheckBox( self.mainWindow )
-            #widget.setText( key )
+            if "default" in definition:
+                widget.setChecked( definition["default"] == "yes" )        
             if action is not None:
                 widget.toggled.connect( action )
 
@@ -186,10 +214,14 @@ class AttributesWidgets():
             "LabelAttributes",
             self.get_label_attribute_definitions() )
 
-        self.globalAttributeWidgets = self.installWidgetScope(
-            "Custom Operations",
-            "CustomAttributes",
-            self.get_global_attribute_definitions() )
+        #self.globalAttributeWidgets = self.installWidgetScope(
+        #    "Custom Operations",
+        #    "CustomAttributes",
+        #    self.get_global_attribute_definitions() )
+            
+        for gad in self.get_global_attribute_definitions():
+            self.installWidgetScope( gad[0], gad[1], gad[2] )
+
 
     def loadAttributes(self, attributes, widgets ):
         for attr in widgets:
@@ -208,7 +240,7 @@ class AttributesWidgets():
                 value = None
             self.set_widget_value( widget, value )
 
-    def update_image_attributes( self ):
+    def update_image_attributes( self, *args ):
         # but only if there's an image loaded
         if self.mainWindow.filePath:
             for w in self.imageAttributeWidgets:
@@ -219,7 +251,7 @@ class AttributesWidgets():
         else:
             print( "No filepath: {}".format( self.mainWindow.filePath ) )
 
-    def update_label_attributes( self ):
+    def update_label_attributes( self, *args ):
         shape = self.mainWindow.canvas.selectedShape
         if shape:
             if shape.attributes is None:
