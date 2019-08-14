@@ -164,10 +164,10 @@ class PascalVocReader:
         return self.shapes
 
     def addShape(self, label, bndbox, difficult, score, attributes):
-        xmin = int(bndbox.find('xmin').text)
-        ymin = int(bndbox.find('ymin').text)
-        xmax = int(bndbox.find('xmax').text)
-        ymax = int(bndbox.find('ymax').text)
+        xmin = int(float(bndbox.find('xmin').text))
+        ymin = int(float(bndbox.find('ymin').text))
+        xmax = int(float(bndbox.find('xmax').text))
+        ymax = int(float(bndbox.find('ymax').text))
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None, difficult, score, attributes))
 
