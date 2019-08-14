@@ -1,6 +1,9 @@
+mixed
 blackbird
 blue tit
+cat
 collared dove
+dunnock
 goldfinch
 great tit
 jackdaw
@@ -8,8 +11,8 @@ long tailed tit
 mouse
 robin
 sparrow
+sparrowhawk
 squirrel
 starling
 wood pigeon
-wren
 unclassified
