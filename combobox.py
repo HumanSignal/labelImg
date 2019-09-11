@@ -1,3 +1,4 @@
+import sys
 try:
     from PyQt5.QtWidgets import QWidget, QHBoxLayout, QComboBox
 except ImportError:
