@@ -9,7 +9,7 @@ except ImportError:
     if sys.version_info.major >= 3:
         import sip
         sip.setapi('QVariant', 2)
-    from PyQt4.QtWidgets import QWidget, QHBoxLayout, QComboBox
+    from PyQt4.QtGui import QWidget, QHBoxLayout, QComboBox
 
 
 class ComboBox(QWidget):
