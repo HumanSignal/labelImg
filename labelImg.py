@@ -224,6 +224,9 @@ class MainWindow(QMainWindow, WindowMixin):
         save_format = action('&PascalVOC', self.change_format,
                       'Ctrl+', 'format_voc', getStr('changeSaveFormat'), enabled=True)
 
+        save_file_menu = action('Change Annotation Format to YOLO', self.change_format,
+                      'Ctrl+', 'format_voc', getStr('changeSaveFormat'), enabled=True)
+
         saveAs = action(getStr('saveAs'), self.saveFileAs,
                         'Ctrl+Shift+S', 'save-as', getStr('saveAsDetail'), enabled=False)
 
@@ -323,7 +326,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.drawSquaresOption.triggered.connect(self.toogleDrawSquare)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
+        self.actions = struct(save=save, save_file_menu = save_file_menu, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
@@ -368,7 +371,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, quit))
+                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_file_menu, saveAs, close, resetAll, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -393,7 +396,7 @@ class MainWindow(QMainWindow, WindowMixin):
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_file_menu, None,
             createMode, editMode, None,
             hideAll, showAll)
 
@@ -490,6 +493,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if save_format == FORMAT_PASCALVOC:
             self.actions.save_format.setText(FORMAT_PASCALVOC)
             self.actions.save_format.setIcon(newIcon("format_voc"))
+            self.actions.save_file_menu.setText("Change Annotation Format to YOLO")
             self.usingPascalVocFormat = True
             self.usingYoloFormat = False
             LabelFile.suffix = XML_EXT
@@ -497,6 +501,7 @@ class MainWindow(QMainWindow, WindowMixin):
         elif save_format == FORMAT_YOLO:
             self.actions.save_format.setText(FORMAT_YOLO)
             self.actions.save_format.setIcon(newIcon("format_yolo"))
+            self.actions.save_file_menu.setText("Change Annotation Format to Pascal VOC")
             self.usingPascalVocFormat = False
             self.usingYoloFormat = True
             LabelFile.suffix = TXT_EXT
