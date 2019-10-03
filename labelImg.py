@@ -474,7 +474,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Open Dir if deafult file
         if self.filePath and os.path.isdir(self.filePath):
-            self.openDirDialog(dirpath=self.filePath)
+            self.openDirDialog(dirpath=self.filePath, silent=True)
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
@@ -1170,7 +1170,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             self.loadPascalXMLByFilename(filename)
 
-    def openDirDialog(self, _value=False, dirpath=None):
+    def openDirDialog(self, _value=False, dirpath=None, silent=False):
         if not self.mayContinue():
             return
 
@@ -1179,10 +1179,13 @@ class MainWindow(QMainWindow, WindowMixin):
             defaultOpenDirPath = self.lastOpenDir
         else:
             defaultOpenDirPath = os.path.dirname(self.filePath) if self.filePath else '.'
+        if silent!=True :
+            targetDirPath = ustr(QFileDialog.getExistingDirectory(self,
+                                                         '%s - Open Directory' % __appname__, defaultOpenDirPath,
+                                                         QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
+        else:
+            targetDirPath = ustr(defaultOpenDirPath)
 
-        targetDirPath = ustr(QFileDialog.getExistingDirectory(self,
-                                                     '%s - Open Directory' % __appname__, defaultOpenDirPath,
-                                                     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
         self.importDirImages(targetDirPath)
 
     def importDirImages(self, dirpath):
