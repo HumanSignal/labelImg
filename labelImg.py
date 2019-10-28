@@ -308,7 +308,7 @@ class MainWindow(QMainWindow, WindowMixin):
         labels.setText(getStr('showHide'))
         labels.setShortcut('Ctrl+Shift+L')
 
-        # Lavel list context menu.
+        # Label list context menu.
         labelMenu = QMenu()
         addActions(labelMenu, (edit, delete))
         self.labelList.setContextMenuPolicy(Qt.CustomContextMenu)
