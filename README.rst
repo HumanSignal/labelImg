@@ -206,6 +206,13 @@ Note:
 
 - When saving as YOLO format, "difficult" flag is discarded.
 
+Load and validate already annotated data
+~~~~~~~~~~~~
+
+1. Just select the directory having images and annotations.
+
+2. Directory should have a file named classes.txt having list of classes(one at each line) in your dataset.
+
 Create pre-defined classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
