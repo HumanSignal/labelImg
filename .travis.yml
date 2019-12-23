@@ -69,14 +69,14 @@ matrix:
     # Pipenv Python 3 + QT5 - Build .app
     - os: osx
       language: generic
-      python: "3.6"
+      python: "3.7"
       env:
         - PIPENV_VENV_IN_PROJECT=1
         - PIPENV_IGNORE_VIRTUALENVS=1
       install:
         - pip3 install pipenv
         - pipenv install pyqt5 lxml
-        - pipenv run pip install pyqt5 lxml
+        - pipenv run pip install pyqt5==5.13.2 lxml
         - pipenv run make qt5py3
         - rm -rf build dist
         - pipenv run python setup.py py2app
