@@ -157,7 +157,6 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
 
-        #mine
         listLayout.addWidget(self.fakeButton)
         listLayout.addWidget(self.truncatedButton)
         listLayout.addWidget(self.occludedButton)
@@ -443,7 +442,6 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.difficult = False
 
-        #my code
         self.fake = False
         self.occluded = False
         self.reflection = False
@@ -749,7 +747,6 @@ class MainWindow(QMainWindow, WindowMixin):
         except:
             pass
 
-    #mine
     def fakebtnstate(self, item= None):
         """ Function to handle difficult examples
         Update on each object """
@@ -1006,7 +1003,6 @@ class MainWindow(QMainWindow, WindowMixin):
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
 
-            #mine
             self.fakeButton.setChecked(shape.fake)
             self.occludedButton.setChecked(shape.occluded)
             self.reflectionButton.setChecked(shape.reflection)
@@ -1046,7 +1042,6 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.diffcButton.setChecked(False)
 
-        #mine
         self.fakeButton.setChecked(False)
         self.occludedButton.setChecked(False)
         self.reflectionButton.setChecked(False)

@@ -46,7 +46,7 @@ class LabelFile(object):
         writer.verified = self.verified
 
         for shape in shapes:
-            # print (shape)
+
             points = shape['points']
             label = shape['label']
             # Add Chris

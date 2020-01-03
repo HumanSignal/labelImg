@@ -23,7 +23,7 @@ class StringBundle:
         assert(create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
         self.idToMessage = {}
         paths = self.__createLookupFallbackList(localeStr)
-        # print (paths)
+
         for path in paths:
             self.__loadBundle(path)
 
@@ -65,7 +65,7 @@ class StringBundle:
                 text.setCodec("UTF-8")
             while not text.atEnd():
                 line = ustr(text.readLine())
-                # print (line)
+
                 key_value = line.split(PROP_SEPERATOR)
                 key = key_value[0].strip()
                 value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')

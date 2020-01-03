@@ -611,7 +611,7 @@ class Canvas(QWidget):
         if key == Qt.Key_Escape and self.current:
             print('ESC press')
             self.current = None
-            self.drawiminengPolygon.emit(False)
+            self.drawingPolygon.emit(False)
             self.update()
         elif key == Qt.Key_Return and self.canCloseShape():
             self.finalise()
