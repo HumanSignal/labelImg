@@ -14,8 +14,13 @@ class TestPascalVocRW(unittest.TestCase):
         # Test Write/Read
         writer = PascalVocWriter('tests', 'test', (512, 512, 1), localImgPath='tests/test.512.512.bmp')
         difficult = 1
-        writer.addBndBox(60, 40, 430, 504, 'person', difficult)
-        writer.addBndBox(113, 40, 450, 403, 'face', difficult)
+        fake = 1
+        occluded = 1
+        crew = 1
+        reflection = 1
+        behindGlass = 1
+        writer.addBndBox(60, 40, 430, 504, 'person', difficult, fake, occluded, crew, reflection, behindGlass)
+        writer.addBndBox(113, 40, 450, 403, 'face', difficult, fake, occluded, crew, reflection, behindGlass)
         writer.save('tests/test.xml')
 
         reader = PascalVocReader('tests/test.xml')
