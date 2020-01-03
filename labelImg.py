@@ -158,7 +158,6 @@ class MainWindow(QMainWindow, WindowMixin):
         listLayout.addWidget(self.diffcButton)
 
         listLayout.addWidget(self.fakeButton)
-        listLayout.addWidget(self.truncatedButton)
         listLayout.addWidget(self.occludedButton)
         listLayout.addWidget(self.reflectionButton)
         listLayout.addWidget(self.crewButton)
