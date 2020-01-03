@@ -105,8 +105,6 @@ class PascalVocWriter:
             difficult = SubElement(object_item, 'difficult')
             difficult.text = str( bool(each_object['difficult']) & 1 )
 
-
-            #mine
             fake = SubElement(object_item, 'fake')
             fake.text = str( bool(each_object['fake']) & 1 )
             occluded = SubElement(object_item, 'occluded')
@@ -187,7 +185,6 @@ class PascalVocReader:
             # Add chris
             difficult = False
 
-            #mine
             fake = False
             occluded = False
             crew = False
@@ -197,7 +194,6 @@ class PascalVocReader:
             if object_iter.find('difficult') is not None:
                 difficult = bool(int(object_iter.find('difficult').text))
 
-            #mine
             if object_iter.find('fake') is not None:
                 fake = bool(int(object_iter.find('fake').text))
             if object_iter.find('occluded') is not None:

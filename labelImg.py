@@ -133,8 +133,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fakeButton = QCheckBox(getStr('useFake'))
         self.fakeButton.setChecked(False)
         self.fakeButton.stateChanged.connect(self.fakebtnstate)
-        # self.truncatedButton = QCheckBox(getStr('useTruncated'))
-        # self.truncatedButton.setChecked(False)
+
+        self.truncatedButton = QCheckBox(getStr('useTruncated'))
+        self.truncatedButton.setChecked(False)
+        
         self.occludedButton = QCheckBox(getStr('useOccluded'))
         self.occludedButton.setChecked(False)
         self.occludedButton.stateChanged.connect(self.occludedbtnstate)
@@ -161,7 +163,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         #mine
         listLayout.addWidget(self.fakeButton)
-        # listLayout.addWidget(self.truncatedButton)
+        listLayout.addWidget(self.truncatedButton)
         listLayout.addWidget(self.occludedButton)
         listLayout.addWidget(self.reflectionButton)
         listLayout.addWidget(self.crewButton)

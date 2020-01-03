@@ -52,9 +52,7 @@ class LabelFile(object):
             # Add Chris
             difficult = int(shape['difficult'])
 
-            #mine
             fake = int(shape['fake'])
-            # truncated = int(shape['truncated'])
             occluded = int(shape['occluded'])
             crew = int(shape['crew'])
             reflection = int(shape['reflection'])
@@ -88,9 +86,7 @@ class LabelFile(object):
             # Add Chris
             difficult = int(shape['difficult'])
 
-            #mine
             fake = int(shape['fake'])
-            # truncated = int(shape['truncated'])
             occluded = int(shape['occluded'])
             crew = int(shape['crew'])
             reflection = int(shape['reflection'])

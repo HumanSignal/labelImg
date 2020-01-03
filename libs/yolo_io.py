@@ -27,7 +27,6 @@ class YOLOWriter:
         bndbox['name'] = name
         bndbox['difficult'] = difficult
 
-        #mine
         bndbox['fake'] = fake
         bndbox['occluded'] = occluded
         bndbox['crew'] = crew
