@@ -129,14 +129,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.setChecked(False)
         self.diffcButton.stateChanged.connect(self.btnstate)
 
-        #mine
         self.fakeButton = QCheckBox(getStr('useFake'))
         self.fakeButton.setChecked(False)
         self.fakeButton.stateChanged.connect(self.fakebtnstate)
 
-        self.truncatedButton = QCheckBox(getStr('useTruncated'))
-        self.truncatedButton.setChecked(False)
-        
         self.occludedButton = QCheckBox(getStr('useOccluded'))
         self.occludedButton.setChecked(False)
         self.occludedButton.stateChanged.connect(self.occludedbtnstate)
