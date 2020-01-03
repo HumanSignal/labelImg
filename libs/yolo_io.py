@@ -22,10 +22,17 @@ class YOLOWriter:
         self.localImgPath = localImgPath
         self.verified = False
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult, fake, occluded, crew, reflection, behindGlass):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
         bndbox['difficult'] = difficult
+
+        #mine
+        bndbox['fake'] = fake
+        bndbox['occluded'] = occluded
+        bndbox['crew'] = crew
+        bndbox['reflection'] = reflection
+        bndbox['behindGlass'] = behindGlass
         self.boxlist.append(bndbox)
 
     def BndBox2YoloLine(self, box, classList=[]):
@@ -116,10 +123,10 @@ class YoloReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, xmin, ymin, xmax, ymax, difficult):
+    def addShape(self, label, xmin, ymin, xmax, ymax, difficult, fake, occluded, crew, reflection, behindGlass):
 
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, difficult))
+        self.shapes.append((label, points, None, None, difficult, fake, occluded, crew, reflection, behindGlass))
 
     def yoloLine2Shape(self, classIndex, xcen, ycen, w, h):
         label = self.classes[int(classIndex)]

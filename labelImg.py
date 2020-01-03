@@ -128,12 +128,45 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton = QCheckBox(getStr('useDifficult'))
         self.diffcButton.setChecked(False)
         self.diffcButton.stateChanged.connect(self.btnstate)
+
+        #mine
+        self.fakeButton = QCheckBox(getStr('useFake'))
+        self.fakeButton.setChecked(False)
+        self.fakeButton.stateChanged.connect(self.fakebtnstate)
+        # self.truncatedButton = QCheckBox(getStr('useTruncated'))
+        # self.truncatedButton.setChecked(False)
+        self.occludedButton = QCheckBox(getStr('useOccluded'))
+        self.occludedButton.setChecked(False)
+        self.occludedButton.stateChanged.connect(self.occludedbtnstate)
+
+        self.reflectionButton = QCheckBox(getStr('useReflection'))
+        self.reflectionButton.setChecked(False)
+        self.reflectionButton.stateChanged.connect(self.reflectionbtnstate)
+
+        self.crewButton = QCheckBox(getStr('useCrew'))
+        self.crewButton.setChecked(False)
+        self.crewButton.stateChanged.connect(self.crewbtnstate)
+
+        self.behindGlassButton = QCheckBox(getStr('useBehindGlass'))
+        self.behindGlassButton.setChecked(False)
+        self.behindGlassButton.stateChanged.connect(self.behindglassbtnstate)
+
+
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
+
+        #mine
+        listLayout.addWidget(self.fakeButton)
+        # listLayout.addWidget(self.truncatedButton)
+        listLayout.addWidget(self.occludedButton)
+        listLayout.addWidget(self.reflectionButton)
+        listLayout.addWidget(self.crewButton)
+        listLayout.addWidget(self.behindGlassButton)
+
         listLayout.addWidget(useDefaultLabelContainer)
 
         # Create and add a widget for showing current label items
@@ -412,6 +445,13 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.difficult = False
 
+        #my code
+        self.fake = False
+        self.occluded = False
+        self.reflection = False
+        self.crew = False
+        self.behindGlass = False
+
         ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
         if settings.get(SETTING_RECENT_FILES):
             if have_qstring():
@@ -444,6 +484,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.setDrawingColor(self.lineColor)
         # Add chris
         Shape.difficult = self.difficult
+        Shape.fake = self.fake
+        Shape.occluded = self.occluded
+        Shape.reflection = self.reflection
+        Shape.crew = self.crew
+        Shape.behindGlass = self.behindGlass
 
         def xbool(x):
             if isinstance(x, QVariant):
@@ -480,7 +525,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if event.key() == Qt.Key_Control:
             self.canvas.setDrawingShapeToSquare(False)
 
-    def keyPressEvent(self, event):
+    def F(self, event):
         if event.key() == Qt.Key_Control:
             # Draw rectangle if Ctrl is pressed
             self.canvas.setDrawingShapeToSquare(True)
@@ -706,6 +751,136 @@ class MainWindow(QMainWindow, WindowMixin):
         except:
             pass
 
+    #mine
+    def fakebtnstate(self, item= None):
+        """ Function to handle difficult examples
+        Update on each object """
+        if not self.canvas.editing():
+            return
+
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one
+            item = self.labelList.item(self.labelList.count()-1)
+
+        fake = self.fakeButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update
+        try:
+            if fake != shape.fake:
+                shape.fake = fake
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
+    def occludedbtnstate(self, item= None):
+        """ Function to handle difficult examples
+        Update on each object """
+        if not self.canvas.editing():
+            return
+
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one
+            item = self.labelList.item(self.labelList.count()-1)
+
+        occluded = self.occludedButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update
+        try:
+            if occluded != shape.occluded:
+                shape.occluded = occluded
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
+    def reflectionbtnstate(self, item= None):
+        """ Function to handle difficult examples
+        Update on each object """
+        if not self.canvas.editing():
+            return
+
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one
+            item = self.labelList.item(self.labelList.count()-1)
+
+        reflection = self.reflectionButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update
+        try:
+            if reflection != shape.reflection:
+                shape.reflection = reflection
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
+
+    def crewbtnstate(self, item= None):
+        """ Function to handle difficult examples
+        Update on each object """
+        if not self.canvas.editing():
+            return
+
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one
+            item = self.labelList.item(self.labelList.count()-1)
+
+        crew = self.crewButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update
+        try:
+            if crew != shape.crew:
+                shape.crew = crew
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
+
+    def behindglassbtnstate(self, item= None):
+        """ Function to handle difficult examples
+        Update on each object """
+        if not self.canvas.editing():
+            return
+
+        item = self.currentItem()
+        if not item: # If not selected Item, take the first one
+            item = self.labelList.item(self.labelList.count()-1)
+
+        behindGlass = self.behindGlassButton.isChecked()
+
+        try:
+            shape = self.itemsToShapes[item]
+        except:
+            pass
+        # Checked and Update
+        try:
+            if behindGlass != shape.behindGlass:
+                shape.behindGlass = behindGlass
+                self.setDirty()
+            else:  # User probably changed item visibility
+                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+        except:
+            pass
+
+
     # React to canvas signals.
     def shapeSelectionChanged(self, selected=False):
         if self._noSelectionSlot:
@@ -745,7 +920,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, difficult in shapes:
+        for label, points, line_color, fill_color, difficult, fake, occluded, reflection, crew, behindGlass in shapes:
             shape = Shape(label=label)
             for x, y in points:
 
@@ -756,6 +931,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
                 shape.addPoint(QPointF(x, y))
             shape.difficult = difficult
+            shape.fake = fake
+            shape.occluded = occluded
+            shape.reflection = reflection
+            shape.crew = crew
+            shape.behindGlass = behindGlass
             shape.close()
             s.append(shape)
 
@@ -785,7 +965,12 @@ class MainWindow(QMainWindow, WindowMixin):
                         fill_color=s.fill_color.getRgb(),
                         points=[(p.x(), p.y()) for p in s.points],
                        # add chris
-                        difficult = s.difficult)
+                        difficult = s.difficult,
+                        fake = s.fake,
+                        occluded = s.occluded,
+                        crew = s.crew,
+                        reflection = s.reflection,
+                        behindGlass = s.behindGlass)
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add differrent annotation formats here
@@ -816,12 +1001,19 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def labelSelectionChanged(self):
         item = self.currentItem()
-        if item and self.canvas.editing():
+        if self.canvas.editing() and item != None:
             self._noSelectionSlot = True
             self.canvas.selectShape(self.itemsToShapes[item])
             shape = self.itemsToShapes[item]
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
+
+            #mine
+            self.fakeButton.setChecked(shape.fake)
+            self.occludedButton.setChecked(shape.occluded)
+            self.reflectionButton.setChecked(shape.reflection)
+            self.crewButton.setChecked(shape.crew)
+            self.behindGlassButton.setChecked(shape.behindGlass)
 
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
@@ -844,7 +1036,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelDialog = LabelDialog(
                     parent=self, listItem=self.labelHist)
 
-            # Sync single class mode from PR#106
+            # Syndifficultc single class mode from PR#106
             if self.singleClassMode.isChecked() and self.lastLabel:
                 text = self.lastLabel
             else:
@@ -855,6 +1047,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Add Chris
         self.diffcButton.setChecked(False)
+
+        #mine
+        self.fakeButton.setChecked(False)
+        self.occludedButton.setChecked(False)
+        self.reflectionButton.setChecked(False)
+        self.crewButton.setChecked(False)
+        self.behindGlassButton.setChecked(False)
+
         if text is not None:
             self.prevLabelText = text
             generate_color = generateColorByText(text)

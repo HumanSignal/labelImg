@@ -46,12 +46,22 @@ class LabelFile(object):
         writer.verified = self.verified
 
         for shape in shapes:
+            # print (shape)
             points = shape['points']
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
+
+            #mine
+            fake = int(shape['fake'])
+            # truncated = int(shape['truncated'])
+            occluded = int(shape['occluded'])
+            crew = int(shape['crew'])
+            reflection = int(shape['reflection'])
+            behindGlass = int(shape['behindGlass'])
+
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult, fake, occluded, crew, reflection, behindGlass)
 
         writer.save(targetFile=filename)
         return
@@ -61,7 +71,7 @@ class LabelFile(object):
         imgFolderPath = os.path.dirname(imagePath)
         imgFolderName = os.path.split(imgFolderPath)[-1]
         imgFileName = os.path.basename(imagePath)
-        #imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
+        #imgFileNamediffcWithoutExt = os.path.splitext(imgFileName)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
         image = QImage()
@@ -77,8 +87,17 @@ class LabelFile(object):
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
+
+            #mine
+            fake = int(shape['fake'])
+            # truncated = int(shape['truncated'])
+            occluded = int(shape['occluded'])
+            crew = int(shape['crew'])
+            reflection = int(shape['reflection'])
+            behindGlass = int(shape['behindGlass'])
+
             bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult, fake, occluded, crew, reflection, behindGlass)
 
         writer.save(targetFile=filename, classList=classList)
         return

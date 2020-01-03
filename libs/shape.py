@@ -38,13 +38,21 @@ class Shape(object):
     point_size = 8
     scale = 1.0
 
-    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False):
+    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False, fake=False, occluded=False, crew=False, reflection=False, behindGlass=False):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
         self.paintLabel = paintLabel
+
+        #mine
+        self.fake = fake
+        # self.truncated = truncated
+        self.occluded = occluded
+        self.crew = crew
+        self.reflection = reflection
+        self.behindGlass = behindGlass
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -193,6 +201,14 @@ class Shape(object):
         if self.fill_color != Shape.fill_color:
             shape.fill_color = self.fill_color
         shape.difficult = self.difficult
+
+        #mine
+        shape.fake = self.fake
+        # shape.truncated = self.truncated
+        shape.occluded = self.occluded
+        shape.crew = self.crew
+        shape.reflection = self.reflection
+        shape.behindGlass = self.behindGlass
         return shape
 
     def __len__(self):

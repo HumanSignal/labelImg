@@ -77,10 +77,15 @@ class PascalVocWriter:
         segmented.text = '0'
         return top
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult, fake, occluded, crew, reflection, behindGlass):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
         bndbox['difficult'] = difficult
+        bndbox['fake'] = fake
+        bndbox['occluded'] = occluded
+        bndbox['crew'] = crew
+        bndbox['reflection'] = reflection
+        bndbox['behindGlass'] = behindGlass
         self.boxlist.append(bndbox)
 
     def appendObjects(self, top):
@@ -99,6 +104,22 @@ class PascalVocWriter:
                 truncated.text = "0"
             difficult = SubElement(object_item, 'difficult')
             difficult.text = str( bool(each_object['difficult']) & 1 )
+
+
+            #mine
+            fake = SubElement(object_item, 'fake')
+            fake.text = str( bool(each_object['fake']) & 1 )
+            occluded = SubElement(object_item, 'occluded')
+            occluded.text = str( bool(each_object['occluded']) & 1 )
+            crew = SubElement(object_item, 'crew')
+            crew.text = str( bool(each_object['crew']) & 1 )
+            reflection = SubElement(object_item, 'reflection')
+            reflection.text = str( bool(each_object['reflection']) & 1 )
+            behindGlass = SubElement(object_item, 'behindGlass')
+            behindGlass.text = str( bool(each_object['behindGlass']) & 1 )
+
+
+
             bndbox = SubElement(object_item, 'bndbox')
             xmin = SubElement(bndbox, 'xmin')
             xmin.text = str(each_object['xmin'])
@@ -140,13 +161,13 @@ class PascalVocReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, bndbox, difficult):
+    def addShape(self, label, bndbox, difficult, fake, occluded, crew, reflection, behindGlass):
         xmin = int(float(bndbox.find('xmin').text))
         ymin = int(float(bndbox.find('ymin').text))
         xmax = int(float(bndbox.find('xmax').text))
         ymax = int(float(bndbox.find('ymax').text))
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, difficult))
+        self.shapes.append((label, points, None, None, difficult, fake, occluded, crew, reflection, behindGlass))
 
     def parseXML(self):
         assert self.filepath.endswith(XML_EXT), "Unsupport file format"
@@ -165,7 +186,27 @@ class PascalVocReader:
             label = object_iter.find('name').text
             # Add chris
             difficult = False
+
+            #mine
+            fake = False
+            occluded = False
+            crew = False
+            reflection = False
+            behindGlass = False
+
             if object_iter.find('difficult') is not None:
                 difficult = bool(int(object_iter.find('difficult').text))
-            self.addShape(label, bndbox, difficult)
+
+            #mine
+            if object_iter.find('fake') is not None:
+                fake = bool(int(object_iter.find('fake').text))
+            if object_iter.find('occluded') is not None:
+                occluded = bool(int(object_iter.find('occluded').text))
+            if object_iter.find('crew') is not None:
+                crew = bool(int(object_iter.find('crew').text))
+            if object_iter.find('reflection') is not None:
+                reflection = bool(int(object_iter.find('reflection').text))
+            if object_iter.find('behindGlass') is not None:
+                behindGlass = bool(int(object_iter.find('behindGlass').text))
+            self.addShape(label, bndbox, difficult, fake, occluded, crew, reflection, behindGlass)
         return True
