@@ -115,6 +115,12 @@ class Canvas(QWidget):
         if self.drawing():
             self.overrideCursor(CURSOR_DRAW)
             if self.current:
+                # Display annotation width and height while drawing
+                currentWidth = abs(self.current[0].x() - pos.x())
+                currentHeight = abs(self.current[0].y() - pos.y())
+                self.parent().window().labelCoordinates.setText(
+                        'Width: %d, Height: %d / X: %d; Y: %d' % (currentWidth, currentHeight, pos.x(), pos.y()))
+                
                 color = self.drawingLineColor
                 if self.outOfPixmap(pos):
                     # Don't allow the user to draw outside the pixmap.
