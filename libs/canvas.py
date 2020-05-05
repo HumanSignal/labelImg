@@ -124,8 +124,12 @@ class Canvas(QWidget):
                 color = self.drawingLineColor
                 if self.outOfPixmap(pos):
                     # Don't allow the user to draw outside the pixmap.
-                    # Project the point to the pixmap's edges.
-                    pos = self.intersectionPoint(self.current[-1], pos)
+                    # Clip the coordinates to 0 or max,
+                    # if they are outside the range [0, max]
+                    size = self.pixmap.size()
+                    clipped_x = min(max(0, pos.x()), size.width())
+                    clipped_y = min(max(0, pos.y()), size.height())
+                    pos = QPointF(clipped_x, clipped_y)
                 elif len(self.current) > 1 and self.closeEnough(pos, self.current[0]):
                     # Attract line to starting point and colorise to alert the
                     # user:
@@ -350,7 +354,10 @@ class Canvas(QWidget):
         index, shape = self.hVertex, self.hShape
         point = shape[index]
         if self.outOfPixmap(pos):
-            pos = self.intersectionPoint(point, pos)
+            size = self.pixmap.size()
+            clipped_x = min(max(0, pos.x()), size.width())
+            clipped_y = min(max(0, pos.y()), size.height())
+            pos = QPointF(clipped_x, clipped_y)
 
         if self.drawSquare:
             opposite_point_index = (index + 2) % 4
@@ -527,32 +534,6 @@ class Canvas(QWidget):
         #m = (p1-p2).manhattanLength()
         # print "d %.2f, m %d, %.2f" % (d, m, d - m)
         return distance(p1 - p2) < self.epsilon
-
-    def intersectionPoint(self, p1, p2):
-        # Cycle through each image edge in clockwise fashion,
-        # and find the one intersecting the current line segment.
-        # http://paulbourke.net/geometry/lineline2d/
-        size = self.pixmap.size()
-        points = [(0, 0),
-                  (size.width(), 0),
-                  (size.width(), size.height()),
-                  (0, size.height())]
-        x1, y1 = p1.x(), p1.y()
-        x2, y2 = p2.x(), p2.y()
-        d, i, (x, y) = min(self.intersectingEdges((x1, y1), (x2, y2), points))
-        x3, y3 = points[i]
-        x4, y4 = points[(i + 1) % 4]
-        if (x, y) == (x1, y1):
-            # Handle cases where previous point is on one of the edges.
-            if x3 == x4:
-                return QPointF(x3, min(max(0, y2), max(y3, y4)))
-            else:  # y3 == y4
-                return QPointF(min(max(0, x2), max(x3, x4)), y3)
-
-        # Ensure the labels are within the bounds of the image. If not, fix them.
-        x, y, _ = self.snapPointToCanvas(x, y)
-
-        return QPointF(x, y)
 
     def intersectingEdges(self, x1y1, x2y2, points):
         """For each edge formed by `points', yield the intersection
