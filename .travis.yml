@@ -6,38 +6,6 @@
 matrix:
   include:
 
-
-    # Python 2.7 + QT4
-    - os: linux
-      dist: trusty
-      sudo: required
-      language: generic
-      python: "2.7"
-      env:
-        - QT=4
-        - CONDA=4.2.0
-      addons:
-        apt:
-          packages:
-            - cmake
-            #- python-qt4
-            #- pyqt4-dev-tools
-            - xvfb
-      before_install:
-        # ref: https://www.continuum.io/downloads
-        - curl -O https://repo.continuum.io/archive/Anaconda2-4.2.0-Linux-x86_64.sh
-        # ref: http://conda.pydata.org/docs/help/silent.html
-        - /bin/bash Anaconda2-4.2.0-Linux-x86_64.sh -b -p $HOME/anaconda2
-        - export PATH="$HOME/anaconda2/bin:$PATH"
-        # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
-        - conda create -y -n labelImg-py2qt4 python=2.7
-        - source activate labelImg-py2qt4
-        - conda install -y pyqt=4
-        - conda install -y lxml
-        - make qt4py2
-        - xvfb-run make testpy2
-
-
     # Python 3 + QT5
     - os: linux
       dist: trusty
@@ -53,10 +21,10 @@ matrix:
             - cmake
             - xvfb
       before_install:
-        # ref: https://www.continuum.io/downloads
-        - curl -O https://repo.continuum.io/archive/Anaconda3-4.2.0-Linux-x86_64.sh
+        # ref: https://repo.anaconda.com/archive/
+        - curl -O https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
         # ref: http://conda.pydata.org/docs/help/silent.html
-        - /bin/bash Anaconda3-4.2.0-Linux-x86_64.sh -b -p $HOME/anaconda3
+        - /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -b -p $HOME/anaconda3
         - export PATH="$HOME/anaconda3/bin:$PATH"
         # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
         - conda create -y -n labelImg-py3qt5 python=3.5
