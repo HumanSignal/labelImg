@@ -5,13 +5,12 @@
 
 matrix:
   include:
-
     # Python 3 + QT5
     - os: linux
       dist: trusty
       sudo: required
       language: generic
-      python: "3.5"
+      python: "3.7"
       env:
         - QT=5
         - CONDA=4.2.0
@@ -26,8 +25,7 @@ matrix:
         # ref: http://conda.pydata.org/docs/help/silent.html
         - /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -b -p $HOME/anaconda3
         - export PATH="$HOME/anaconda3/bin:$PATH"
-        # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
-        - conda create -y -n labelImg-py3qt5 python=3.5
+        - conda create -y -n labelImg-py3qt5 python=3.7
         - source activate labelImg-py3qt5
         - conda install -y pyqt=5
         - conda install -y lxml
