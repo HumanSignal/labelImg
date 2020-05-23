@@ -116,7 +116,7 @@ Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    pyrcc4 -o line/resources.py resources.qrc
+    pyrcc4 -o lib/resources.py resources.qrc
     For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
     
     python labelImg.py
@@ -250,6 +250,16 @@ This is used when creating a dataset automatically, the user can then through al
 
 The difficult field is set to 1 indicates that the object has been annotated as "difficult", for example, an object which is clearly visible but difficult to recognize without substantial use of context.
 According to your deep neural network implementation, you can include or exclude difficult objects during training.
+
+How to reset the settings
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In case there are issues with loading the classes, you can either:
+
+1. From the top menu of the labelimg click on Menu/File/Reset All
+2. Remove the `.labelImgSettings.pkl` from your home directory. In Linux and Mac you can do:
+    `rm ~/.labelImgSettings.pkl`
+
 
 How to contribute
 ~~~~~~~~~~~~~~~~~
