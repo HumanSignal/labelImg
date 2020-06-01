@@ -45,6 +45,8 @@ from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from libs.__init__ import __version__
+
 
 __appname__ = 'labelImg'
 
