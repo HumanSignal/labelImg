@@ -51,11 +51,8 @@ __appname__ = 'labelImg'
 class WindowMixin(object):
 
     def menu(self, title, actions=None):
-        
         menu = self.menuBar().addMenu(title)
-    
         if actions:
-        
             addActions(menu, actions)
         return menu
 
@@ -155,7 +152,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.itemChanged.connect(self.labelItemChanged)
         listLayout.addWidget(self.labelList)
 
-        
+
 
         self.dock = QDockWidget(getStr('boxLabelText'), self)
         self.dock.setObjectName(getStr('labels'))
@@ -622,6 +619,7 @@ class MainWindow(QMainWindow, WindowMixin):
         subprocess.Popen(self.screencastViewer + [self.screencast])
 
     def showInfoDialog(self):
+        from libs.__init__ import __version__
         msg = u'Name:{0} \nApp Version:{1} \n{2} '.format(__appname__, __version__, sys.version_info)
         QMessageBox.information(self, u'Information', msg)
 
@@ -793,7 +791,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def updateComboBox(self):
         # Get the unique labels and add them to the Combobox.
         itemsTextList = [str(self.labelList.item(i).text()) for i in range(self.labelList.count())]
-            
+
         uniqueTextList = list(set(itemsTextList))
         # Add a null row for showing all the labels
         uniqueTextList.append("")
@@ -841,7 +839,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addLabel(self.canvas.copySelectedShape())
         # fix copy and delete
         self.shapeSelectionChanged(True)
-    
+
     def comboSelectionChanged(self, index):
         text = self.comboBox.cb.itemText(index)
         for i in range(self.labelList.count()):
@@ -1373,13 +1371,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.toggleActions(False)
         self.canvas.setEnabled(False)
         self.actions.saveAs.setEnabled(False)
+
     def deleteImg(self):
         deletePath = self.filePath
-        if self.filePath is not None:
+        if deletePath is not None:
             self.openNextImg()
             os.remove(deletePath)
             self.importDirImages(self.lastOpenDir)
-            
 
     def resetAll(self):
         self.settings.reset()
