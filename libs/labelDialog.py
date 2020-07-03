@@ -45,6 +45,12 @@ class LabelDialog(QDialog):
             layout.addWidget(self.listWidget)
 
         self.setLayout(layout)
+# edit by KAmIL
+    def keyPressEvent(self, ev):
+        key = ev.key()
+        if key == Qt.Key_E:
+            print("PRESSED")
+            self.validate()
 
     def validate(self):
         try:
@@ -64,6 +70,7 @@ class LabelDialog(QDialog):
 
     def popUp(self, text='', move=True):
         self.edit.setText(text)
+        self.edit.setReadOnly(True)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
         if move:
