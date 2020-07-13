@@ -118,7 +118,7 @@ Open cmd and go to the `labelImg <#labelimg>`__ directory
 
     pyrcc4 -o lib/resources.py resources.qrc
     For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
-    
+
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -284,4 +284,10 @@ Related
 4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
 5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
 6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
+
+
+Stargazers over time
+~~~~~~~~~~~~~~~~~~~~
+
+.. image:: https://starchart.cc/tzutalin/labelImg.svg
 
