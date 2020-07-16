@@ -86,8 +86,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Save as Pascal voc xml
         self.defaultSaveDir = defaultSaveDir
-        self.usingPascalVocFormat = True
-        self.usingYoloFormat = False
+        self.usingPascalVocFormat = settings.get(SETTING_USING_VOC_FORMAT, True)
+        self.usingYoloFormat = not self.usingPascalVocFormat
 
         # For loading all image under a directory
         self.mImgList = []
@@ -229,8 +229,10 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(getStr('save'), self.saveFile,
                       'Ctrl+S', 'save', getStr('saveDetail'), enabled=False)
 
-        save_format = action('&PascalVOC', self.change_format,
-                      'Ctrl+', 'format_voc', getStr('changeSaveFormat'), enabled=True)
+        save_format = action('&PascalVOC' if self.usingPascalVocFormat else '&YOLO',
+                             self.change_format, 'Ctrl+',
+                             'format_voc' if self.usingPascalVocFormat else 'format_yolo',
+                             getStr('changeSaveFormat'), enabled=True)
 
         saveAs = action(getStr('saveAs'), self.saveFileAs,
                         'Ctrl+Shift+S', 'save-as', getStr('saveAsDetail'), enabled=False)
@@ -1155,6 +1157,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.displayLabelOption.isChecked()
         settings[SETTING_DRAW_SQUARE] = self.drawSquaresOption.isChecked()
+        settings[SETTING_USING_VOC_FORMAT] = self.usingPascalVocFormat
         settings.save()
 
     def loadRecent(self, filename):
