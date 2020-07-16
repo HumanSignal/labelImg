@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import argparse
 import codecs
 import distutils.spawn
 import os.path
@@ -1506,12 +1507,19 @@ def get_main_app(argv=[]):
     app.setApplicationName(__appname__)
     app.setWindowIcon(newIcon("app"))
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("image_dir", nargs="?")
+    argparser.add_argument("predefined_classes_file",
+                           default=os.path.join(
+                               os.path.dirname(argv[0]),
+                               "data", "predefined_classes.txt"),
+                           nargs="?")
+    argparser.add_argument("save_dir", nargs="?")
+    args = argparser.parse_args(argv[1:])
     # Usage : labelImg.py image predefClassFile saveDir
-    win = MainWindow(argv[1] if len(argv) >= 2 else None,
-                     argv[2] if len(argv) >= 3 else os.path.join(
-                         os.path.dirname(sys.argv[0]),
-                         'data', 'predefined_classes.txt'),
-                     argv[3] if len(argv) >= 4 else None)
+    win = MainWindow(args.image_dir,
+                     args.predefined_classes_file,
+                     args.save_dir)
     win.show()
     return app, win
 
