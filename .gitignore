@@ -17,3 +17,12 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+
+# MacOS System-Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
