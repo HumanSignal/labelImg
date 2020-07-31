@@ -14,14 +14,17 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 class PascalVocWriter:
 
-    def __init__(self, foldername, filename, imgSize,databaseSrc='Unknown', localImgPath=None):
+    def __init__(self, foldername, filename, imgSize, sourceTags=[], localImgPath=None):
         self.foldername = foldername
         self.filename = filename
-        self.databaseSrc = databaseSrc
+        self.sourceTags = sourceTags;
         self.imgSize = imgSize
         self.boxlist = []
         self.localImgPath = localImgPath
         self.verified = False
+
+        if 'database' not in dict(self.sourceTags):
+            self.sourceTags.append(('database', 'Unknown'))
 
     def prettify(self, elem):
         """
@@ -59,8 +62,9 @@ class PascalVocWriter:
             localImgPath.text = self.localImgPath
 
         source = SubElement(top, 'source')
-        database = SubElement(source, 'database')
-        database.text = self.databaseSrc
+        for key, value in self.sourceTags:
+            tag = SubElement(source, key)
+            tag.text = value
 
         size_part = SubElement(top, 'size')
         width = SubElement(size_part, 'width')
@@ -132,6 +136,7 @@ class PascalVocReader:
         self.shapes = []
         self.filepath = filepath
         self.verified = False
+        self.sourceTags = []
         try:
             self.parseXML()
         except:
@@ -159,6 +164,10 @@ class PascalVocReader:
                 self.verified = True
         except KeyError:
             self.verified = False
+
+        source = xmltree.find('source')
+        for child in source:
+            self.sourceTags.append((child.tag, child.text))
 
         for object_iter in xmltree.findall('object'):
             bndbox = object_iter.find("bndbox")
