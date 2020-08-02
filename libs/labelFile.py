@@ -10,8 +10,14 @@ from base64 import b64encode, b64decode
 from libs.pascal_voc_io import PascalVocWriter
 from libs.yolo_io import YOLOWriter
 from libs.pascal_voc_io import XML_EXT
+from enum import Enum
 import os.path
 import sys
+
+
+class LabelFileFormat(Enum):
+    PASCAL_VOC= 1
+    YOLO = 2
 
 
 class LabelFileError(Exception):
