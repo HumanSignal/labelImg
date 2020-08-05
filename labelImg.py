@@ -210,8 +210,8 @@ class MainWindow(QMainWindow, WindowMixin):
         opendir = action(getStr('openDir'), self.openDirDialog,
                          'Ctrl+u', 'open', getStr('openDir'))
         
-        copyPrevBounding = action(getStr('openDir'), self.copyPreviousBoundingBoxes,
-                         'Ctrl+v', 'open', getStr('openDir'))
+        copyPrevBounding = action(getStr('copyPrevBounding'), self.copyPreviousBoundingBoxes,
+                         'Ctrl+v', 'paste', getStr('copyPrevBounding'))
 
         changeSavedir = action(getStr('changeSaveDir'), self.changeSavedirDialog,
                                'Ctrl+r', 'open', getStr('changeSavedAnnotationDir'))
