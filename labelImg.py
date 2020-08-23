@@ -135,6 +135,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
+
+        # *
+        # * dhzs 2017-12-2 add copy button
+        # *
+        self.copy_prev_button = QPushButton('复制上图')
+        self.copy_prev_button.setShortcut('c')
+        self.copy_prev_button.clicked.connect(self.copy_prev)
+        listLayout.addWidget(self.copy_prev_button)
+
+
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)
@@ -544,6 +554,62 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             raise ValueError('Unknown label file format.')
         self.setDirty()
+
+    # *
+    # * dhzs 2017-12-2 copy button fucntion
+    # *
+    def copy_prev(self):
+
+        if not self.noShapes():
+            self.status('已有标记区域')
+            return
+
+        if len(self.mImgList) <= 0:
+            self.status('请选择图片目录')
+            return
+
+        if self.filePath is None:
+            self.status('请选择图片目录')
+            return
+
+        currIndex = self.mImgList.index(self.filePath)
+        if currIndex - 1 < 0:
+            self.status('前面没有图片了')
+            return
+
+        filename = self.mImgList[currIndex - 1]
+        if not filename:
+            self.status('no filename')
+            return
+
+        filename = ustr(filename)
+        if not (filename and os.path.exists(filename)):
+            self.status('no filename')
+            return
+
+        if self.defaultSaveDir is not None:
+            basename = os.path.basename(
+                os.path.splitext(filename)[0])
+            xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
+            txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
+
+            """Annotation file priority:
+            PascalXML > YOLO
+            """
+            if os.path.isfile(xmlPath):
+                self.loadPascalXMLByFilename(xmlPath)
+            elif os.path.isfile(txtPath):
+                self.loadYOLOTXTByFilename(txtPath)
+        else:
+            xmlPath = os.path.splitext(self.filePath)[0] + XML_EXT
+            txtPath = os.path.splitext(self.filePath)[0] + TXT_EXT
+            if os.path.isfile(xmlPath):
+                self.loadPascalXMLByFilename(xmlPath)
+            elif os.path.isfile(txtPath):
+                self.loadYOLOTXTByFilename(txtPath)
+
+        self.canvas.setFocus(True)
+        self.status('复制上图标签成功')
 
     def noShapes(self):
         return not self.itemsToShapes
