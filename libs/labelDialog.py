@@ -67,7 +67,16 @@ class LabelDialog(QDialog):
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
         if move:
-            self.move(QCursor.pos())
+            cursor_pos = QCursor.pos()
+            parent_bottomRight = self.parentWidget().geometry()
+            max_x = parent_bottomRight.x() + parent_bottomRight.width() - self.sizeHint().width()
+            max_y = parent_bottomRight.y() + parent_bottomRight.height() - self.sizeHint().height()
+            max_global = self.parentWidget().mapToGlobal(QPoint(max_x, max_y))
+            if cursor_pos.x() > max_global.x():
+                cursor_pos.setX(max_global.x())
+            if cursor_pos.y() > max_global.y():
+                cursor_pos.setY(max_global.y())
+            self.move(cursor_pos)
         return self.edit.text() if self.exec_() else None
 
     def listItemClick(self, tQListWidgetItem):
