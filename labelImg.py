@@ -1392,12 +1392,22 @@ class MainWindow(QMainWindow, WindowMixin):
         proc.startDetached(os.path.abspath(__file__))
 
     def mayContinue(self):
-        return not (self.dirty and not self.discardChangesDialog())
+        if not self.dirty:
+            return True
+        else:
+            discardChanges = self.discardChangesDialog()
+            if discardChanges == QMessageBox.No:
+                return True
+            elif discardChanges == QMessageBox.Yes:
+                self.saveFile()
+                return True
+            else:
+                return False
 
     def discardChangesDialog(self):
-        yes, no = QMessageBox.Yes, QMessageBox.No
-        msg = u'You have unsaved changes, proceed anyway?'
-        return yes == QMessageBox.warning(self, u'Attention', msg, yes | no)
+        yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
+        msg = u'You have unsaved changes, would you like to save them and proceed?\nClick "No" to undo all changes.'
+        return QMessageBox.warning(self, u'Attention', msg, yes | no | cancel)
 
     def errorMessage(self, title, message):
         return QMessageBox.critical(self, title,
