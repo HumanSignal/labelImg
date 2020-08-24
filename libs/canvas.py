@@ -63,6 +63,9 @@ class Canvas(QWidget):
         self.verified = False
         self.drawSquare = False
 
+        #initialisation for panning
+        self.pan_initial_pos = QPoint()
+
     def setDrawingColor(self, qColor):
         self.drawingLineColor = qColor
         self.drawingRectColor = qColor
@@ -179,6 +182,13 @@ class Canvas(QWidget):
                 self.boundedMoveShape(self.selectedShape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
+            else:
+                #pan
+                delta_x = pos.x() - self.pan_initial_pos.x()
+                delta_y = pos.y() - self.pan_initial_pos.y()
+                self.scrollRequest.emit(delta_x, Qt.Horizontal)
+                self.scrollRequest.emit(delta_y, Qt.Vertical)
+                self.update()
             return
 
         # Just hovering over the canvas, 2 posibilities:
@@ -224,13 +234,18 @@ class Canvas(QWidget):
             if self.drawing():
                 self.handleDrawing(pos)
             else:
-                self.selectShapePoint(pos)
+                selection = self.selectShapePoint(pos)
                 self.prevPoint = pos
-                self.repaint()
+
+                if selection is None:
+                    #pan
+                    QApplication.setOverrideCursor(QCursor(Qt.OpenHandCursor))
+                    self.pan_initial_pos = pos
+
         elif ev.button() == Qt.RightButton and self.editing():
             self.selectShapePoint(pos)
             self.prevPoint = pos
-            self.repaint()
+        self.update()
 
     def mouseReleaseEvent(self, ev):
         if ev.button() == Qt.RightButton:
@@ -250,6 +265,9 @@ class Canvas(QWidget):
             pos = self.transformPos(ev.pos())
             if self.drawing():
                 self.handleDrawing(pos)
+            else:
+                #pan
+                QApplication.restoreOverrideCursor()
 
     def endMove(self, copy=False):
         assert self.selectedShape and self.selectedShapeCopy
@@ -321,12 +339,13 @@ class Canvas(QWidget):
             index, shape = self.hVertex, self.hShape
             shape.highlightVertex(index, shape.MOVE_VERTEX)
             self.selectShape(shape)
-            return
+            return self.hVertex
         for shape in reversed(self.shapes):
             if self.isVisible(shape) and shape.containsPoint(point):
                 self.selectShape(shape)
                 self.calculateOffsets(shape, point)
-                return
+                return self.selectedShape
+        return None
 
     def calculateOffsets(self, shape, point):
         rect = shape.boundingRect()
