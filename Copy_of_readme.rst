@@ -1,5 +1,5 @@
-LabelImg for ellipse bounding boxes
-===================================
+LabelImg
+========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
