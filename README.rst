@@ -30,6 +30,9 @@ IoU computation for the circles, please refer to the article above. For the inte
 may be more complex. However, the automatic tools are developed and available online, e.g. `here <https://github.com/chraibi/EEOver>`__.
 The current version of labeling tool does not support ellipse rotation. 
 
+.. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo7.jpg
+     :alt: Demo Image
+
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
