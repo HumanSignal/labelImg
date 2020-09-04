@@ -33,7 +33,7 @@ The current version of labeling tool does not support ellipse rotation.
 .. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo7.jpg
      :alt: Demo Image
 
-.. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo8.jpg
+.. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo8.png
      :alt: Demo Image
 
 
