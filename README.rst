@@ -18,6 +18,11 @@ It is written in Python and uses Qt for its graphical interface.
 Annotations are saved as XML files in PASCAL VOC format, the format used
 by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO format
 
+What's new?
+-----------
+The `original release <https://github.com/tzutalin/labelImg>`__ of this image annotation tool supports only 
+rectangular bounding boxes. However, rectangular bounding boxes may not be suitable for some applications. 
+
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
