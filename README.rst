@@ -27,7 +27,7 @@ to produce better results. The present version of this software is designed to g
 In order to comply with the YOLO models, the inscribed ellipses are parameterized in terms of the corresponding rectangles. 
 To produce better results, this method may require a change in the Intersection over Union (IoU) computation. For the method of
 IoU computation for the circles, please refer to the article above. For the intersection of two ellipses, the computation of IoU
-may be more complex. However, the automatic tools are developed and available online, e.g. `here<https://github.com/chraibi/EEOver>`__.
+may be more complex. However, the automatic tools are developed and available online, e.g. `here <https://github.com/chraibi/EEOver>`__.
 The current version of labeling tool does not support ellipse rotation. 
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
