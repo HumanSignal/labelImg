@@ -28,7 +28,8 @@ In order to comply with the YOLO models, the inscribed ellipses are parameterize
 To produce better results, this method may require a change in the Intersection over Union (IoU) computation. For the method of
 IoU computation for the circles, please refer to the article above. For the intersection of two ellipses, the computation of IoU
 may be more complex. However, the automatic tools are developed and available online, e.g. `here <https://github.com/chraibi/EEOver>`__.
-The current version of labeling tool does not support ellipse rotation. 
+The current version of labeling tool does not support ellipse rotation.
+From the main menu, go to View -> Display Inscribed Ellipse to show all ellipses. 
 
 .. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo7.jpg
      :alt: Demo Image
