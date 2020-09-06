@@ -1,4 +1,4 @@
-
+import sys
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -28,6 +28,7 @@ class Canvas(QWidget):
     selectionChanged = pyqtSignal(bool)
     shapeMoved = pyqtSignal()
     drawingPolygon = pyqtSignal(bool)
+    chooseHighlight = pyqtSignal()
 
     CREATE, EDIT = list(range(2))
 
@@ -41,6 +42,9 @@ class Canvas(QWidget):
         self.current = None
         self.selectedShape = None  # save the selected shape here
         self.selectedShapeCopy = None
+        self.highlight_index = 0   # for choosing highlight shape.
+        self.shape_contains_point_list = []
+        self.chooseHighlight.connect(self.chooseShapeHighlight)
         self.drawingLineColor = QColor(0, 0, 255)
         self.drawingRectColor = QColor(0, 0, 255)
         self.line = Shape(line_color=self.drawingLineColor)
@@ -186,36 +190,60 @@ class Canvas(QWidget):
         # - Highlight vertex
         # Update shape/vertex fill and tooltip value accordingly.
         self.setToolTip("Image")
-        for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
-            # Look for a nearby vertex to highlight. If that fails,
-            # check if we happen to be inside a shape.
-            index = shape.nearestVertex(pos, self.epsilon)
-            if index is not None:
-                if self.selectedVertex():
+        # if distance is so small, there will be a bug that the frontier point in self.points is preemptive.
+        # so we may be confused when we move mouse between two points nearly.
+        # We should iterate through all the points in shapes to find the nearest point.
+        min_distance = sys.maxsize
+        min_idx = -1
+        for i, shape in enumerate([s for s in self.shapes if self.isVisible(s)]):
+            for j, point in enumerate(shape.points):
+                distance_this = distance(point-pos)
+                if distance_this < min_distance:
+                    min_distance = distance_this
+                    min_idx = (i, j)
+        if min_distance > self.epsilon:
+            min_idx = -1
+        if min_idx == -1:
+            # for choosing correct shape
+            self.shape_contains_point_list = []
+            for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
+                if shape.containsPoint(pos):
+                    self.shape_contains_point_list.append(shape)
+            if len(self.shape_contains_point_list) == 0:
+                # Nothing found, clear highlights, reset state.
+                if self.hShape:
                     self.hShape.highlightClear()
-                self.hVertex, self.hShape = index, shape
-                shape.highlightVertex(index, shape.MOVE_VERTEX)
-                self.overrideCursor(CURSOR_POINT)
-                self.setToolTip("Click & drag to move point")
-                self.setStatusTip(self.toolTip())
-                self.update()
-                break
-            elif shape.containsPoint(pos):
+                    self.update()
+                self.hVertex, self.hShape = None, None
+                self.overrideCursor(CURSOR_DEFAULT)
+            else:
+                shape = self.shape_contains_point_list[0]
                 if self.selectedVertex():
                     self.hShape.highlightClear()
                 self.hVertex, self.hShape = None, shape
-                self.setToolTip(
-                    "Click & drag to move shape '%s'" % shape.label)
+                if len(self.shape_contains_point_list) > 1:
+                    self.setToolTip(
+                        "Click & drag to move shape '%s', or press key 'b' to select which shape you want." %
+                        shape.label)
+                else:
+                    self.setToolTip(
+                        "Click & drag to move shape '%s'" % shape.label)
                 self.setStatusTip(self.toolTip())
                 self.overrideCursor(CURSOR_GRAB)
                 self.update()
-                break
-        else:  # Nothing found, clear highlights, reset state.
-            if self.hShape:
+        else:
+            self.highlight_index = 0
+            i, j = min_idx
+            index = j
+            shape = self.shapes[i]
+            if self.selectedVertex():
                 self.hShape.highlightClear()
-                self.update()
-            self.hVertex, self.hShape = None, None
-            self.overrideCursor(CURSOR_DEFAULT)
+            self.hVertex, self.hShape = index, shape
+            shape.highlightVertex(index, shape.MOVE_VERTEX)
+            self.overrideCursor(CURSOR_POINT)
+            self.setToolTip("Click & drag to move point")
+            self.setStatusTip(self.toolTip())
+            self.update()
 
     def mousePressEvent(self, ev):
         pos = self.transformPos(ev.pos())
@@ -306,6 +334,23 @@ class Canvas(QWidget):
             self.current.popPoint()
             self.finalise()
 
+    def chooseShapeHighlight(self):
+        if not self.drawing():
+            if len(self.shape_contains_point_list) > 1:
+                self.highlight_index = self.highlight_index + 1
+                if self.highlight_index > len(self.shape_contains_point_list)-1:
+                    self.highlight_index = 0
+                shape = self.shape_contains_point_list[self.highlight_index]
+                self.deSelectShape()
+                if self.selectedVertex():
+                    self.hShape.highlightClear()
+                self.hVertex, self.hShape = None, shape
+                self.setToolTip(
+                    "Drag to move shape '%s'" % shape.label)
+                self.setStatusTip(self.toolTip())
+                self.overrideCursor(CURSOR_GRAB)
+                self.update()
+
     def selectShape(self, shape):
         self.deSelectShape()
         shape.selected = True
@@ -322,7 +367,10 @@ class Canvas(QWidget):
             shape.highlightVertex(index, shape.MOVE_VERTEX)
             self.selectShape(shape)
             return
-        for shape in reversed(self.shapes):
+        if len(self.shape_contains_point_list) > 0:
+            if self.highlight_index > len(self.shape_contains_point_list)-1:
+                self.highlight_index = 0
+            shape = self.shape_contains_point_list[self.highlight_index]
             if self.isVisible(shape) and shape.containsPoint(point):
                 self.selectShape(shape)
                 self.calculateOffsets(shape, point)
@@ -420,6 +468,9 @@ class Canvas(QWidget):
         if self.selectedShape:
             shape = self.selectedShape
             self.shapes.remove(self.selectedShape)
+            # remove from list
+            if self.selectedShape in self.shape_contains_point_list:
+                self.shape_contains_point_list.remove(self.selectedShape)
             self.selectedShape = None
             self.update()
             return shape
