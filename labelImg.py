@@ -209,6 +209,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         opendir = action(getStr('openDir'), self.openDirDialog,
                          'Ctrl+u', 'open', getStr('openDir'))
+        
+        copyPrevBounding = action(getStr('copyPrevBounding'), self.copyPreviousBoundingBoxes,
+                         'Ctrl+v', 'paste', getStr('copyPrevBounding'))
 
         changeSavedir = action(getStr('changeSaveDir'), self.changeSavedirDialog,
                                'Ctrl+r', 'open', getStr('changeSavedAnnotationDir'))
@@ -380,7 +383,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
 
         addActions(self.menus.file,
-                   (open, opendir, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit))
+                   (open, opendir, copyPrevBounding, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -1060,29 +1063,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.adjustScale(initial=True)
             self.paintCanvas()
             self.addRecentFile(self.filePath)
-            self.toggleActions(True)
-
-            # Label xml file and show bound box according to its filename
-            if self.defaultSaveDir is not None:
-                basename = os.path.basename(
-                    os.path.splitext(self.filePath)[0])
-                xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
-                txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
-
-                """Annotation file priority:
-                PascalXML > YOLO
-                """
-                if os.path.isfile(xmlPath):
-                    self.loadPascalXMLByFilename(xmlPath)
-                elif os.path.isfile(txtPath):
-                    self.loadYOLOTXTByFilename(txtPath)
-            else:
-                xmlPath = os.path.splitext(filePath)[0] + XML_EXT
-                txtPath = os.path.splitext(filePath)[0] + TXT_EXT
-                if os.path.isfile(xmlPath):
-                    self.loadPascalXMLByFilename(xmlPath)
-                elif os.path.isfile(txtPath):
-                    self.loadYOLOTXTByFilename(txtPath)
+            self.toggleActions(True)        
+            self.showXmlBoundingBoxes(filePath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1094,6 +1076,28 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.setFocus(True)
             return True
         return False
+
+    def showXmlBoundingBoxes(self, filePath):
+        if self.defaultSaveDir is not None:
+            basename = os.path.basename(
+                os.path.splitext(filePath)[0])
+            xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
+            txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
+
+            """Annotation file priority:
+            PascalXML > YOLO
+            """
+            if os.path.isfile(xmlPath):
+                self.loadPascalXMLByFilename(xmlPath)
+            elif os.path.isfile(txtPath):
+                self.loadYOLOTXTByFilename(txtPath)
+        else:
+            xmlPath = os.path.splitext(filePath)[0] + XML_EXT
+            txtPath = os.path.splitext(filePath)[0] + TXT_EXT
+            if os.path.isfile(xmlPath):
+                self.loadPascalXMLByFilename(xmlPath)
+            elif os.path.isfile(txtPath):
+                self.loadYOLOTXTByFilename(txtPath)
 
     def resizeEvent(self, event):
         if self.canvas and not self.image.isNull()\
@@ -1494,6 +1498,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.loadLabels(shapes)
         self.canvas.verified = tYoloParseReader.verified
 
+    def copyPreviousBoundingBoxes(self):
+        currIndex = self.mImgList.index(self.filePath)
+        prevFilePath = self.mImgList[currIndex - 1]
+        
+        self.showXmlBoundingBoxes(prevFilePath)
+        self.saveFile()
+        
     def togglePaintLabelsOption(self):
         for shape in self.canvas.shapes:
             shape.paintLabel = self.displayLabelOption.isChecked()
