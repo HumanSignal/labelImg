@@ -209,7 +209,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         opendir = action(getStr('openDir'), self.openDirDialog,
                          'Ctrl+u', 'open', getStr('openDir'))
-        
+
         copyPrevBounding = action(getStr('copyPrevBounding'), self.copyPreviousBoundingBoxes,
                          'Ctrl+v', 'paste', getStr('copyPrevBounding'))
 
@@ -1063,8 +1063,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.adjustScale(initial=True)
             self.paintCanvas()
             self.addRecentFile(self.filePath)
-            self.toggleActions(True)        
-            self.showXmlBoundingBoxes(filePath)
+            self.toggleActions(True)
+            self.showBoundingBoxFromAnnotationFile(filePath)
 
             self.setWindowTitle(__appname__ + ' ' + filePath)
 
@@ -1077,7 +1077,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return True
         return False
 
-    def showXmlBoundingBoxes(self, filePath):
+    def showBoundingBoxFromAnnotationFile(self, filePath):
         if self.defaultSaveDir is not None:
             basename = os.path.basename(
                 os.path.splitext(filePath)[0])
@@ -1500,11 +1500,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def copyPreviousBoundingBoxes(self):
         currIndex = self.mImgList.index(self.filePath)
-        prevFilePath = self.mImgList[currIndex - 1]
-        
-        self.showXmlBoundingBoxes(prevFilePath)
-        self.saveFile()
-        
+        if currIndex - 1 >= 0:
+            prevFilePath = self.mImgList[currIndex - 1]
+            self.showBoundingBoxFromAnnotationFile(prevFilePath)
+            self.saveFile()
+
     def togglePaintLabelsOption(self):
         for shape in self.canvas.shapes:
             shape.paintLabel = self.displayLabelOption.isChecked()
