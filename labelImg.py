@@ -1521,23 +1521,10 @@ def inverted(color):
 
 def read(filename, default=None):
     try:
-        #with open(filename, 'rb') as f:
-        #    return f.read()
         reader = QImageReader(filename)
         reader.setAutoTransform(True)
-        loaded_image = reader.read()
-        if loaded_image.isNull():
-            return default
-        """
-        image_ba = QByteArray()
-        buf = QBuffer(image_ba)
-        buf.open(QIODevice.WriteOnly)
-        loaded_image.save(buf, "PNG")
-        return image_ba
-        """
-        return loaded_image
+        return reader.read()
     except:
-        raise
         return default
 
 
