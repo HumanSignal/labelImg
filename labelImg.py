@@ -1046,7 +1046,10 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelFile = None
                 self.canvas.verified = False
 
-            image = QImage.fromData(self.imageData)
+            if isinstance(self.imageData, QImage):
+                image = self.imageData
+            else:
+                image = QImage.fromData(self.imageData)
             if image.isNull():
                 self.errorMessage(u'Error opening file',
                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicodeFilePath)
@@ -1518,9 +1521,23 @@ def inverted(color):
 
 def read(filename, default=None):
     try:
-        with open(filename, 'rb') as f:
-            return f.read()
+        #with open(filename, 'rb') as f:
+        #    return f.read()
+        reader = QImageReader(filename)
+        reader.setAutoTransform(True)
+        loaded_image = reader.read()
+        if loaded_image.isNull():
+            return default
+        """
+        image_ba = QByteArray()
+        buf = QBuffer(image_ba)
+        buf.open(QIODevice.WriteOnly)
+        loaded_image.save(buf, "PNG")
+        return image_ba
+        """
+        return loaded_image
     except:
+        raise
         return default
 
 
