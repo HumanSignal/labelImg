@@ -231,10 +231,20 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(getStr('save'), self.saveFile,
                       'Ctrl+S', 'save', getStr('saveDetail'), enabled=False)
 
-        isUsingPascalVoc = self.labelFileFormat == LabelFileFormat.PASCAL_VOC
-        save_format = action('&PascalVOC' if isUsingPascalVoc else '&YOLO',
+        def getFormatMeta(format: LabelFileFormat):
+            """
+            returns a tuple containing (title, icon_name) of the selected format
+            """
+            if format == LabelFileFormat.PASCAL_VOC:
+                return ('&PascalVOC', 'format_voc')
+            elif format == LabelFileFormat.YOLO:
+                return ('&YOLO', 'format_yolo')
+            elif format == LabelFileFormat.CREATE_ML:
+                return ('&CreateML', 'format_createml')
+
+        save_format = action(getFormatMeta(self.labelFileFormat)[0],
                              self.change_format, 'Ctrl+',
-                             'format_voc' if isUsingPascalVoc else 'format_yolo',
+                             getFormatMeta(self.labelFileFormat)[1],
                              getStr('changeSaveFormat'), enabled=True)
 
         saveAs = action(getStr('saveAs'), self.saveFileAs,
