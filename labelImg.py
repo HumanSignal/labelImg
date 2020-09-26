@@ -242,7 +242,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         close = action(getStr('closeCur'), self.closeFile, 'Ctrl+W', 'close', getStr('closeCurDetail'))
 
-        deleteImg = action(getStr('deleteImg'), self.deleteImg, 'Ctrl+D', 'close', getStr('deleteImgDetail'))
+        deleteImg = action(getStr('deleteImg'), self.deleteImg, 'Ctrl+Shift+D', 'close', getStr('deleteImgDetail'))
 
         resetAll = action(getStr('resetAll'), self.resetAll, None, 'resetall', getStr('resetAllDetail'))
 
@@ -1389,7 +1389,8 @@ class MainWindow(QMainWindow, WindowMixin):
         deletePath = self.filePath
         if deletePath is not None:
             self.openNextImg()
-            os.remove(deletePath)
+            if os.path.exists(deletePath):
+                os.remove(deletePath)
             self.importDirImages(self.lastOpenDir)
 
     def resetAll(self):
