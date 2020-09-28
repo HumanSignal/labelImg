@@ -38,20 +38,12 @@ class CreateMLWriter:
         for shape in self.shapes:
             points = shape["points"]
 
-            xmin = points[0][0]
-            ymin = points[2][1]
-            xmax = points[1][0]
-            ymax = points[0][1]
+            x1 = points[0][0]
+            y1 = points[0][1]
+            x2 = points[1][0]
+            y2 = points[2][1]
 
-            width = xmax - xmin
-            if width < 0:
-                width = width * -1
-            height = ymax - ymin
-            if height < 0:
-                height = height * -1
-            # x and y from center of rect
-            x = xmin + width / 2
-            y = ymin + height / 2
+            height, width, x, y = self.calculate_coordinates(x1, x2, y1, y2)
 
             shapedict = {
                 "label": shape["label"],
@@ -77,6 +69,28 @@ class CreateMLWriter:
 
         Path(self.outputfile).write_text(json.dumps(outputdict), ENCODE_METHOD)
 
+    def calculate_coordinates(self, x1, x2, y1, y2):
+        if x1 < x2:
+            xmin = x1
+            xmax = x2
+        else:
+            xmin = x2
+            xmax = x1
+        if y1 < y2:
+            ymin = y1
+            ymax = y2
+        else:
+            ymin = y2
+            ymax = y1
+        width = xmax - xmin
+        if width < 0:
+            width = width * -1
+        height = ymax - ymin
+        # x and y from center of rect
+        x = xmin + width / 2
+        y = ymin + height / 2
+        return height, width, x, y
+
 
 class CreateMLReader:
     def __init__(self, jsonpath, filepath):
@@ -96,6 +110,8 @@ class CreateMLReader:
         outputdict = json.loads(inputdata)
         self.verified = True
 
+        if len(self.shapes) > 0:
+            self.shapes = []
         for image in outputdict:
             if image["image"] == self.filename:
                 for shape in image["annotations"]:
@@ -103,10 +119,10 @@ class CreateMLReader:
 
     def add_shape(self, label, bndbox):
         xmin = bndbox["x"] - (bndbox["width"] / 2)
-        ymin = bndbox["y"] + (bndbox["height"] / 2)
+        ymin = bndbox["y"] - (bndbox["height"] / 2)
 
         xmax = bndbox["x"] + (bndbox["width"] / 2)
-        ymax = bndbox["y"] - (bndbox["height"] / 2)
+        ymax = bndbox["y"] + (bndbox["height"] / 2)
 
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None, True))
