@@ -234,7 +234,7 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(getStr('save'), self.saveFile,
                       'Ctrl+S', 'save', getStr('saveDetail'), enabled=False)
 
-        def getFormatMeta(format: LabelFileFormat):
+        def getFormatMeta(format):
             """
             returns a tuple containing (title, icon_name) of the selected format
             """
