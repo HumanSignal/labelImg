@@ -80,8 +80,8 @@ class CreateMLWriter:
 
 class CreateMLReader:
     def __init__(self, jsonpath, filepath):
-        self.jsonpath: str = jsonpath
-        self.shapes: list = []
+        self.jsonpath = jsonpath
+        self.shapes = []
         self.verified = False
         self.filename = filepath.split("/")[-1:][0]
         try:
