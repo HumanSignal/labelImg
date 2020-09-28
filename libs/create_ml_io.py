@@ -44,7 +44,11 @@ class CreateMLWriter:
             ymax = points[0][1]
 
             width = xmax - xmin
+            if width < 0:
+                width = width * -1
             height = ymax - ymin
+            if height < 0:
+                height = height * -1
             # x and y from center of rect
             x = xmin + width / 2
             y = ymin + height / 2
@@ -94,16 +98,15 @@ class CreateMLReader:
 
         for image in outputdict:
             if image["image"] == self.filename:
-                print("found file!", image)
                 for shape in image["annotations"]:
                     self.add_shape(shape["label"], shape["coordinates"])
 
     def add_shape(self, label, bndbox):
-        xmin = bndbox["x"] + bndbox["width"] / 2
-        ymin = bndbox["y"] + bndbox["height"] / 2
+        xmin = bndbox["x"] - (bndbox["width"] / 2)
+        ymin = bndbox["y"] + (bndbox["height"] / 2)
 
-        xmax = bndbox["x"] - bndbox["width"] / 2
-        ymax = bndbox["y"] - bndbox["height"] / 2
+        xmax = bndbox["x"] + (bndbox["width"] / 2)
+        ymax = bndbox["y"] - (bndbox["height"] / 2)
 
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
         self.shapes.append((label, points, None, None, True))
