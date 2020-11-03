@@ -195,6 +195,8 @@ class PascalVocReader:
         xmax = int(float(bndbox.find('xmax').text))
         ymax = int(float(bndbox.find('ymax').text))
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+        component = Component(label,xmax-xmin,ymax-ymin,(xmin,ymin),difficult)
+        self.components.append(component)
         self.shapes.append((label, points, None, None, difficult))
 
     def parseXML(self):
