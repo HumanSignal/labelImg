@@ -766,17 +766,18 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def addLabel(self, shape):
-        shape.paintLabel = self.displayLabelOption.isChecked()
-        item = HashableQListWidgetItem(shape.label)
-        item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-        item.setCheckState(Qt.Checked)
-        item.setBackground(generateColorByText(shape.label))
-        self.itemsToShapes[item] = shape
-        self.shapesToItems[shape] = item
-        self.labelList.addItem(item)
-        for action in self.actions.onShapesPresent:
-            action.setEnabled(True)
-        self.updateComboBox()
+        if shape is not None:
+            shape.paintLabel = self.displayLabelOption.isChecked()
+            item = HashableQListWidgetItem(shape.label)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Checked)
+            item.setBackground(generateColorByText(shape.label))
+            self.itemsToShapes[item] = shape
+            self.shapesToItems[shape] = item
+            self.labelList.addItem(item)
+            for action in self.actions.onShapesPresent:
+                action.setEnabled(True)
+            self.updateComboBox()
 
     def remLabel(self, shape):
         if shape is None:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 import sys
+import copy
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
@@ -11,6 +12,25 @@ from libs.ustr import ustr
 
 XML_EXT = '.xml'
 ENCODE_METHOD = DEFAULT_ENCODING
+
+
+class Component(object):
+    def __init__(self,name,w,h,location:tuple,difficult):
+        self.name = name
+        self.w = w
+        self.h = h
+        self.location = location
+        self.difficult = difficult
+    
+    def __eq__(self, other) -> bool:
+        return self.name == other.name and self.w == other.w and self.h == other.h and self.location == other.location
+    
+    def __str__(self):  # unnecessary
+        return str(self.name)
+    
+    def __hash__(self) -> int:
+        return hash(self.name) + hash(self.w) + hash(self.h) + hash(self.location)
+
 
 class PascalVocWriter:
 
@@ -130,15 +150,44 @@ class PascalVocReader:
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         self.shapes = []
+        self.components = []
         self.filepath = filepath
         self.verified = False
         try:
             self.parseXML()
         except:
             pass
+    
+    def sortShapes(self):
+        heights = []
+        for i in self.shapes:
+            heights.append(i[1][2][1]-i[1][0][1])
+
+        maxHeight = max(heights)
+        resList = copy.deepcopy(self.components)
+        t = 0
+        sps = []
+
+        while len(resList)>0:
+            tt = t + 0.5
+            f1 = list(filter(lambda x:x.location[1]<maxHeight*tt,resList))
+            f1.sort(key=lambda x:x.location[0])
+            for i in f1:
+                xmin = i.location[0]
+                ymin = i.location[1]
+                xmax = xmin + i.w 
+                ymax = ymin + i.h
+                points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+                sps.append((i.name,points,None,None,i.difficult))
+            resList = list(set(resList).difference(set(f1)))
+            t = t + 1       
+        return sps
 
     def getShapes(self):
-        return self.shapes
+        if len(self.shapes)<3:
+            return self.shapes
+        else:
+            return self.sortShapes()
 
     def addShape(self, label, bndbox, difficult):
         xmin = int(float(bndbox.find('xmin').text))
