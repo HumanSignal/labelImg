@@ -1109,7 +1109,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def showBoundingBoxFromAnnotationFile(self, filePath):
         if self.defaultSaveDir is not None:
             basename = os.path.basename(os.path.splitext(filePath)[0])
-            filedir = os.path.basename(os.path.dirname(filePath))
+            filedir = filePath.split(basename)[0].split(os.path.sep)[-2:-1][0]
             xmlPath = os.path.join(self.defaultSaveDir, basename + XML_EXT)
             txtPath = os.path.join(self.defaultSaveDir, basename + TXT_EXT)
             jsonPath = os.path.join(self.defaultSaveDir, filedir + JSON_EXT)
