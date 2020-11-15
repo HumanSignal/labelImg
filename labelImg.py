@@ -27,7 +27,7 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from combobox import ComboBox
+from libs.combobox import ComboBox
 from libs.resources import *
 from libs.constants import *
 from libs.utils import *
