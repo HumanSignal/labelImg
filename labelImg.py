@@ -851,7 +851,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if annotationFilePath[-4:].lower() != ".xml":
                     annotationFilePath += XML_EXT
                 self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath + name, self.imageData,
-                    self.lineColor.getRgb(), self.fillColor.getRgb())#modifiable
+                    self.lineColor.getRgb(), self.fillColor.getRgb())
             elif self.labelFileFormat == LabelFileFormat.YOLO:
                 if annotationFilePath[-4:].lower() != ".txt":
                     annotationFilePath += TXT_EXT
