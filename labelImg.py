@@ -8,6 +8,7 @@ import platform
 import re
 import sys
 import subprocess
+import configparser
 
 from functools import partial
 from collections import defaultdict
@@ -232,7 +233,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         'space', 'verify', getStr('verifyImgDetail'))
 
         save = action(getStr('save'), self.saveFile,
-                      'Ctrl+S', 'save', getStr('saveDetail'), enabled=False)
+                      'Ctrl+S', 'save', getStr('saveDetail'), enabled=True)
 
         def getFormatMeta(format):
             """
@@ -829,7 +830,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.comboBox.update_items(uniqueTextList)
 
-    def saveLabels(self, annotationFilePath):
+    def saveLabels(self, annotationFilePath, name):
         annotationFilePath = ustr(annotationFilePath)
         if self.labelFile is None:
             self.labelFile = LabelFile()
@@ -849,8 +850,8 @@ class MainWindow(QMainWindow, WindowMixin):
             if self.labelFileFormat == LabelFileFormat.PASCAL_VOC:
                 if annotationFilePath[-4:].lower() != ".xml":
                     annotationFilePath += XML_EXT
-                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath, self.imageData,
-                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
+                    self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath + name, self.imageData,
+                        self.lineColor.getRgb(), self.fillColor.getRgb())
             elif self.labelFileFormat == LabelFileFormat.YOLO:
                 if annotationFilePath[-4:].lower() != ".txt":
                     annotationFilePath += TXT_EXT
@@ -1364,19 +1365,30 @@ class MainWindow(QMainWindow, WindowMixin):
             self.loadFile(filename)
 
     def saveFile(self, _value=False):
+        currIndex = self.mImgList.index(self.filePath)
+
+        parser = configparser.RawConfigParser()
+        parser.read('data/config.cfg')
+        save_to: str = parser.get('save_config', 'save_path')
+
         if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
+
             if self.filePath:
+
                 imgFileName = os.path.basename(self.filePath)
                 savedFileName = os.path.splitext(imgFileName)[0]
-                savedPath = os.path.join(ustr(self.defaultSaveDir), savedFileName)
+                savedPath = os.path.join(ustr(save_to), savedFileName)
+                self.image.save(savedPath + '.jpg',imgFileName)
                 self._saveFile(savedPath)
+
         else:
             imgFileDir = os.path.dirname(self.filePath)
             imgFileName = os.path.basename(self.filePath)
             savedFileName = os.path.splitext(imgFileName)[0]
-            savedPath = os.path.join(imgFileDir, savedFileName)
-            self._saveFile(savedPath if self.labelFile
-                           else self.saveFileDialog(removeExt=False))
+            savedPath = os.path.join(ustr(save_to), savedFileName)
+            self.image.save(savedPath + '.jpg')
+            self._saveFile(savedPath + '.xml',imgFileName)
+
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
