@@ -589,7 +589,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def setClean(self):
         self.dirty = False
-        self.actions.save.setEnabled(False)
+        self.actions.save.setEnabled(True)
         self.actions.create.setEnabled(True)
 
     def toggleActions(self, value=True):
@@ -850,8 +850,8 @@ class MainWindow(QMainWindow, WindowMixin):
             if self.labelFileFormat == LabelFileFormat.PASCAL_VOC:
                 if annotationFilePath[-4:].lower() != ".xml":
                     annotationFilePath += XML_EXT
-                    self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath + name, self.imageData,
-                        self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.savePascalVocFormat(annotationFilePath, shapes, self.filePath + name, self.imageData,
+                    self.lineColor.getRgb(), self.fillColor.getRgb())#modifiable
             elif self.labelFileFormat == LabelFileFormat.YOLO:
                 if annotationFilePath[-4:].lower() != ".txt":
                     annotationFilePath += TXT_EXT
@@ -1374,11 +1374,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
 
             if self.filePath:
-
                 imgFileName = os.path.basename(self.filePath)
                 savedFileName = os.path.splitext(imgFileName)[0]
                 savedPath = os.path.join(ustr(save_to), savedFileName)
-                self.image.save(savedPath + '.jpg',imgFileName)
+                self.image.save(savedPath + '.jpg', imgFileName)
                 self._saveFile(savedPath)
 
         else:
@@ -1386,6 +1385,7 @@ class MainWindow(QMainWindow, WindowMixin):
             imgFileName = os.path.basename(self.filePath)
             savedFileName = os.path.splitext(imgFileName)[0]
             savedPath = os.path.join(ustr(save_to), savedFileName)
+            print(imgFileName)
             self.image.save(savedPath + '.jpg')
             self._saveFile(savedPath + '.xml',imgFileName)
 
@@ -1412,8 +1412,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 return fullFilePath
         return ''
 
-    def _saveFile(self, annotationFilePath):
-        if annotationFilePath and self.saveLabels(annotationFilePath):
+    def _saveFile(self, annotationFilePath, name):
+        if annotationFilePath and self.saveLabels(annotationFilePath, name):
             self.setClean()
             self.statusBar().showMessage('Saved to  %s' % annotationFilePath)
             self.statusBar().show()
