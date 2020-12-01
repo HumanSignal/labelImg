@@ -1,4 +1,5 @@
 person
 face
+face_mask
 male
 female
