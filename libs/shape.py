@@ -18,7 +18,6 @@ DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
 DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
-MIN_Y_LABEL = 10
 
 
 class Shape(object):
@@ -116,6 +115,7 @@ class Shape(object):
             if self.paintLabel:
                 min_x = sys.maxsize
                 min_y = sys.maxsize
+                min_y_label = int(1.25 * self.labelFontSize)
                 for point in self.points:
                     min_x = min(min_x, point.x())
                     min_y = min(min_y, point.y())
@@ -126,8 +126,8 @@ class Shape(object):
                     painter.setFont(font)
                     if(self.label == None):
                         self.label = ""
-                    if(min_y < MIN_Y_LABEL):
-                        min_y += MIN_Y_LABEL
+                    if(min_y < min_y_label):
+                        min_y += min_y_label
                     painter.drawText(min_x, min_y, self.label)
 
             if self.fill:
