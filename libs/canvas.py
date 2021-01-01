@@ -47,6 +47,7 @@ class Canvas(QWidget):
         self.prevPoint = QPointF()
         self.offsets = QPointF(), QPointF()
         self.scale = 1.0
+        self.labelFontSize = 8
         self.pixmap = QPixmap()
         self.visible = {}
         self._hideBackround = False
@@ -478,6 +479,7 @@ class Canvas(QWidget):
 
         p.drawPixmap(0, 0, self.pixmap)
         Shape.scale = self.scale
+        Shape.labelFontSize = self.labelFontSize
         for shape in self.shapes:
             if (shape.selected or not self._hideBackround) and self.isVisible(shape):
                 shape.fill = shape.selected or shape == self.hShape
