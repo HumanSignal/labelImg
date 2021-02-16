@@ -135,6 +135,14 @@ class MainWindow(QMainWindow, WindowMixin):
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
+        # *
+        # * dhzs 2017-12-2 add copy button
+        # *
+        self.copy_prev_button = QPushButton('Copy the previous label')
+        self.copy_prev_button.setShortcut('c')
+        self.copy_prev_button.clicked.connect(self.copyPreviousBoundingBoxes)
+        listLayout.addWidget(self.copy_prev_button)
+
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.diffcButton)

@@ -119,6 +119,17 @@ Open the Anaconda Prompt and go to the `labelImg <#labelimg>`__ directory
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
+.. code::
+
+    conda create -n labelimg python=3.5
+    pip install PyQt5==5.10.1 lxml pyinstaller
+    # You may delete C:~/.labelImgSettings.pkl
+    pyrcc5 -o libs/resources.py resources.qrc
+    python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+    pyinstaller --hidden-import=xml --hidden-import=xml.etree --hidden-import=xml.etree.ElementTree --hidden-import=lxml.etree --hidden-import=PyQt5.sip -D -F -n labelImg -c "./labelImg.py" -p ./libs -p ./ --paths C:\Users\Administrator\Anaconda3\envs\labelimg\Lib\site-packages\PyQt5\Qt\bin
+
+
 Get from PyPI but only python3.0 or above
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is the simplest (one-command) install method on modern Linux distributions such as Ubuntu and Fedora.
@@ -218,6 +229,8 @@ Hotkeys
 | d                  | Next image                                 |
 +--------------------+--------------------------------------------+
 | a                  | Previous image                             |
++--------------------+--------------------------------------------+
+| c                  | Copy Previous label                             |
 +--------------------+--------------------------------------------+
 | del                | Delete the selected rect box               |
 +--------------------+--------------------------------------------+
