@@ -128,12 +128,26 @@ class MainWindow(QMainWindow, WindowMixin):
         useDefaultLabelContainer = QWidget()
         useDefaultLabelContainer.setLayout(useDefaultLabelQHBoxLayout)
 
-        # Create a widget for edit and diffc button
-        self.diffcButton = QCheckBox(getStr('useDifficult'))
-        self.diffcButton.setChecked(False)
-        self.diffcButton.stateChanged.connect(self.btnstate)
         self.editButton = QToolButton()
         self.editButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        # Create Flag checkboxes list
+        self.flagGroupBox = QGroupBox(self)
+        self.flagGroupBox.setTitle('Flags')
+        flagslayout = QVBoxLayout(self)
+        self.flagGroupBox.setLayout(flagslayout)
+        self.flagButtons = []
+
+        self.diffcButton = QCheckBox(getStr('useDifficult'))
+        self.diffcButton.setChecked(False)
+        # calling stateChanged is inappropriate!
+        self.diffcButton.clicked.connect(self.btnstate)
+        self.flagButtons.append(self.diffcButton)
+
+        self.truncButton = QCheckBox(getStr('useTruncated'))
+        self.truncButton.setChecked(False)
+        self.truncButton.clicked.connect(self.btnstate)
+        self.flagButtons.append(self.truncButton)
 
         # *
         # * dhzs 2017-12-2 add copy button
@@ -143,9 +157,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.copy_prev_button.clicked.connect(self.copyPreviousBoundingBoxes)
         listLayout.addWidget(self.copy_prev_button)
 
+        # add flag buttons to flagsGroupBox
+        for flagbtn in self.flagButtons:
+            flagslayout.addWidget(flagbtn)
+
         # Add some of widgets to listLayout
         listLayout.addWidget(self.editButton)
-        listLayout.addWidget(self.diffcButton)
+        listLayout.addWidget(self.flagGroupBox)
         listLayout.addWidget(useDefaultLabelContainer)
 
         # Create and add combobox for showing unique labels in group
@@ -446,8 +464,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fillColor = None
         self.zoom_level = 100
         self.fit_window = False
-        # Add Chris
-        self.difficult = False
 
         ## Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
         if settings.get(SETTING_RECENT_FILES):
@@ -479,8 +495,7 @@ class MainWindow(QMainWindow, WindowMixin):
         Shape.line_color = self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, DEFAULT_LINE_COLOR))
         Shape.fill_color = self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, DEFAULT_FILL_COLOR))
         self.canvas.setDrawingColor(self.lineColor)
-        # Add chris
-        Shape.difficult = self.difficult
+        Shape.flags = self.flags
 
         def xbool(x):
             if isinstance(x, QVariant):
@@ -730,6 +745,20 @@ class MainWindow(QMainWindow, WindowMixin):
             if filename:
                 self.loadFile(filename)
 
+    @property
+    def flags(self):
+        """
+        Returns
+        -------
+        dict
+            key is a flag name
+            value is a Bool
+        """
+        return {flagbtn.text(): flagbtn.isChecked() for flagbtn in self.flagButtons}
+
+    def setFlagsChecked(self, flags):
+        pass
+
     # Add chris
     def btnstate(self, item= None):
         """ Function to handle difficult examples
@@ -741,7 +770,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if not item: # If not selected Item, take the first one
             item = self.labelList.item(self.labelList.count()-1)
 
-        difficult = self.diffcButton.isChecked()
+        flags = self.flags
 
         try:
             shape = self.itemsToShapes[item]
@@ -749,8 +778,7 @@ class MainWindow(QMainWindow, WindowMixin):
             pass
         # Checked and Update
         try:
-            if difficult != shape.difficult:
-                shape.difficult = difficult
+            if shape.setChangedFlags(flags):
                 self.setDirty()
             else:  # User probably changed item visibility
                 self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
@@ -798,7 +826,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, difficult in shapes:
+        for label, points, line_color, fill_color, flags in shapes:
             shape = Shape(label=label)
             for x, y in points:
 
@@ -808,7 +836,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     self.setDirty()
 
                 shape.addPoint(QPointF(x, y))
-            shape.difficult = difficult
+            shape.flags = flags
             shape.close()
             s.append(shape)
 
@@ -848,11 +876,10 @@ class MainWindow(QMainWindow, WindowMixin):
                         line_color=s.line_color.getRgb(),
                         fill_color=s.fill_color.getRgb(),
                         points=[(p.x(), p.y()) for p in s.points],
-                       # add chris
-                        difficult = s.difficult)
+                        flags=s.flags)
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
-        # Can add differrent annotation formats here
+        # Can add different annotation formats here
         try:
             if self.labelFileFormat == LabelFileFormat.PASCAL_VOC:
                 if annotationFilePath[-4:].lower() != ".xml":
@@ -899,9 +926,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self._noSelectionSlot = True
             self.canvas.selectShape(self.itemsToShapes[item])
             shape = self.itemsToShapes[item]
-            # Add Chris
-            self.diffcButton.setChecked(shape.difficult)
-
+            for flagbtn in self.flagButtons:
+                if hasattr(shape, flagbtn.text()):
+                    flagbtn.setChecked(getattr(shape, flagbtn.text()))
+                else:
+                    flagbtn.setChecked(False)
     def labelItemChanged(self, item):
         shape = self.itemsToShapes[item]
         label = item.text()
@@ -932,8 +961,8 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             text = self.defaultLabelTextLine.text()
 
-        # Add Chris
-        self.diffcButton.setChecked(False)
+        for flagbtn in self.flagButtons:
+            flagbtn.setChecked(False)
         if text is not None:
             self.prevLabelText = text
             generate_color = generateColorByText(text)
@@ -1283,7 +1312,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.lastOpenDir = dirpath
         self.dirname = dirpath
         self.filePath = None
-        self.fileListWidget.clear()
         self.mImgList = self.scanAllImages(dirpath)
         self.openNextImg()
         for imgPath in self.mImgList:

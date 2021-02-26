@@ -22,10 +22,10 @@ class YOLOWriter:
         self.localImgPath = localImgPath
         self.verified = False
 
-    def addBndBox(self, xmin, ymin, xmax, ymax, name, difficult):
+    def addBndBox(self, xmin, ymin, xmax, ymax, name, flags):
         bndbox = {'xmin': xmin, 'ymin': ymin, 'xmax': xmax, 'ymax': ymax}
         bndbox['name'] = name
-        bndbox['difficult'] = difficult
+        bndbox['flags'] = flags
         self.boxlist.append(bndbox)
 
     def BndBox2YoloLine(self, box, classList=[]):
@@ -85,7 +85,7 @@ class YoloReader:
 
     def __init__(self, filepath, image, classListPath=None):
         # shapes type:
-        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
+        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, flags]
         self.shapes = []
         self.filepath = filepath
 
@@ -116,10 +116,10 @@ class YoloReader:
     def getShapes(self):
         return self.shapes
 
-    def addShape(self, label, xmin, ymin, xmax, ymax, difficult):
+    def addShape(self, label, xmin, ymin, xmax, ymax, flags):
 
         points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
-        self.shapes.append((label, points, None, None, difficult))
+        self.shapes.append((label, points, None, None, flags))
 
     def yoloLine2Shape(self, classIndex, xcen, ycen, w, h):
         label = self.classes[int(classIndex)]
@@ -142,5 +142,5 @@ class YoloReader:
             classIndex, xcen, ycen, w, h = bndBox.strip().split(' ')
             label, xmin, ymin, xmax, ymax = self.yoloLine2Shape(classIndex, xcen, ycen, w, h)
 
-            # Caveat: difficult flag is discarded when saved as yolo format.
-            self.addShape(label, xmin, ymin, xmax, ymax, False)
+            # Caveat: flags are discarded when saved as yolo format.
+            self.addShape(label, xmin, ymin, xmax, ymax, {'difficult': False, 'truncated': False})

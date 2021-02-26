@@ -38,12 +38,12 @@ class Shape(object):
     scale = 1.0
     labelFontSize = 8
 
-    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False):
+    def __init__(self, label=None, line_color=None, flags={'difficult': False, 'truncated': False}, paintLabel=False):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
-        self.difficult = difficult
+        self.flags = flags
         self.paintLabel = paintLabel
 
         self._highlightIndex = None
@@ -193,8 +193,29 @@ class Shape(object):
             shape.line_color = self.line_color
         if self.fill_color != Shape.fill_color:
             shape.fill_color = self.fill_color
-        shape.difficult = self.difficult
+        shape.flags = self.flags
         return shape
+
+
+    def setChangedFlags(self, newflags):
+        """
+        Set changed flags and return the boolean representing whether to have changed flags
+        Returns
+        -------
+        Bool
+            Whether to have changed flags
+        """
+        isChanged = False
+        for newkey, newval in newflags.items():
+            if newkey not in self.flags.keys() or self.flags[newkey] != newval:
+                isChanged = True
+                break
+
+        if isChanged:
+            self.flags = newflags
+
+        return isChanged
+
 
     def __len__(self):
         return len(self.points)
@@ -204,3 +225,19 @@ class Shape(object):
 
     def __setitem__(self, key, value):
         self.points[key] = value
+
+    # allow to access the flag's key as Shape's attribute
+    def __getattr__(self, item):
+        if item in self.flags.keys():
+            return self.flags[item]
+        else:
+            raise AttributeError('Shape has no attribute \'{}\''.format(item))
+
+    def __setattr__(self, key, value):
+        try:
+            super().__setattr__(key, value)
+        except AttributeError:
+            if key in self.flags.keys():
+                self.flags[key] = value
+            else:
+                raise AttributeError('Shape has no attribute \'{}\''.format(key))
