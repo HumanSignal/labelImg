@@ -157,14 +157,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addFlags(getStr('useDifficult'))
         self.addFlags(getStr('useTruncated'))
 
-        # *
-        # * dhzs 2017-12-2 add copy button
-        # *
-        self.copy_prev_button = QPushButton('Copy the previous label')
-        self.copy_prev_button.setShortcut('c')
-        self.copy_prev_button.clicked.connect(self.copyPreviousBoundingBoxes)
-        listLayout.addWidget(self.copy_prev_button)
-
         # Add some of widgets to listLayout
         listLayout.addWidget(self.flagGroupBox)
         listLayout.addWidget(self.editButton)
@@ -244,7 +236,7 @@ class MainWindow(QMainWindow, WindowMixin):
                          'Ctrl+u', 'open', getStr('openDir'))
 
         copyPrevBounding = action(getStr('copyPrevBounding'), self.copyPreviousBoundingBoxes,
-                         'Ctrl+v', 'paste', getStr('copyPrevBounding'))
+                         'c', 'paste', getStr('copyPrevBounding'))
 
         changeSavedir = action(getStr('changeSaveDir'), self.changeSavedirDialog,
                                'Ctrl+r', 'open', getStr('changeSavedAnnotationDir'))
