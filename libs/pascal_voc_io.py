@@ -156,15 +156,18 @@ class PascalVocReader:
         except KeyError:
             self.verified = False
 
+        noflag_list = ['name', 'pose', 'bndbox']
         for object_iter in xmltree.findall('object'):
             bndbox = object_iter.find("bndbox")
             label = object_iter.find('name').text
 
-            difficult = False
-            if object_iter.find('difficult') is not None:
-                difficult = bool(int(object_iter.find('difficult').text))
-            truncated = False
-            if object_iter.find('truncated') is not None:
-                truncated = bool(int(object_iter.find('truncated').text))
-            self.addShape(label, bndbox, flags={'difficult': difficult, 'truncated': truncated})
+            flags = {'difficult': False, 'truncated': False}
+
+            for obj_node in object_iter:
+                if obj_node.tag in noflag_list:
+                    continue
+                val = bool(int(obj_node.text))
+                flags[obj_node.tag] = val
+
+            self.addShape(label, bndbox, flags=flags)
         return True

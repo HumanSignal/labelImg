@@ -134,20 +134,28 @@ class MainWindow(QMainWindow, WindowMixin):
         # Create Flag checkboxes list
         self.flagGroupBox = QGroupBox(self)
         self.flagGroupBox.setTitle('Flags')
-        flagslayout = QVBoxLayout(self)
-        self.flagGroupBox.setLayout(flagslayout)
-        self.flagButtons = []
 
-        self.diffcButton = QCheckBox(getStr('useDifficult'))
-        self.diffcButton.setChecked(False)
-        # calling stateChanged is inappropriate!
-        self.diffcButton.clicked.connect(self.btnstate)
-        self.flagButtons.append(self.diffcButton)
+        vbox = QVBoxLayout(self)
+        self.flagslayout = QGridLayout(self)
+        vbox.addLayout(self.flagslayout)
 
-        self.truncButton = QCheckBox(getStr('useTruncated'))
-        self.truncButton.setChecked(False)
-        self.truncButton.clicked.connect(self.btnstate)
-        self.flagButtons.append(self.truncButton)
+        addflagLayout = QHBoxLayout(self)
+        self.flaglineedit = QLineEdit()
+        self.flaglineedit.setPlaceholderText('Flag name')
+        self.flaglineedit.returnPressed.connect(self.addflag_button_pushed)
+        addflagLayout.addWidget(self.flaglineedit, 9)
+        self.addflag_button = QPushButton('↑')
+        self.addflag_button.clicked.connect(self.addflag_button_pushed)
+        addflagLayout.addWidget(self.addflag_button, 1)
+        vbox.addLayout(addflagLayout)
+
+        self.flagGroupBox.setLayout(vbox)
+        # list of tuple(checkbox, x button)
+        self.flagWidgets = []
+
+        # add difficult and truncated flag by default
+        self.addFlags(getStr('useDifficult'))
+        self.addFlags(getStr('useTruncated'))
 
         # *
         # * dhzs 2017-12-2 add copy button
@@ -157,13 +165,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.copy_prev_button.clicked.connect(self.copyPreviousBoundingBoxes)
         listLayout.addWidget(self.copy_prev_button)
 
-        # add flag buttons to flagsGroupBox
-        for flagbtn in self.flagButtons:
-            flagslayout.addWidget(flagbtn)
-
         # Add some of widgets to listLayout
-        listLayout.addWidget(self.editButton)
         listLayout.addWidget(self.flagGroupBox)
+        listLayout.addWidget(self.editButton)
         listLayout.addWidget(useDefaultLabelContainer)
 
         # Create and add combobox for showing unique labels in group
@@ -756,8 +760,64 @@ class MainWindow(QMainWindow, WindowMixin):
         """
         return {flagbtn.text(): flagbtn.isChecked() for flagbtn in self.flagButtons}
 
-    def setFlagsChecked(self, flags):
-        pass
+    def addflag_button_pushed(self):
+        # check whether the name is valid or not
+        flagname = self.flaglineedit.text()
+        if flagname == '':
+            self.errorMessage('Invalid flag name', 'Input any texts!')
+            return
+
+        if flagname in [c.text() for c in self.flagButtons]:
+            self.errorMessage('Invalid flag name', 'Already exist!')
+            return
+
+        self.addFlags(flagname)
+
+    def addFlags(self, name):
+        column = len(self.flagWidgets)
+
+        newbtn = QCheckBox(name)
+        newbtn.setChecked(False)
+        # calling stateChanged is inappropriate!
+        newbtn.clicked.connect(self.btnstate)
+        self.flagslayout.addWidget(newbtn, *(column, 0))
+        self.flagslayout.setColumnStretch(0, 9)
+
+        removebtn = QPushButton('X')
+        widgets = (newbtn, removebtn)
+        index = len(self.flagWidgets)
+        removebtn.clicked.connect(lambda : self.removeFlags(index))
+        self.flagslayout.addWidget(removebtn, *(column, 1))
+        self.flagslayout.setColumnStretch(1, 1)
+        self.flagWidgets.append(widgets)
+
+
+    def removeFlags(self, index):
+        # remove checkbox
+        btn = self.flagWidgets[index][0]
+        self.flagslayout.removeWidget(btn)
+
+        # remove x button
+        removebtn = self.flagWidgets[index][1]
+        self.flagslayout.removeWidget(removebtn)
+
+        btn.deleteLater()
+        removebtn.deleteLater()
+        del self.flagWidgets[index]
+
+        # update argument of removeFlags
+        for i, removeBtn in enumerate(self.flagRemoveButtons):
+            removebtn.clicked.connect(lambda : self.removeFlags(i))
+
+    @property
+    def flagButtons(self):
+        for widgets in self.flagWidgets:
+            yield widgets[0]
+
+    @property
+    def flagRemoveButtons(self):
+        for widgets in self.flagWidgets:
+            yield widgets[1]
 
     # Add chris
     def btnstate(self, item= None):
@@ -826,6 +886,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
+        flaglist = [btn.text() for btn in self.flagButtons]
         for label, points, line_color, fill_color, flags in shapes:
             shape = Shape(label=label)
             for x, y in points:
@@ -849,6 +910,11 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.fill_color = QColor(*fill_color)
             else:
                 shape.fill_color = generateColorByText(label)
+
+            # add flag if it doesn't exist
+            for flagname in shape.flags.keys():
+                if flagname not in flaglist:
+                    self.addFlags(flagname)
 
             self.addLabel(shape)
         self.updateComboBox()
