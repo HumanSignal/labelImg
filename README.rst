@@ -259,7 +259,7 @@ License
 
 Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
 
-Related
+Related and additional tools
 ~~~~~~~
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
@@ -269,6 +269,8 @@ Related
 4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
 5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
 6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
+7. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
+
 
 
 Stargazers over time
