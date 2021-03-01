@@ -154,8 +154,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.flagWidgets = []
 
         # add difficult and truncated flag by default
-        self.addFlags(getStr('useDifficult'))
-        self.addFlags(getStr('useTruncated'))
+        flaglist = settings.get(SETTING_FLAGS_INFO, [getStr('useDifficult'), getStr('useTruncated')])
+        for flagname in flaglist:
+            self.addFlags(flagname)
 
         # Add some of widgets to listLayout
         listLayout.addWidget(self.flagGroupBox)
@@ -878,7 +879,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def loadLabels(self, shapes):
         s = []
-        flaglist = [btn.text() for btn in self.flagButtons]
+        flagset = set([btn.text() for btn in self.flagButtons])
         for label, points, line_color, fill_color, flags in shapes:
             shape = Shape(label=label)
             for x, y in points:
@@ -903,10 +904,17 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 shape.fill_color = generateColorByText(label)
 
-            # add flag if it doesn't exist
-            for flagname in shape.flags.keys():
-                if flagname not in flaglist:
-                    self.addFlags(flagname)
+            shape_flagset = set(shape.flags.keys())
+            # setDirty if the xml file's flag doesn't exist
+            for flagname in (flagset - shape_flagset):
+                shape.flags[flagname] = False
+                self.setDirty()
+
+            # add flag to rightdock if it doesn't exist
+            for flagname in (shape_flagset - flagset):
+                flagset.add(flagname)
+                self.addFlags(flagname)
+                self.setDirty()
 
             self.addLabel(shape)
         self.updateComboBox()
@@ -1293,6 +1301,9 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_PAINT_LABEL] = self.displayLabelOption.isChecked()
         settings[SETTING_DRAW_SQUARE] = self.drawSquaresOption.isChecked()
         settings[SETTING_LABEL_FILE_FORMAT] = self.labelFileFormat
+
+        # save flag info
+        settings[SETTING_FLAGS_INFO] = list(self.flags.keys())
         settings.save()
 
     def loadRecent(self, filename):
