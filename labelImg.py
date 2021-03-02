@@ -149,6 +149,11 @@ class MainWindow(QMainWindow, WindowMixin):
         addflagLayout.addWidget(self.addflag_button, 1)
         vbox.addLayout(addflagLayout)
 
+        self.discardUnnecessaryFlagsCheckbox = QCheckBox(getStr('discardFlags'))
+        self.discardUnnecessaryFlagsCheckbox.setChecked(settings.get(SETTING_DISCARD_FLAGS, False))
+        self.discardUnnecessaryFlagsCheckbox.clicked.connect(self.btnstate)
+        vbox.addWidget(self.discardUnnecessaryFlagsCheckbox)
+
         self.flagGroupBox.setLayout(vbox)
         # list of tuple(checkbox, x button)
         self.flagWidgets = []
@@ -767,40 +772,51 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addFlags(flagname)
 
     def addFlags(self, name):
-        column = len(self.flagWidgets)
+        index = len(self.flagWidgets)
 
         newbtn = QCheckBox(name)
         newbtn.setChecked(False)
         # calling stateChanged is inappropriate!
         newbtn.clicked.connect(self.btnstate)
-        self.flagslayout.addWidget(newbtn, *(column, 0))
+        newbtn.setProperty('colpos', index)
+        self.flagslayout.addWidget(newbtn, *(index, 0))
         self.flagslayout.setColumnStretch(0, 9)
 
         removebtn = QPushButton('X')
         widgets = (newbtn, removebtn)
-        index = len(self.flagWidgets)
-        removebtn.clicked.connect(lambda : self.removeFlags(index))
-        self.flagslayout.addWidget(removebtn, *(column, 1))
+        removebtn.setProperty('colpos', index)
+        removebtn.clicked.connect(lambda : self.removeFlags(removebtn.property('colpos')))
+        self.flagslayout.addWidget(removebtn, *(index, 1))
         self.flagslayout.setColumnStretch(1, 1)
         self.flagWidgets.append(widgets)
 
 
     def removeFlags(self, index):
+        # remove widget by index totally
+        flaglineedit, removebtn = self.flagWidgets[index]
         # remove checkbox
-        btn = self.flagWidgets[index][0]
-        self.flagslayout.removeWidget(btn)
+        self.flagslayout.removeWidget(flaglineedit)
+        flaglineedit.setParent(None)
 
         # remove x button
-        removebtn = self.flagWidgets[index][1]
         self.flagslayout.removeWidget(removebtn)
+        removebtn.setParent(None)
 
-        btn.deleteLater()
+        flaglineedit.deleteLater()
         removebtn.deleteLater()
         del self.flagWidgets[index]
 
-        # update argument of removeFlags
-        for i, removeBtn in enumerate(self.flagRemoveButtons):
-            removebtn.clicked.connect(lambda : self.removeFlags(i))
+        # update position
+        for i, (flaglineedit, removebtn) in enumerate(self.flagWidgets):
+            # update property
+            flaglineedit.setProperty('colpos', i)
+            removebtn.setProperty('colpos', i)
+
+            # update flaglayout position
+            self.flagslayout.addWidget(flaglineedit, *(i, 0))
+            self.flagslayout.addWidget(removebtn, *(i, 1))
+
+        self.setDirty()
 
     @property
     def flagButtons(self):
@@ -911,10 +927,14 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.setDirty()
 
             # add flag to rightdock if it doesn't exist
-            for flagname in (shape_flagset - flagset):
-                flagset.add(flagname)
-                self.addFlags(flagname)
-                self.setDirty()
+            if self.discardUnnecessaryFlagsCheckbox.isChecked():
+                for flagname in (shape_flagset - flagset):
+                    del shape.flags[flagname]
+                    self.setDirty()
+            else:
+                for flagname in (shape_flagset - flagset):
+                    flagset.add(flagname)
+                    self.addFlags(flagname)
 
             self.addLabel(shape)
         self.updateComboBox()
@@ -1304,6 +1324,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # save flag info
         settings[SETTING_FLAGS_INFO] = list(self.flags.keys())
+        settings[SETTING_DISCARD_FLAGS] = self.discardUnnecessaryFlagsCheckbox.isChecked()
         settings.save()
 
     def loadRecent(self, filename):

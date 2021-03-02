@@ -210,6 +210,10 @@ class Shape(object):
             if newkey not in self.flags.keys() or self.flags[newkey] != newval:
                 isChanged = True
                 break
+        # check to discard unnecessary flags
+        newflags_set = set(newflags.keys())
+        origflags_set = set(self.flags.keys())
+        isChanged = isChanged or len(newflags_set.symmetric_difference(origflags_set)) > 0
 
         if isChanged:
             self.flags = newflags
