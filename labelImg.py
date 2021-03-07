@@ -27,6 +27,9 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
+import cv2  # pip install opencv-python
+import numpy as np
+
 from libs.combobox import ComboBox
 from libs.resources import *
 from libs.constants import *
@@ -1564,7 +1567,40 @@ def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
 
 
+def read_opencv(path):
+    """Load an image via opencv and convert it to a QImage.
+    Supports all image formats supported by opencv, including 16 bit grayscale and color images."""
+    image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    if image.max() > 255:
+        image = (image - image.min()) / (image.max() - image.min()) * 255
+        image = image.astype('uint8')
+
+    if len(image.shape) == 2:
+        image = np.tile(image, (3, 1, 1)).transpose((1, 2, 0))
+
+    height, width, channels = image.shape
+    if channels == 3:
+        # convert BGR to RGB
+        image[:, :, [0, 1, 2]] = image[:, :, [2, 1, 0]]
+        image = image.copy()
+        return QImage(image, width, height, image.strides[0], QImage.Format_RGB888)
+    elif channels == 4:
+        # convert BGRA to RGBA
+        image[:, :, [0, 1, 2, 3]] = image[:, :, [2, 1, 0, 3]]
+        image = image.copy()
+        return QImage(image, width, height, image.strides[0], QImage.Format_RGBA8888)
+    else:
+        assert False
+
+
 def read(filename, default=None):
+    # try loading image using opencv (for 16 bit image support)
+    try:
+        return read_opencv(filename)
+    except:
+        pass
+
+    # if opencv fails for any reason (e.g. no svg support), try the Qt image reader instead.
     try:
         reader = QImageReader(filename)
         reader.setAutoTransform(True)

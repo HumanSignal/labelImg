@@ -1,2 +1,4 @@
 pyqt5==5.10.1
 lxml==4.6.2
+opencv-python>=4.2.0.0
+numpy>=1.11.3
