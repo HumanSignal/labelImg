@@ -57,7 +57,7 @@ class WindowMixin(object):
     def menu(self, title, actions=None):
         menu = self.menuBar().addMenu(title)
         if actions:
-            addActions(menu, actions)
+            add_actions(menu, actions)
         return menu
 
     def toolbar(self, title, actions=None):
@@ -66,7 +66,7 @@ class WindowMixin(object):
         # toolbar.setOrientation(Qt.Vertical)
         toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         if actions:
-            addActions(toolbar, actions)
+            add_actions(toolbar, actions)
         self.addToolBar(Qt.LeftToolBarArea, toolbar)
         return toolbar
 
@@ -84,8 +84,8 @@ class MainWindow(QMainWindow, WindowMixin):
         settings = self.settings
 
         # Load string bundle for i18n
-        self.stringBundle = StringBundle.getBundle()
-        get_str = lambda str_id: self.stringBundle.getString(str_id)
+        self.stringBundle = StringBundle.get_bundle()
+        get_str = lambda str_id: self.stringBundle.get_string(str_id)
 
         # Save as Pascal voc xml
         self.defaultSaveDir = default_save_dir
@@ -109,7 +109,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.load_predefined_classes(default_prefdef_class_file)
 
         # Main widgets and related state.
-        self.labelDialog = LabelDialog(parent=self, listItem=self.labelHist)
+        self.labelDialog = LabelDialog(parent=self, list_item=self.labelHist)
 
         self.itemsToShapes = {}
         self.shapesToItems = {}
@@ -203,7 +203,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
         # Actions
-        action = partial(newAction, self)
+        action = partial(new_action, self)
         quit = action(get_str('quit'), self.close,
                       'Ctrl+Q', 'quit', get_str('quitApp'))
 
@@ -293,8 +293,8 @@ class MainWindow(QMainWindow, WindowMixin):
         zoom.setDefaultWidget(self.zoomWidget)
         self.zoomWidget.setWhatsThis(
             u"Zoom in or out of the image. Also accessible with"
-            " %s and %s from the canvas." % (fmtShortcut("Ctrl+[-+]"),
-                                             fmtShortcut("Ctrl+Wheel")))
+            " %s and %s from the canvas." % (format_shortcut("Ctrl+[-+]"),
+                                             format_shortcut("Ctrl+Wheel")))
         self.zoomWidget.setEnabled(False)
 
         zoom_in = action(get_str('zoomin'), partial(self.add_zoom, 10),
@@ -338,7 +338,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Label list context menu.
         label_menu = QMenu()
-        addActions(label_menu, (edit, delete))
+        add_actions(label_menu, (edit, delete))
         self.labelList.setContextMenuPolicy(Qt.CustomContextMenu)
         self.labelList.customContextMenuRequested.connect(
             self.pop_label_list_menu)
@@ -351,7 +351,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.drawSquaresOption.triggered.connect(self.toggle_draw_square)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, save_format=save_format, saveAs=save_as, open=open, close=close, resetAll=reset_all, deleteImg=delete_image,
+        self.actions = Struct(save=save, save_format=save_format, saveAs=save_as, open=open, close=close, resetAll=reset_all, deleteImg=delete_image,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=create_mode, editMode=edit_mode, advancedMode=advanced_mode,
                               shapeLineColor=shape_line_color, shapeFillColor=shape_fill_color,
@@ -370,7 +370,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                   close, create, create_mode, edit_mode),
                               onShapesPresent=(save_as, hide_all, show_all))
 
-        self.menus = struct(
+        self.menus = Struct(
             file=self.menu(get_str('menu_file')),
             edit=self.menu(get_str('menu_edit')),
             view=self.menu(get_str('menu_view')),
@@ -395,10 +395,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.displayLabelOption.triggered.connect(self.toggle_paint_labels_option)
 
-        addActions(self.menus.file,
-                   (open, open_dir, copy_prev_bounding, change_save_dir, open_annotation, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
-        addActions(self.menus.help, (help, show_info))
-        addActions(self.menus.view, (
+        add_actions(self.menus.file,
+                    (open, open_dir, copy_prev_bounding, change_save_dir, open_annotation, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
+        add_actions(self.menus.help, (help, show_info))
+        add_actions(self.menus.view, (
             self.autoSaving,
             self.singleClassMode,
             self.displayLabelOption,
@@ -410,8 +410,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.menus.file.aboutToShow.connect(self.update_file_menu)
 
         # Custom context menu for the canvas widget:
-        addActions(self.canvas.menus[0], self.actions.beginnerContext)
-        addActions(self.canvas.menus[1], (
+        add_actions(self.canvas.menus[0], self.actions.beginnerContext)
+        add_actions(self.canvas.menus[1], (
             action('&Copy here', self.copy_shape),
             action('&Move here', self.move_shape)))
 
@@ -518,19 +518,19 @@ class MainWindow(QMainWindow, WindowMixin):
     def set_format(self, save_format):
         if save_format == FORMAT_PASCALVOC:
             self.actions.save_format.setText(FORMAT_PASCALVOC)
-            self.actions.save_format.setIcon(newIcon("format_voc"))
+            self.actions.save_format.setIcon(new_icon("format_voc"))
             self.labelFileFormat = LabelFileFormat.PASCAL_VOC
             LabelFile.suffix = XML_EXT
 
         elif save_format == FORMAT_YOLO:
             self.actions.save_format.setText(FORMAT_YOLO)
-            self.actions.save_format.setIcon(newIcon("format_yolo"))
+            self.actions.save_format.setIcon(new_icon("format_yolo"))
             self.labelFileFormat = LabelFileFormat.YOLO
             LabelFile.suffix = TXT_EXT
 
         elif save_format == FORMAT_CREATEML:
             self.actions.save_format.setText(FORMAT_CREATEML)
-            self.actions.save_format.setIcon(newIcon("format_createml"))
+            self.actions.save_format.setIcon(new_icon("format_createml"))
             self.labelFileFormat = LabelFileFormat.CREATE_ML
             LabelFile.suffix = JSON_EXT
 
@@ -566,21 +566,21 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             tool, menu = self.actions.advanced, self.actions.advancedContext
         self.tools.clear()
-        addActions(self.tools, tool)
+        add_actions(self.tools, tool)
         self.canvas.menus[0].clear()
-        addActions(self.canvas.menus[0], menu)
+        add_actions(self.canvas.menus[0], menu)
         self.menus.edit.clear()
         actions = (self.actions.create,) if self.beginner()\
             else (self.actions.createMode, self.actions.editMode)
-        addActions(self.menus.edit, actions + self.actions.editMenu)
+        add_actions(self.menus.edit, actions + self.actions.editMenu)
 
     def set_beginner(self):
         self.tools.clear()
-        addActions(self.tools, self.actions.beginner)
+        add_actions(self.tools, self.actions.beginner)
 
     def set_advanced(self):
         self.tools.clear()
-        addActions(self.tools, self.actions.advanced)
+        add_actions(self.tools, self.actions.advanced)
 
     def set_dirty(self):
         self.dirty = True
@@ -692,7 +692,7 @@ class MainWindow(QMainWindow, WindowMixin):
         files = [f for f in self.recentFiles if f !=
                  curr_file_path and exists(f)]
         for i, f in enumerate(files):
-            icon = newIcon('labels')
+            icon = new_icon('labels')
             action = QAction(
                 icon, '&%d %s' % (i + 1, QFileInfo(f).fileName()), self)
             action.triggered.connect(partial(self.load_recent, f))
@@ -707,10 +707,10 @@ class MainWindow(QMainWindow, WindowMixin):
         item = self.current_item()
         if not item:
             return
-        text = self.labelDialog.popUp(item.text())
+        text = self.labelDialog.pop_up(item.text())
         if text is not None:
             item.setText(text)
-            item.setBackground(generateColorByText(text))
+            item.setBackground(generate_color_by_text(text))
             self.set_dirty()
             self.update_combo_box()
 
@@ -770,7 +770,7 @@ class MainWindow(QMainWindow, WindowMixin):
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
-        item.setBackground(generateColorByText(shape.label))
+        item.setBackground(generate_color_by_text(shape.label))
         self.itemsToShapes[item] = shape
         self.shapesToItems[shape] = item
         self.labelList.addItem(item)
@@ -799,7 +799,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 if snapped:
                     self.set_dirty()
 
-                shape.addPoint(QPointF(x, y))
+                shape.add_point(QPointF(x, y))
             shape.difficult = difficult
             shape.close()
             s.append(shape)
@@ -807,12 +807,12 @@ class MainWindow(QMainWindow, WindowMixin):
             if line_color:
                 shape.line_color = QColor(*line_color)
             else:
-                shape.line_color = generateColorByText(label)
+                shape.line_color = generate_color_by_text(label)
 
             if fill_color:
                 shape.fill_color = QColor(*fill_color)
             else:
-                shape.fill_color = generateColorByText(label)
+                shape.fill_color = generate_color_by_text(label)
 
             self.add_label(shape)
         self.update_combo_box()
@@ -849,18 +849,18 @@ class MainWindow(QMainWindow, WindowMixin):
             if self.labelFileFormat == LabelFileFormat.PASCAL_VOC:
                 if annotation_file_path[-4:].lower() != ".xml":
                     annotation_file_path += XML_EXT
-                self.labelFile.savePascalVocFormat(annotation_file_path, shapes, self.filePath, self.imageData,
-                                                   self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.save_pascal_voc_format(annotation_file_path, shapes, self.filePath, self.imageData,
+                                                      self.lineColor.getRgb(), self.fillColor.getRgb())
             elif self.labelFileFormat == LabelFileFormat.YOLO:
                 if annotation_file_path[-4:].lower() != ".txt":
                     annotation_file_path += TXT_EXT
-                self.labelFile.saveYoloFormat(annotation_file_path, shapes, self.filePath, self.imageData, self.labelHist,
-                                              self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.save_yolo_format(annotation_file_path, shapes, self.filePath, self.imageData, self.labelHist,
+                                                self.lineColor.getRgb(), self.fillColor.getRgb())
             elif self.labelFileFormat == LabelFileFormat.CREATE_ML:
                 if annotation_file_path[-5:].lower() != ".json":
                     annotation_file_path += JSON_EXT
-                self.labelFile.saveCreateMLFormat(annotation_file_path, shapes, self.filePath, self.imageData,
-                                                  self.labelHist, self.lineColor.getRgb(), self.fillColor.getRgb())
+                self.labelFile.save_create_ml_format(annotation_file_path, shapes, self.filePath, self.imageData,
+                                                     self.labelHist, self.lineColor.getRgb(), self.fillColor.getRgb())
             else:
                 self.labelFile.save(annotation_file_path, shapes, self.filePath, self.imageData,
                                     self.lineColor.getRgb(), self.fillColor.getRgb())
@@ -899,7 +899,7 @@ class MainWindow(QMainWindow, WindowMixin):
         label = item.text()
         if label != shape.label:
             shape.label = item.text()
-            shape.line_color = generateColorByText(shape.label)
+            shape.line_color = generate_color_by_text(shape.label)
             self.set_dirty()
         else:  # User probably changed item visibility
             self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
@@ -913,13 +913,13 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.useDefaultLabelCheckbox.isChecked() or not self.defaultLabelTextLine.text():
             if len(self.labelHist) > 0:
                 self.labelDialog = LabelDialog(
-                    parent=self, listItem=self.labelHist)
+                    parent=self, list_item=self.labelHist)
 
             # Sync single class mode from PR#106
             if self.singleClassMode.isChecked() and self.lastLabel:
                 text = self.lastLabel
             else:
-                text = self.labelDialog.popUp(text=self.prevLabelText)
+                text = self.labelDialog.pop_up(text=self.prevLabelText)
                 self.lastLabel = text
         else:
             text = self.defaultLabelTextLine.text()
@@ -928,7 +928,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffcButton.setChecked(False)
         if text is not None:
             self.prevLabelText = text
-            generate_color = generateColorByText(text)
+            generate_color = generate_color_by_text(text)
             shape = self.canvas.set_last_label(text, generate_color, generate_color)
             self.add_label(shape)
             if self.beginner():  # Switch to edit mode.
@@ -1051,7 +1051,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.mImgList.clear()
 
         if unicode_file_path and os.path.exists(unicode_file_path):
-            if LabelFile.isLabelFile(unicode_file_path):
+            if LabelFile.is_label_file(unicode_file_path):
                 try:
                     self.labelFile = LabelFile(unicode_file_path)
                 except LabelFileError as e:
@@ -1286,13 +1286,13 @@ class MainWindow(QMainWindow, WindowMixin):
         # Proceeding next image without dialog if having any label
         if self.filePath is not None:
             try:
-                self.labelFile.toggleVerify()
+                self.labelFile.toggle_verify()
             except AttributeError:
                 # If the labelling file does not exist yet, create if and
                 # re-save it with the verified attribute.
                 self.save_file()
                 if self.labelFile is not None:
-                    self.labelFile.toggleVerify()
+                    self.labelFile.toggle_verify()
                 else:
                     return
 
@@ -1516,7 +1516,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_format(FORMAT_PASCALVOC)
 
         t_voc_parse_reader = PascalVocReader(xml_path)
-        shapes = t_voc_parse_reader.getShapes()
+        shapes = t_voc_parse_reader.get_shapes()
         self.load_labels(shapes)
         self.canvas.verified = t_voc_parse_reader.verified
 
@@ -1528,7 +1528,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.set_format(FORMAT_YOLO)
         t_yolo_parse_reader = YoloReader(txt_path, self.image)
-        shapes = t_yolo_parse_reader.getShapes()
+        shapes = t_yolo_parse_reader.get_shapes()
         print(shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
@@ -1580,7 +1580,7 @@ def get_main_app(argv=[]):
     """
     app = QApplication(argv)
     app.setApplicationName(__appname__)
-    app.setWindowIcon(newIcon("app"))
+    app.setWindowIcon(new_icon("app"))
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
     argparser = argparse.ArgumentParser()
     argparser.add_argument("image_dir", nargs="?")

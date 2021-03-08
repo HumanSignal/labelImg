@@ -32,19 +32,19 @@ class Shape(object):
     select_line_color = DEFAULT_SELECT_LINE_COLOR
     select_fill_color = DEFAULT_SELECT_FILL_COLOR
     vertex_fill_color = DEFAULT_VERTEX_FILL_COLOR
-    hvertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
+    h_vertex_fill_color = DEFAULT_HVERTEX_FILL_COLOR
     point_type = P_ROUND
     point_size = 8
     scale = 1.0
     labelFontSize = 8
 
-    def __init__(self, label=None, line_color=None, difficult=False, paintLabel=False):
+    def __init__(self, label=None, line_color=None, difficult=False, paint_label=False):
         self.label = label
         self.points = []
         self.fill = False
         self.selected = False
         self.difficult = difficult
-        self.paintLabel = paintLabel
+        self.paintLabel = paint_label
 
         self._highlightIndex = None
         self._highlightMode = self.NEAR_VERTEX
@@ -64,24 +64,24 @@ class Shape(object):
     def close(self):
         self._closed = True
 
-    def reachMaxPoints(self):
+    def reach_max_points(self):
         if len(self.points) >= 4:
             return True
         return False
 
-    def addPoint(self, point):
-        if not self.reachMaxPoints():
+    def add_point(self, point):
+        if not self.reach_max_points():
             self.points.append(point)
 
-    def popPoint(self):
+    def pop_point(self):
         if self.points:
             return self.points.pop()
         return None
 
-    def isClosed(self):
+    def is_closed(self):
         return self._closed
 
-    def setOpen(self):
+    def set_open(self):
         self._closed = False
 
     def paint(self, painter):
@@ -93,23 +93,23 @@ class Shape(object):
             painter.setPen(pen)
 
             line_path = QPainterPath()
-            vrtx_path = QPainterPath()
+            vertex_path = QPainterPath()
 
             line_path.moveTo(self.points[0])
             # Uncommenting the following line will draw 2 paths
             # for the 1st vertex, and make it non-filled, which
             # may be desirable.
-            #self.drawVertex(vrtx_path, 0)
+            # self.drawVertex(vertex_path, 0)
 
             for i, p in enumerate(self.points):
                 line_path.lineTo(p)
-                self.drawVertex(vrtx_path, i)
-            if self.isClosed():
+                self.draw_vertex(vertex_path, i)
+            if self.is_closed():
                 line_path.lineTo(self.points[0])
 
             painter.drawPath(line_path)
-            painter.drawPath(vrtx_path)
-            painter.fillPath(vrtx_path, self.vertex_fill_color)
+            painter.drawPath(vertex_path)
+            painter.fillPath(vertex_path, self.vertex_fill_color)
 
             # Draw text at the top-left
             if self.paintLabel:
@@ -124,9 +124,9 @@ class Shape(object):
                     font.setPointSize(self.labelFontSize)
                     font.setBold(True)
                     painter.setFont(font)
-                    if(self.label == None):
+                    if self.label is None:
                         self.label = ""
-                    if(min_y < min_y_label):
+                    if min_y < min_y_label:
                         min_y += min_y_label
                     painter.drawText(min_x, min_y, self.label)
 
@@ -134,7 +134,7 @@ class Shape(object):
                 color = self.select_fill_color if self.selected else self.fill_color
                 painter.fillPath(line_path, color)
 
-    def drawVertex(self, path, i):
+    def draw_vertex(self, path, i):
         d = self.point_size / self.scale
         shape = self.point_type
         point = self.points[i]
@@ -142,7 +142,7 @@ class Shape(object):
             size, shape = self._highlightSettings[self._highlightMode]
             d *= size
         if self._highlightIndex is not None:
-            self.vertex_fill_color = self.hvertex_fill_color
+            self.vertex_fill_color = self.h_vertex_fill_color
         else:
             self.vertex_fill_color = Shape.vertex_fill_color
         if shape == self.P_SQUARE:
@@ -152,35 +152,35 @@ class Shape(object):
         else:
             assert False, "unsupported vertex shape"
 
-    def nearestVertex(self, point, epsilon):
+    def nearest_vertex(self, point, epsilon):
         for i, p in enumerate(self.points):
             if distance(p - point) <= epsilon:
                 return i
         return None
 
-    def containsPoint(self, point):
-        return self.makePath().contains(point)
+    def contains_point(self, point):
+        return self.make_path().contains(point)
 
-    def makePath(self):
+    def make_path(self):
         path = QPainterPath(self.points[0])
         for p in self.points[1:]:
             path.lineTo(p)
         return path
 
-    def boundingRect(self):
-        return self.makePath().boundingRect()
+    def bounding_rect(self):
+        return self.make_path().boundingRect()
 
-    def moveBy(self, offset):
+    def move_by(self, offset):
         self.points = [p + offset for p in self.points]
 
-    def moveVertexBy(self, i, offset):
+    def move_vertex_by(self, i, offset):
         self.points[i] = self.points[i] + offset
 
-    def highlightVertex(self, i, action):
+    def highlight_vertex(self, i, action):
         self._highlightIndex = i
         self._highlightMode = action
 
-    def highlightClear(self):
+    def highlight_clear(self):
         self._highlightIndex = None
 
     def copy(self):
