@@ -15,12 +15,12 @@ ENCODE_METHOD = DEFAULT_ENCODING
 class PascalVocWriter:
 
     def __init__(self, folder_name, filename, img_size, database_src='Unknown', local_img_path=None):
-        self.foldername = folder_name
+        self.folder_name = folder_name
         self.filename = filename
-        self.databaseSrc = database_src
-        self.imgSize = img_size
-        self.boxlist = []
-        self.localImgPath = local_img_path
+        self.database_src = database_src
+        self.img_size = img_size
+        self.box_list = []
+        self.local_img_path = local_img_path
         self.verified = False
 
     def prettify(self, elem):
@@ -40,8 +40,8 @@ class PascalVocWriter:
         """
         # Check conditions
         if self.filename is None or \
-                self.foldername is None or \
-                self.imgSize is None:
+                self.folder_name is None or \
+                self.img_size is None:
             return None
 
         top = Element('annotation')
@@ -49,27 +49,27 @@ class PascalVocWriter:
             top.set('verified', 'yes')
 
         folder = SubElement(top, 'folder')
-        folder.text = self.foldername
+        folder.text = self.folder_name
 
         filename = SubElement(top, 'filename')
         filename.text = self.filename
 
-        if self.localImgPath is not None:
+        if self.local_img_path is not None:
             local_img_path = SubElement(top, 'path')
-            local_img_path.text = self.localImgPath
+            local_img_path.text = self.local_img_path
 
         source = SubElement(top, 'source')
         database = SubElement(source, 'database')
-        database.text = self.databaseSrc
+        database.text = self.database_src
 
         size_part = SubElement(top, 'size')
         width = SubElement(size_part, 'width')
         height = SubElement(size_part, 'height')
         depth = SubElement(size_part, 'depth')
-        width.text = str(self.imgSize[1])
-        height.text = str(self.imgSize[0])
-        if len(self.imgSize) == 3:
-            depth.text = str(self.imgSize[2])
+        width.text = str(self.img_size[1])
+        height.text = str(self.img_size[0])
+        if len(self.img_size) == 3:
+            depth.text = str(self.img_size[2])
         else:
             depth.text = '1'
 
@@ -81,19 +81,19 @@ class PascalVocWriter:
         bnd_box = {'xmin': x_min, 'ymin': y_min, 'xmax': x_max, 'ymax': y_max}
         bnd_box['name'] = name
         bnd_box['difficult'] = difficult
-        self.boxlist.append(bnd_box)
+        self.box_list.append(bnd_box)
 
     def append_objects(self, top):
-        for each_object in self.boxlist:
+        for each_object in self.box_list:
             object_item = SubElement(top, 'object')
             name = SubElement(object_item, 'name')
             name.text = ustr(each_object['name'])
             pose = SubElement(object_item, 'pose')
             pose.text = "Unspecified"
             truncated = SubElement(object_item, 'truncated')
-            if int(float(each_object['ymax'])) == int(float(self.imgSize[0])) or (int(float(each_object['ymin'])) == 1):
+            if int(float(each_object['ymax'])) == int(float(self.img_size[0])) or (int(float(each_object['ymin'])) == 1):
                 truncated.text = "1"  # max == height or min
-            elif (int(float(each_object['xmax'])) == int(float(self.imgSize[1]))) or (int(float(each_object['xmin'])) == 1):
+            elif (int(float(each_object['xmax'])) == int(float(self.img_size[1]))) or (int(float(each_object['xmin'])) == 1):
                 truncated.text = "1"  # max == width or min
             else:
                 truncated.text = "0"
@@ -130,7 +130,7 @@ class PascalVocReader:
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         self.shapes = []
-        self.filepath = file_path
+        self.file_path = file_path
         self.verified = False
         try:
             self.parse_xml()
@@ -149,9 +149,9 @@ class PascalVocReader:
         self.shapes.append((label, points, None, None, difficult))
 
     def parse_xml(self):
-        assert self.filepath.endswith(XML_EXT), "Unsupported file format"
+        assert self.file_path.endswith(XML_EXT), "Unsupported file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
-        xml_tree = ElementTree.parse(self.filepath, parser=parser).getroot()
+        xml_tree = ElementTree.parse(self.file_path, parser=parser).getroot()
         filename = xml_tree.find('filename').text
         try:
             verified = xml_tree.attrib['verified']

@@ -36,7 +36,7 @@ class Shape(object):
     point_type = P_ROUND
     point_size = 8
     scale = 1.0
-    labelFontSize = 8
+    label_font_size = 8
 
     def __init__(self, label=None, line_color=None, difficult=False, paint_label=False):
         self.label = label
@@ -44,11 +44,11 @@ class Shape(object):
         self.fill = False
         self.selected = False
         self.difficult = difficult
-        self.paintLabel = paint_label
+        self.paint_label = paint_label
 
-        self._highlightIndex = None
-        self._highlightMode = self.NEAR_VERTEX
-        self._highlightSettings = {
+        self._highlight_index = None
+        self._highlight_mode = self.NEAR_VERTEX
+        self._highlight_settings = {
             self.NEAR_VERTEX: (4, self.P_ROUND),
             self.MOVE_VERTEX: (1.5, self.P_SQUARE),
         }
@@ -112,16 +112,16 @@ class Shape(object):
             painter.fillPath(vertex_path, self.vertex_fill_color)
 
             # Draw text at the top-left
-            if self.paintLabel:
+            if self.paint_label:
                 min_x = sys.maxsize
                 min_y = sys.maxsize
-                min_y_label = int(1.25 * self.labelFontSize)
+                min_y_label = int(1.25 * self.label_font_size)
                 for point in self.points:
                     min_x = min(min_x, point.x())
                     min_y = min(min_y, point.y())
                 if min_x != sys.maxsize and min_y != sys.maxsize:
                     font = QFont()
-                    font.setPointSize(self.labelFontSize)
+                    font.setPointSize(self.label_font_size)
                     font.setBold(True)
                     painter.setFont(font)
                     if self.label is None:
@@ -138,10 +138,10 @@ class Shape(object):
         d = self.point_size / self.scale
         shape = self.point_type
         point = self.points[i]
-        if i == self._highlightIndex:
-            size, shape = self._highlightSettings[self._highlightMode]
+        if i == self._highlight_index:
+            size, shape = self._highlight_settings[self._highlight_mode]
             d *= size
-        if self._highlightIndex is not None:
+        if self._highlight_index is not None:
             self.vertex_fill_color = self.h_vertex_fill_color
         else:
             self.vertex_fill_color = Shape.vertex_fill_color
@@ -177,11 +177,11 @@ class Shape(object):
         self.points[i] = self.points[i] + offset
 
     def highlight_vertex(self, i, action):
-        self._highlightIndex = i
-        self._highlightMode = action
+        self._highlight_index = i
+        self._highlight_mode = action
 
     def highlight_clear(self):
-        self._highlightIndex = None
+        self._highlight_index = None
 
     def copy(self):
         shape = Shape("%s" % self.label)

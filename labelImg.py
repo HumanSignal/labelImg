@@ -1061,7 +1061,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                        % (e, unicode_file_path))
                     self.status("Error reading %s" % unicode_file_path)
                     return False
-                self.imageData = self.labelFile.imageData
+                self.imageData = self.labelFile.image_data
                 self.lineColor = QColor(*self.labelFile.lineColor)
                 self.fillColor = QColor(*self.labelFile.fillColor)
                 self.canvas.verified = self.labelFile.verified

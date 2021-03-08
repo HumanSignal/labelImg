@@ -12,19 +12,19 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 class CreateMLWriter:
     def __init__(self, folder_name, filename, img_size, shapes, output_file, database_src='Unknown', local_img_path=None):
-        self.foldername = folder_name
+        self.folder_name = folder_name
         self.filename = filename
-        self.databasesrc = database_src
-        self.imgsize = img_size
-        self.boxlist = []
-        self.localimgpath = local_img_path
+        self.database_src = database_src
+        self.img_size = img_size
+        self.box_list = []
+        self.local_img_path = local_img_path
         self.verified = False
         self.shapes = shapes
-        self.outputfile = output_file
+        self.output_file = output_file
 
     def write(self):
-        if os.path.isfile(self.outputfile):
-            with open(self.outputfile, "r") as file:
+        if os.path.isfile(self.output_file):
+            with open(self.output_file, "r") as file:
                 input_data = file.read()
                 output_dict = json.loads(input_data)
         else:
@@ -67,7 +67,7 @@ class CreateMLWriter:
         if not exists:
             output_dict.append(output_image_dict)
 
-        Path(self.outputfile).write_text(json.dumps(output_dict), ENCODE_METHOD)
+        Path(self.output_file).write_text(json.dumps(output_dict), ENCODE_METHOD)
 
     def calculate_coordinates(self, x1, x2, y1, y2):
         if x1 < x2:
@@ -94,7 +94,7 @@ class CreateMLWriter:
 
 class CreateMLReader:
     def __init__(self, json_path, file_path):
-        self.jsonpath = json_path
+        self.json_path = json_path
         self.shapes = []
         self.verified = False
         self.filename = file_path.split("/")[-1:][0]
@@ -104,7 +104,7 @@ class CreateMLReader:
             print("JSON decoding failed")
 
     def parse_json(self):
-        with open(self.jsonpath, "r") as file:
+        with open(self.json_path, "r") as file:
             input_data = file.read()
 
         output_dict = json.loads(input_data)

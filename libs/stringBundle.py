@@ -21,7 +21,7 @@ class StringBundle:
 
     def __init__(self, create_key, locale_str):
         assert(create_key == StringBundle.__create_key), "StringBundle must be created using StringBundle.getBundle"
-        self.idToMessage = {}
+        self.id_to_message = {}
         paths = self.__create_lookup_fallback_list(locale_str)
         for path in paths:
             self.__load_bundle(path)
@@ -39,8 +39,8 @@ class StringBundle:
         return StringBundle(cls.__create_key, locale_str)
 
     def get_string(self, string_id):
-        assert(string_id in self.idToMessage), "Missing string id : " + string_id
-        return self.idToMessage[string_id]
+        assert(string_id in self.id_to_message), "Missing string id : " + string_id
+        return self.id_to_message[string_id]
 
     def __create_lookup_fallback_list(self, locale_str):
         result_paths = []
@@ -68,6 +68,6 @@ class StringBundle:
                 key_value = line.split(PROP_SEPERATOR)
                 key = key_value[0].strip()
                 value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')
-                self.idToMessage[key] = value
+                self.id_to_message[key] = value
 
             f.close()

@@ -479,7 +479,7 @@ class Canvas(QWidget):
 
         p.drawPixmap(0, 0, self.pixmap)
         Shape.scale = self.scale
-        Shape.labelFontSize = self.labelFontSize
+        Shape.label_font_size = self.labelFontSize
         for shape in self.shapes:
             if (shape.selected or not self._hideBackround) and self.isVisible(shape):
                 shape.fill = shape.selected or shape == self.hShape

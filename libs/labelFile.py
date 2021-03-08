@@ -34,8 +34,8 @@ class LabelFile(object):
 
     def __init__(self, filename=None):
         self.shapes = ()
-        self.imagePath = None
-        self.imageData = None
+        self.image_path = None
+        self.image_data = None
         self.verified = False
 
     def save_create_ml_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
