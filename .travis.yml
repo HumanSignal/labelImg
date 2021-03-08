@@ -8,10 +8,9 @@ matrix:
 
     # Python 3 + QT5
     - os: linux
-      dist: trusty
-      sudo: required
+      dist: focal
       language: generic
-      python: "3.5"
+      python: "3.6"
       env:
         - QT=5
         - CONDA=4.2.0
@@ -27,7 +26,7 @@ matrix:
         - /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -b -p $HOME/anaconda3
         - export PATH="$HOME/anaconda3/bin:$PATH"
         # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
-        - conda create -y -n labelImg-py3qt5 python=3.5
+        - conda create -y -n labelImg-py3qt5 python=3.6
         - source activate labelImg-py3qt5
         - conda install -y pyqt=5
         - conda install -y lxml
@@ -37,7 +36,7 @@ matrix:
     # Pipenv Python 3 + QT5 - Build .app
     - os: osx
       language: generic
-      python: "3.7"
+      python: "3.9"
       env:
         - PIPENV_VENV_IN_PROJECT=1
         - PIPENV_IGNORE_VIRTUALENVS=1
