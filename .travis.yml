@@ -33,10 +33,9 @@ jobs:
         - make qt5py3
         - xvfb-run make testpy3
 
-    # Pipenv Python 3 + QT5 - Build .app
+    # Pipenv Python 3.7.5 + QT5 - Build .app
     - os: osx
       language: generic
-      python: "3.9"
       env:
         - PIPENV_VENV_IN_PROJECT=1
         - PIPENV_IGNORE_VIRTUALENVS=1
