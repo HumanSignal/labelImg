@@ -177,7 +177,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.canvas = Canvas(parent=self)
         self.canvas.zoomRequest.connect(self.zoom_request)
-        self.canvas.setDrawingShapeToSquare(settings.get(SETTING_DRAW_SQUARE, False))
+        self.canvas.set_drawing_shape_to_square(settings.get(SETTING_DRAW_SQUARE, False))
 
         scroll = QScrollArea()
         scroll.setWidget(self.canvas)
@@ -470,7 +470,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.restoreState(settings.get(SETTING_WIN_STATE, QByteArray()))
         Shape.line_color = self.lineColor = QColor(settings.get(SETTING_LINE_COLOR, DEFAULT_LINE_COLOR))
         Shape.fill_color = self.fillColor = QColor(settings.get(SETTING_FILL_COLOR, DEFAULT_FILL_COLOR))
-        self.canvas.setDrawingColor(self.lineColor)
+        self.canvas.set_drawing_color(self.lineColor)
         # Add chris
         Shape.difficult = self.difficult
 
@@ -507,12 +507,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
-            self.canvas.setDrawingShapeToSquare(False)
+            self.canvas.set_drawing_shape_to_square(False)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Control:
             # Draw rectangle if Ctrl is pressed
-            self.canvas.setDrawingShapeToSquare(True)
+            self.canvas.set_drawing_shape_to_square(True)
 
     # Support Functions #
     def set_format(self, save_format):
@@ -550,7 +550,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_advanced_mode(self, value=True):
         self._beginner = not value
-        self.canvas.setEditing(True)
+        self.canvas.set_editing(True)
         self.populate_mode_actions()
         self.editButton.setVisible(not value)
         if value:
@@ -611,7 +611,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.filePath = None
         self.imageData = None
         self.labelFile = None
-        self.canvas.resetState()
+        self.canvas.reset_state()
         self.labelCoordinates.clear()
         self.comboBox.cb.clear()
 
@@ -655,7 +655,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def create_shape(self):
         assert self.beginner()
-        self.canvas.setEditing(False)
+        self.canvas.set_editing(False)
         self.actions.create.setEnabled(False)
 
     def toggle_drawing_sensitive(self, drawing=True):
@@ -664,12 +664,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if not drawing and self.beginner():
             # Cancel creation.
             print('Cancel creation.')
-            self.canvas.setEditing(True)
-            self.canvas.restoreCursor()
+            self.canvas.set_editing(True)
+            self.canvas.restore_cursor()
             self.actions.create.setEnabled(True)
 
     def toggle_draw_mode(self, edit=True):
-        self.canvas.setEditing(edit)
+        self.canvas.set_editing(edit)
         self.actions.createMode.setEnabled(edit)
         self.actions.editMode.setEnabled(not edit)
 
@@ -745,7 +745,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.difficult = difficult
                 self.set_dirty()
             else:  # User probably changed item visibility
-                self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+                self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
         except:
             pass
 
@@ -795,7 +795,7 @@ class MainWindow(QMainWindow, WindowMixin):
             for x, y in points:
 
                 # Ensure the labels are within the bounds of the image. If not, fix them.
-                x, y, snapped = self.canvas.snapPointToCanvas(x, y)
+                x, y, snapped = self.canvas.snap_point_to_canvas(x, y)
                 if snapped:
                     self.set_dirty()
 
@@ -816,7 +816,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
             self.add_label(shape)
         self.update_combo_box()
-        self.canvas.loadShapes(s)
+        self.canvas.load_shapes(s)
 
     def update_combo_box(self):
         # Get the unique labels and add them to the Combobox.
@@ -871,7 +871,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return False
 
     def copy_selected_shape(self):
-        self.add_label(self.canvas.copySelectedShape())
+        self.add_label(self.canvas.copy_selected_shape())
         # fix copy and delete
         self.shape_selection_changed(True)
 
@@ -889,7 +889,7 @@ class MainWindow(QMainWindow, WindowMixin):
         item = self.current_item()
         if item and self.canvas.editing():
             self._noSelectionSlot = True
-            self.canvas.selectShape(self.itemsToShapes[item])
+            self.canvas.select_shape(self.itemsToShapes[item])
             shape = self.itemsToShapes[item]
             # Add Chris
             self.diffcButton.setChecked(shape.difficult)
@@ -902,7 +902,7 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.line_color = generateColorByText(shape.label)
             self.set_dirty()
         else:  # User probably changed item visibility
-            self.canvas.setShapeVisible(shape, item.checkState() == Qt.Checked)
+            self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
 
     # Callback functions:
     def new_shape(self):
@@ -929,10 +929,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if text is not None:
             self.prevLabelText = text
             generate_color = generateColorByText(text)
-            shape = self.canvas.setLastLabel(text, generate_color, generate_color)
+            shape = self.canvas.set_last_label(text, generate_color, generate_color)
             self.add_label(shape)
             if self.beginner():  # Switch to edit mode.
-                self.canvas.setEditing(True)
+                self.canvas.set_editing(True)
                 self.actions.create.setEnabled(True)
             else:
                 self.actions.editMode.setEnabled(True)
@@ -942,7 +942,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.labelHist.append(text)
         else:
             # self.canvas.undoLastLine()
-            self.canvas.resetAllLines()
+            self.canvas.reset_all_lines()
 
     def scroll_request(self, delta, orientation):
         units = - delta / (8 * 15)
@@ -1084,7 +1084,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.status("Loaded %s" % os.path.basename(unicode_file_path))
             self.image = image
             self.filePath = unicode_file_path
-            self.canvas.loadPixmap(QPixmap.fromImage(image))
+            self.canvas.load_pixmap(QPixmap.fromImage(image))
             if self.labelFile:
                 self.load_labels(self.labelFile.shapes)
             self.set_clean()
@@ -1461,12 +1461,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if color:
             self.lineColor = color
             Shape.line_color = color
-            self.canvas.setDrawingColor(color)
+            self.canvas.set_drawing_color(color)
             self.canvas.update()
             self.set_dirty()
 
     def delete_selected_shape(self):
-        self.remove_label(self.canvas.deleteSelected())
+        self.remove_label(self.canvas.delete_selected())
         self.set_dirty()
         if self.no_shapes():
             for action in self.actions.onShapesPresent:
@@ -1489,12 +1489,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_dirty()
 
     def copy_shape(self):
-        self.canvas.endMove(copy=True)
+        self.canvas.end_move(copy=True)
         self.add_label(self.canvas.selectedShape)
         self.set_dirty()
 
     def move_shape(self):
-        self.canvas.endMove(copy=False)
+        self.canvas.end_move(copy=False)
         self.set_dirty()
 
     def load_predefined_classes(self, predef_classes_file):
@@ -1558,7 +1558,7 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.paintLabel = self.displayLabelOption.isChecked()
 
     def toggle_draw_square(self):
-        self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
+        self.canvas.set_drawing_shape_to_square(self.drawSquaresOption.isChecked())
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
