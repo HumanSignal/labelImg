@@ -29,7 +29,7 @@ class LabelDialog(QDialog):
 
         layout = QVBoxLayout()
         layout.addWidget(self.edit)
-        self.buttonBox = bb = BB(BB.Ok | BB.Cancel, Qt.Horizontal, self)
+        self.button_box = bb = BB(BB.Ok | BB.Cancel, Qt.Horizontal, self)
         bb.button(BB.Ok).setIcon(new_icon('done'))
         bb.button(BB.Cancel).setIcon(new_icon('undo'))
         bb.accepted.connect(self.validate)
@@ -37,12 +37,12 @@ class LabelDialog(QDialog):
         layout.addWidget(bb)
 
         if list_item is not None and len(list_item) > 0:
-            self.listWidget = QListWidget(self)
+            self.list_widget = QListWidget(self)
             for item in list_item:
-                self.listWidget.addItem(item)
-            self.listWidget.itemClicked.connect(self.list_item_click)
-            self.listWidget.itemDoubleClicked.connect(self.list_item_double_click)
-            layout.addWidget(self.listWidget)
+                self.list_widget.addItem(item)
+            self.list_widget.itemClicked.connect(self.list_item_click)
+            self.list_widget.itemDoubleClicked.connect(self.list_item_double_click)
+            layout.addWidget(self.list_widget)
 
         self.setLayout(layout)
 
