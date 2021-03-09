@@ -309,6 +309,17 @@ class MainWindow(QMainWindow, WindowMixin):
         fitWidth = action(getStr('fitWidth'), self.setFitWidth,
                           'Ctrl+Shift+F', 'fit-width', getStr('fitWidthDetail'),
                           checkable=True, enabled=False)
+
+        # Zoom in corners
+        zoomLeftTop = action(getStr('zoomLT'), self.zoomLeftTop,
+                             '1', 'left-top', getStr('zoomLT'))
+        zoomRightTop = action(getStr('zoomRT'), self.zoomRightTop,
+                              '2', 'right-top', getStr('zoomRT'))
+        zoomRightBottom = action(getStr('zoomRB'), self.zoomRightBottom,
+                                 '3', 'right-bottom', getStr('zoomRB'))
+        zoomLeftBottom = action(getStr('zoomLB'), self.zoomLeftBottom,
+                                '4', 'left-bottom', getStr('zoomLB'))
+
         # Group zoom controls into a list for easier toggling.
         zoomActions = (self.zoomWidget, zoomIn, zoomOut,
                        zoomOrg, fitWindow, fitWidth)
@@ -405,7 +416,8 @@ class MainWindow(QMainWindow, WindowMixin):
             labels, advancedMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
-            fitWindow, fitWidth))
+            fitWindow, fitWidth, None,
+            zoomLeftTop, zoomRightTop, zoomRightBottom, zoomLeftBottom))
 
         self.menus.file.aboutToShow.connect(self.updateFileMenu)
 
@@ -957,6 +969,30 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def addZoom(self, increment=10):
         self.setZoom(self.zoomWidget.value() + increment)
+
+    def zoomLeftTop(self):
+        self.setZoom(300)
+        h_bar = self.scrollBars[Qt.Horizontal].setValue(0)
+        v_bar = self.scrollBars[Qt.Vertical].setValue(0)
+
+    def zoomRightTop(self):
+        self.setZoom(300)
+        h_bar = self.scrollBars[Qt.Horizontal]
+        v_bar = self.scrollBars[Qt.Vertical].setValue(0)
+        h_bar.setValue(h_bar.maximum())
+
+    def zoomRightBottom(self):
+        self.setZoom(300)
+        h_bar = self.scrollBars[Qt.Horizontal]
+        v_bar = self.scrollBars[Qt.Vertical]
+        h_bar.setValue(h_bar.maximum())
+        v_bar.setValue(v_bar.maximum())
+
+    def zoomLeftBottom(self):
+        self.setZoom(300)
+        h_bar = self.scrollBars[Qt.Horizontal].setValue(0)
+        v_bar = self.scrollBars[Qt.Vertical]
+        v_bar.setValue(v_bar.maximum())
 
     def zoomRequest(self, delta):
         # get the current scrollbar positions
