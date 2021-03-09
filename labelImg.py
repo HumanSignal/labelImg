@@ -766,7 +766,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def add_label(self, shape):
-        shape.paintLabel = self.display_label_option.isChecked()
+        shape.paint_label = self.display_label_option.isChecked()
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
@@ -1555,7 +1555,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_paint_labels_option(self):
         for shape in self.canvas.shapes:
-            shape.paintLabel = self.display_label_option.isChecked()
+            shape.paint_label = self.display_label_option.isChecked()
 
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
