@@ -155,8 +155,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.labelList.itemChanged.connect(self.labelItemChanged)
         listLayout.addWidget(self.labelList)
 
-
-
         self.dock = QDockWidget(getStr('boxLabelText'), self)
         self.dock.setObjectName(getStr('labels'))
         self.dock.setWidget(labelListContainer)
@@ -394,6 +392,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.setCheckable(True)
         self.displayLabelOption.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
+        # Add option to display ellipses inside rectangles
+        self.displayEllipseOption = QAction(getStr('displayEllipse'), self)
+        self.displayEllipseOption.setCheckable(True)
+        self.displayEllipseOption.setChecked(settings.get(SETTING_ELLIPSE, False))
+        self.displayEllipseOption.triggered.connect(self.togglePaintEllipseOption)
 
         addActions(self.menus.file,
                    (open, opendir, copyPrevBounding, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit))
@@ -402,6 +405,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.autoSaving,
             self.singleClassMode,
             self.displayLabelOption,
+            self.displayEllipseOption,
             labels, advancedMode, None,
             hideAll, showAll, None,
             zoomIn, zoomOut, zoomOrg, None,
@@ -767,6 +771,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def addLabel(self, shape):
         shape.paintLabel = self.displayLabelOption.isChecked()
+        # Check for Ellipses too
+        shape.paintEllipse = self.displayEllipseOption.isChecked()
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
@@ -1196,6 +1202,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_AUTO_SAVE] = self.autoSaving.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.singleClassMode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.displayLabelOption.isChecked()
+        settings[SETTING_ELLIPSE] = self.displayEllipseOption.isChecked()
         settings[SETTING_DRAW_SQUARE] = self.drawSquaresOption.isChecked()
         settings[SETTING_LABEL_FILE_FORMAT] = self.labelFileFormat
         settings.save()
@@ -1529,7 +1536,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_format(FORMAT_YOLO)
         tYoloParseReader = YoloReader(txtPath, self.image)
         shapes = tYoloParseReader.getShapes()
-        print (shapes)
+        print(shapes)
         self.loadLabels(shapes)
         self.canvas.verified = tYoloParseReader.verified
 
@@ -1556,6 +1563,10 @@ class MainWindow(QMainWindow, WindowMixin):
     def togglePaintLabelsOption(self):
         for shape in self.canvas.shapes:
             shape.paintLabel = self.displayLabelOption.isChecked()
+
+    def togglePaintEllipseOption(self):
+        for shape in self.canvas.shapes:
+            shape.paintEllipse = self.displayEllipseOption.isChecked()
 
     def toogleDrawSquare(self):
         self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())

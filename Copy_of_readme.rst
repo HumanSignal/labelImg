@@ -1,5 +1,5 @@
-LabelImg for ellipse bounding boxes
-===================================
+LabelImg
+========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
@@ -18,25 +18,11 @@ It is written in Python and uses Qt for its graphical interface.
 Annotations are saved as XML files in PASCAL VOC format, the format used
 by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO format
 
-What's new?
------------
-The `original release <https://github.com/tzutalin/labelImg>`__ of this image annotation tool supports only 
-rectangular bounding boxes. However, rectangular bounding boxes may not be suitable for some applications.
-In case of round objects, like tomatoes, circular bounding boxes `were shown <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7180616/>`__
-to produce better results. The present version of this software is designed to go further and allow for the ellipse bounding boxes. 
-In order to comply with the YOLO models, the inscribed ellipses are parameterized in terms of the corresponding rectangles. 
-To produce better results, this method may require a change in the Intersection over Union (IoU) computation. For the method of
-IoU computation for the circles, please refer to the article above. For the intersection of two ellipses, the computation of IoU
-may be more complex. However, the automatic tools are developed and available online, e.g. `here <https://github.com/chraibi/EEOver>`__.
-The current version of labeling tool does not support ellipse rotation.
-From the main menu, go to View -> Display Inscribed Ellipse to show all ellipses. 
-
-.. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo7.jpg
+.. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
-.. image:: https://github.com/fastovetsilya/labelImg/raw/master/demo/demo8.png
+.. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
      :alt: Demo Image
-
 
 `Watch a demo video <https://youtu.be/p0nR2YsCY_U>`__
 
@@ -55,8 +41,17 @@ Linux/Ubuntu/Mac requires at least `Python
 
 Ubuntu Linux
 ^^^^^^^^^^^^
+Python 2 + Qt4
 
-Python 3 + Qt5
+.. code:: shell
+
+    sudo apt-get install pyqt4-dev-tools
+    sudo pip install lxml
+    make qt4py2
+    python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
+Python 3 + Qt5 (Recommended)
 
 .. code:: shell
 
@@ -68,8 +63,17 @@ Python 3 + Qt5
 
 macOS
 ^^^^^
+Python 2 + Qt4
 
-Python 3 + Qt5
+.. code:: shell
+
+    brew install qt qt4
+    brew install libxml2
+    make qt4py2
+    python labelImg.py
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
+Python 3 + Qt5 (Recommended)
 
 .. code:: shell
 
@@ -93,9 +97,9 @@ Virtualenv can avoid a lot of the QT / Python version issues
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.12.1 lxml
+    pipenv run pip install pyqt5==5.13.2 lxml
     pipenv run make qt5py3
-    pipenv run python3 labelImg.py
+    python3 labelImg.py
     [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 
 Note: The Last command gives you a nice .app file with a new SVG Icon in your /Applications folder. You can consider using the script: build-tools/build-for-macos.sh
@@ -112,7 +116,7 @@ Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    pyrcc4 -o libs/resources.py resources.qrc
+    pyrcc4 -o lib/resources.py resources.qrc
     For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
 
     python labelImg.py
@@ -214,33 +218,31 @@ to load pre-defined classes
 Hotkeys
 ~~~~~~~
 
-+--------------------+--------------------------------------------+
-| Ctrl + u           | Load all of the images from a directory    |
-+--------------------+--------------------------------------------+
-| Ctrl + r           | Change the default annotation target dir   |
-+--------------------+--------------------------------------------+
-| Ctrl + s           | Save                                       |
-+--------------------+--------------------------------------------+
-| Ctrl + d           | Copy the current label and rect box        |
-+--------------------+--------------------------------------------+
-| Ctrl + Shift + d   | Delete the current image                   |
-+--------------------+--------------------------------------------+
-| Space              | Flag the current image as verified         |
-+--------------------+--------------------------------------------+
-| w                  | Create a rect box                          |
-+--------------------+--------------------------------------------+
-| d                  | Next image                                 |
-+--------------------+--------------------------------------------+
-| a                  | Previous image                             |
-+--------------------+--------------------------------------------+
-| del                | Delete the selected rect box               |
-+--------------------+--------------------------------------------+
-| Ctrl++             | Zoom in                                    |
-+--------------------+--------------------------------------------+
-| Ctrl--             | Zoom out                                   |
-+--------------------+--------------------------------------------+
-| ↑→↓←             |  Keyboard arrows to move selected rect box   |
-+--------------------+--------------------------------------------+
++------------+--------------------------------------------+
+| Ctrl + u   | Load all of the images from a directory    |
++------------+--------------------------------------------+
+| Ctrl + r   | Change the default annotation target dir   |
++------------+--------------------------------------------+
+| Ctrl + s   | Save                                       |
++------------+--------------------------------------------+
+| Ctrl + d   | Copy the current label and rect box        |
++------------+--------------------------------------------+
+| Space      | Flag the current image as verified         |
++------------+--------------------------------------------+
+| w          | Create a rect box                          |
++------------+--------------------------------------------+
+| d          | Next image                                 |
++------------+--------------------------------------------+
+| a          | Previous image                             |
++------------+--------------------------------------------+
+| del        | Delete the selected rect box               |
++------------+--------------------------------------------+
+| Ctrl++     | Zoom in                                    |
++------------+--------------------------------------------+
+| Ctrl--     | Zoom out                                   |
++------------+--------------------------------------------+
+| ↑→↓←       | Keyboard arrows to move selected rect box  |
++------------+--------------------------------------------+
 
 **Verify Image:**
 
@@ -273,7 +275,7 @@ License
 
 Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
 
-Related and additional tools
+Related
 ~~~~~~~
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
@@ -283,8 +285,6 @@ Related and additional tools
 4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
 5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
 6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
-7. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
-
 
 
 Stargazers over time
