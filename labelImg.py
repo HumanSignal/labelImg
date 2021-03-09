@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
-import distutils.spawn
 import os.path
 import platform
-import re
 import sys
 import subprocess
 
 from functools import partial
-from collections import defaultdict
 
 try:
     from PyQt5.QtGui import *
@@ -85,7 +82,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Load string bundle for i18n
         self.string_bundle = StringBundle.get_bundle()
-        get_str = lambda str_id: self.string_bundle.get_string(str_id)
+
+        def get_str(str_id):
+            return self.string_bundle.get_string(str_id)
 
         # Save as Pascal voc xml
         self.default_save_dir = default_save_dir
@@ -155,8 +154,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.label_list.itemChanged.connect(self.label_item_changed)
         list_layout.addWidget(self.label_list)
 
-
-
         self.dock = QDockWidget(get_str('boxLabelText'), self)
         self.dock.setObjectName(get_str('labels'))
         self.dock.setWidget(label_list_container)
@@ -204,11 +201,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Actions
         action = partial(new_action, self)
-        quit = action(get_str('quit'), self.close,
-                      'Ctrl+Q', 'quit', get_str('quitApp'))
+        action_quit = action(get_str('quit'), self.close,
+                             'Ctrl+Q', 'quit', get_str('quitApp'))
 
-        open = action(get_str('openFile'), self.open_file,
-                      'Ctrl+O', 'open', get_str('openFileDetail'))
+        action_open = action(get_str('openFile'), self.open_file,
+                             'Ctrl+O', 'open', get_str('openFileDetail'))
 
         open_dir = action(get_str('openDir'), self.open_dir_dialog,
                           'Ctrl+u', 'open', get_str('openDir'))
@@ -234,15 +231,15 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
-        def get_format_meta(format):
+        def get_format_meta(label_format):
             """
             returns a tuple containing (title, icon_name) of the selected format
             """
-            if format == LabelFileFormat.PASCAL_VOC:
+            if label_format == LabelFileFormat.PASCAL_VOC:
                 return '&PascalVOC', 'format_voc'
-            elif format == LabelFileFormat.YOLO:
+            elif label_format == LabelFileFormat.YOLO:
                 return '&YOLO', 'format_yolo'
-            elif format == LabelFileFormat.CREATE_ML:
+            elif label_format == LabelFileFormat.CREATE_ML:
                 return '&CreateML', 'format_createml'
 
         save_format = action(get_format_meta(self.label_file_format)[0],
@@ -265,7 +262,7 @@ class MainWindow(QMainWindow, WindowMixin):
         create_mode = action(get_str('crtBox'), self.set_create_mode,
                              'w', 'new', get_str('crtBoxDetail'), enabled=False)
         edit_mode = action('&Edit\nRectBox', self.set_edit_mode,
-                           'Ctrl+J', 'edit', u'Move and edit Boxs', enabled=False)
+                           'Ctrl+J', 'edit', u'Move and edit Boxes', enabled=False)
 
         create = action(get_str('crtBox'), self.create_shape,
                         'w', 'new', get_str('crtBoxDetail'), enabled=False)
@@ -286,7 +283,7 @@ class MainWindow(QMainWindow, WindowMixin):
                           'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
-        help = action(get_str('tutorial'), self.show_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
+        action_help = action(get_str('tutorial'), self.show_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
         show_info = action(get_str('info'), self.show_info_dialog, None, 'help', get_str('info'))
 
         zoom = QWidgetAction(self)
@@ -350,33 +347,57 @@ class MainWindow(QMainWindow, WindowMixin):
         self.draw_squares_option.setChecked(settings.get(SETTING_DRAW_SQUARE, False))
         self.draw_squares_option.triggered.connect(self.toggle_draw_square)
 
-        # Store actions for further handling.
-        self.actions = Struct(save=save, save_format=save_format, saveAs=save_as, open=open, close=close, resetAll=reset_all, deleteImg=delete_image,
-                              lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
-                              createMode=create_mode, editMode=edit_mode, advancedMode=advanced_mode,
-                              shapeLineColor=shape_line_color, shapeFillColor=shape_fill_color,
-                              zoom=zoom, zoomIn=zoom_in, zoomOut=zoom_out, zoomOrg=zoom_org,
-                              fitWindow=fit_window, fitWidth=fit_width,
-                              zoomActions=zoom_actions,
-                              fileMenuActions=(
-                                  open, open_dir, save, save_as, close, reset_all, quit),
-                              beginner=(), advanced=(),
-                              editMenu=(edit, copy, delete,
-                                        None, color1, self.draw_squares_option),
-                              beginnerContext=(create, edit, copy, delete),
-                              advancedContext=(create_mode, edit_mode, edit, copy,
-                                               delete, shape_line_color, shape_fill_color),
-                              onLoadActive=(
-                                  close, create, create_mode, edit_mode),
-                              onShapesPresent=(save_as, hide_all, show_all))
+        draw_squares_option = self.draw_squares_option
 
-        self.menus = Struct(
-            file=self.menu(get_str('menu_file')),
-            edit=self.menu(get_str('menu_edit')),
-            view=self.menu(get_str('menu_view')),
-            help=self.menu(get_str('menu_help')),
-            recentFiles=QMenu(get_str('menu_openRecent')),
-            labelList=label_menu)
+        class Actions:
+            def __init__(self):
+                self.save = save
+                self.save_format = save_format
+                self.saveAs = save_as
+                self.open = action_open
+                self.close = close
+                self.resetAll = reset_all
+                self.deleteImg = delete_image
+                self.lineColor = color1
+                self.create = create
+                self.delete = delete
+                self.edit = edit
+                self.copy = copy
+                self.createMode = create_mode
+                self.editMode = edit_mode
+                self.advancedMode = advanced_mode
+                self.shapeLineColor = shape_line_color
+                self.shapeFillColor = shape_fill_color
+                self.zoom = zoom
+                self.zoomIn = zoom_in
+                self.zoomOut = zoom_out
+                self.zoomOrg = zoom_org
+                self.fitWindow = fit_window
+                self.fitWidth = fit_width
+                self.zoomActions = zoom_actions
+                self.fileMenuActions = (action_open, open_dir, save, save_as, close, reset_all, action_quit)
+                self.beginner = ()
+                self.advanced = ()
+                self.editMenu = (edit, copy, delete, None, color1, draw_squares_option)
+                self.beginnerContext = (create, edit, copy, delete)
+                self.advancedContext = (create_mode, edit_mode, edit, copy, delete, shape_line_color, shape_fill_color)
+                self.onLoadActive = (close, create, create_mode, edit_mode)
+                self.onShapesPresent = (save_as, hide_all, show_all)
+
+        self.actions = Actions()
+
+        menu = self.menu
+
+        class Menus:
+            def __init__(self):
+                self.file = menu(get_str('menu_file'))
+                self.edit = menu(get_str('menu_edit'))
+                self.view = menu(get_str('menu_view'))
+                self.help = menu(get_str('menu_help'))
+                self.recentFiles = QMenu(get_str('menu_openRecent'))
+                self.labelList = label_menu
+
+        self.menus = Menus()
 
         # Auto saving : Enable auto saving if pressing next
         self.auto_saving = QAction(get_str('autoSaveMode'), self)
@@ -396,8 +417,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.display_label_option.triggered.connect(self.toggle_paint_labels_option)
 
         add_actions(self.menus.file,
-                    (open, open_dir, copy_prev_bounding, change_save_dir, open_annotation, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
-        add_actions(self.menus.help, (help, show_info))
+                    (action_open, open_dir, copy_prev_bounding, change_save_dir, open_annotation, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, action_quit))
+        add_actions(self.menus.help, (action_help, show_info))
         add_actions(self.menus.view, (
             self.auto_saving,
             self.single_class_mode,
@@ -417,11 +438,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, open_dir, change_save_dir, open_next_image, open_prev_image, verify, save, save_format, None, create, copy, delete, None,
+            action_open, open_dir, change_save_dir, open_next_image, open_prev_image, verify, save, save_format, None, create, copy, delete, None,
             zoom_in, zoom, zoom_out, fit_window, fit_width)
 
         self.actions.advanced = (
-            open, open_dir, change_save_dir, open_next_image, open_prev_image, save, save_format, None,
+            action_open, open_dir, change_save_dir, open_next_image, open_prev_image, save, save_format, None,
             create_mode, edit_mode, None,
             hide_all, show_all)
 
@@ -447,7 +468,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
                 self.recent_files = [ustr(i) for i in recent_file_qstring_list]
             else:
-                self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
+                self.recent_files = settings.get(SETTING_RECENT_FILES)
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
@@ -570,7 +591,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.menus[0].clear()
         add_actions(self.canvas.menus[0], menu)
         self.menus.edit.clear()
-        actions = (self.actions.create,) if self.beginner()\
+        actions = (self.actions.create,) if self.beginner() \
             else (self.actions.createMode, self.actions.editMode)
         add_actions(self.menus.edit, actions + self.actions.editMenu)
 
@@ -598,7 +619,8 @@ class MainWindow(QMainWindow, WindowMixin):
         for action in self.actions.onLoadActive:
             action.setEnabled(value)
 
-    def queue_event(self, function):
+    @staticmethod
+    def queue_event(function):
         QTimer.singleShot(0, function)
 
     def status(self, message, delay=5000):
@@ -634,7 +656,8 @@ class MainWindow(QMainWindow, WindowMixin):
     def advanced(self):
         return not self.beginner()
 
-    def get_available_screencast_viewer(self):
+    @staticmethod
+    def get_available_screencast_viewer():
         os_name = platform.system()
 
         if os_name == 'Windows':
@@ -723,7 +746,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_file(filename)
 
     # Add chris
-    def button_state(self, item=None):
+    def button_state(self):
         """ Function to handle difficult examples
         Update on each object """
         if not self.canvas.editing():
@@ -1254,12 +1277,11 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.may_continue():
             return
 
-        default_open_dir_path = dir_path if dir_path else '.'
         if self.last_open_dir and os.path.exists(self.last_open_dir):
             default_open_dir_path = self.last_open_dir
         else:
             default_open_dir_path = os.path.dirname(self.file_path) if self.file_path else '.'
-        if silent != True:
+        if not silent:
             target_dir_path = ustr(QFileDialog.getExistingDirectory(self,
                                                                     '%s - Open Directory' % __appname__, default_open_dir_path,
                                                                     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
@@ -1560,6 +1582,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
 
+
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
 
@@ -1573,11 +1596,13 @@ def read(filename, default=None):
         return default
 
 
-def get_main_app(argv=[]):
+def get_main_app(argv=None):
     """
     Standard boilerplate Qt application code.
     Do everything but app.exec_() -- so that we can test the application in one thread
     """
+    if argv is None:
+        argv = []
     app = QApplication(argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(new_icon("app"))
@@ -1601,6 +1626,7 @@ def main():
     """construct main app and run it"""
     app, _win = get_main_app(sys.argv)
     return app.exec_()
+
 
 if __name__ == '__main__':
     sys.exit(main())
