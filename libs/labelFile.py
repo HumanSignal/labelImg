@@ -6,7 +6,6 @@ try:
 except ImportError:
     from PyQt4.QtGui import QImage
 
-from base64 import b64encode, b64decode
 from libs.pascal_voc_io import PascalVocWriter
 from libs.yolo_io import YOLOWriter
 from libs.pascal_voc_io import XML_EXT
@@ -14,7 +13,6 @@ from libs.create_ml_io import CreateMLWriter
 from libs.create_ml_io import JSON_EXT
 from enum import Enum
 import os.path
-import sys
 
 
 class LabelFileFormat(Enum):
@@ -32,13 +30,13 @@ class LabelFile(object):
     # suffix = '.lif'
     suffix = XML_EXT
 
-    def __init__(self, filename=None):
+    def __init__(self):
         self.shapes = ()
         self.image_path = None
         self.image_data = None
         self.verified = False
 
-    def save_create_ml_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
+    def save_create_ml_format(self, filename, shapes, image_path):
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
@@ -54,9 +52,7 @@ class LabelFile(object):
         writer.verified = self.verified
         writer.write()
 
-
-    def save_pascal_voc_format(self, filename, shapes, image_path, image_data,
-                               line_color=None, fill_color=None, database_src=None):
+    def save_pascal_voc_format(self, filename, shapes, image_path, image_data):
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
@@ -85,8 +81,7 @@ class LabelFile(object):
         writer.save(target_file=filename)
         return
 
-    def save_yolo_format(self, filename, shapes, image_path, image_data, class_list,
-                         line_color=None, fill_color=None, database_src=None):
+    def save_yolo_format(self, filename, shapes, image_path, image_data, class_list):
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)

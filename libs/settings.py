@@ -1,6 +1,5 @@
 import pickle
 import os
-import sys
 
 
 class Settings(object):

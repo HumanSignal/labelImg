@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
@@ -11,6 +10,7 @@ from libs.ustr import ustr
 
 XML_EXT = '.xml'
 ENCODE_METHOD = DEFAULT_ENCODING
+
 
 class PascalVocWriter:
 
@@ -23,7 +23,8 @@ class PascalVocWriter:
         self.local_img_path = local_img_path
         self.verified = False
 
-    def prettify(self, elem):
+    @staticmethod
+    def prettify(elem):
         """
             Return a pretty-printed XML string for the Element.
         """
@@ -31,8 +32,8 @@ class PascalVocWriter:
         root = etree.fromstring(rough_string)
         return etree.tostring(root, pretty_print=True, encoding=ENCODE_METHOD).replace("  ".encode(), "\t".encode())
         # minidom does not support UTF-8
-        # reparsed = minidom.parseString(rough_string)
-        # return reparsed.toprettyxml(indent="\t", encoding=ENCODE_METHOD)
+        # re_parsed = minidom.parseString(rough_string)
+        # return re_parsed.toprettyxml(indent="\t", encoding=ENCODE_METHOD)
 
     def gen_xml(self):
         """
@@ -78,9 +79,13 @@ class PascalVocWriter:
         return top
 
     def add_bnd_box(self, x_min, y_min, x_max, y_max, name, difficult):
-        bnd_box = {'xmin': x_min, 'ymin': y_min, 'xmax': x_max, 'ymax': y_max}
-        bnd_box['name'] = name
-        bnd_box['difficult'] = difficult
+        bnd_box = {
+            'xmin': x_min,
+            'ymin': y_min,
+            'xmax': x_max,
+            'ymax': y_max,
+            'name': name,
+            'difficult': difficult}
         self.box_list.append(bnd_box)
 
     def append_objects(self, top):
@@ -112,7 +117,6 @@ class PascalVocWriter:
     def save(self, target_file=None):
         root = self.gen_xml()
         self.append_objects(root)
-        out_file = None
         if target_file is None:
             out_file = codecs.open(
                 self.filename + XML_EXT, 'w', encoding=ENCODE_METHOD)
@@ -128,7 +132,7 @@ class PascalVocReader:
 
     def __init__(self, file_path):
         # shapes type:
-        # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
+        # [label, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         self.shapes = []
         self.file_path = file_path
         self.verified = False
@@ -152,7 +156,6 @@ class PascalVocReader:
         assert self.file_path.endswith(XML_EXT), "Unsupported file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
         xml_tree = ElementTree.parse(self.file_path, parser=parser).getroot()
-        filename = xml_tree.find('filename').text
         try:
             verified = xml_tree.attrib['verified']
             if verified == 'yes':
