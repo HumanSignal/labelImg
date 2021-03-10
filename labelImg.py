@@ -25,19 +25,19 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from libs.combobox import ComboBox
+from libs.combo_box import ComboBox
 from libs.resources import *
 from libs.constants import *
 from libs.utils import *
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from libs.stringBundle import StringBundle
+from libs.string_bundle import StringBundle
 from libs.canvas import Canvas
-from libs.zoomWidget import ZoomWidget
-from libs.labelDialog import LabelDialog
-from libs.colorDialog import ColorDialog
-from libs.labelFile import LabelFile, LabelFileError, LabelFileFormat
-from libs.toolBar import ToolBar
+from libs.zoom_widget import ZoomWidget
+from libs.label_dialog import LabelDialog
+from libs.color_dialog import ColorDialog
+from libs.label_file import LabelFile, LabelFileError, LabelFileFormat
+from libs.tool_bar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
 from libs.yolo_io import YoloReader
@@ -45,7 +45,7 @@ from libs.yolo_io import TXT_EXT
 from libs.create_ml_io import CreateMLReader
 from libs.create_ml_io import JSON_EXT
 from libs.ustr import ustr
-from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from libs.hashable_qlist_widget_item import HashableQListWidgetItem
 
 __appname__ = 'labelImg'
 
