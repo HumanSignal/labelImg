@@ -14,17 +14,17 @@ class TestPascalVocRW(unittest.TestCase):
         # Test Write/Read
         writer = PascalVocWriter('tests', 'test', (512, 512, 1), localImgPath='tests/test.512.512.bmp')
         difficult = 1
-        writer.addBndBox(60, 40, 430, 504, 'person', difficult)
-        writer.addBndBox(113, 40, 450, 403, 'face', difficult)
+        writer.add_bnd_box(60, 40, 430, 504, 'person', difficult)
+        writer.add_bnd_box(113, 40, 450, 403, 'face', difficult)
         writer.save('tests/test.xml')
 
         reader = PascalVocReader('tests/test.xml')
-        shapes = reader.getShapes()
+        shapes = reader.get_shapes()
 
-        personBndBox = shapes[0]
+        person_bnd_box = shapes[0]
         face = shapes[1]
-        self.assertEqual(personBndBox[0], 'person')
-        self.assertEqual(personBndBox[1], [(60, 40), (430, 40), (430, 504), (60, 504)])
+        self.assertEqual(person_bnd_box[0], 'person')
+        self.assertEqual(person_bnd_box[1], [(60, 40), (430, 40), (430, 504), (60, 504)])
         self.assertEqual(face[0], 'face')
         self.assertEqual(face[1], [(113, 40), (450, 40), (450, 403), (113, 403)])
 
@@ -54,15 +54,15 @@ class TestCreateMLRW(unittest.TestCase):
 
         # check written json
         with open(output_file, "r") as file:
-            inputdata = file.read()
+            input_data = file.read()
 
         import json
-        data_dict = json.loads(inputdata)[0]
+        data_dict = json.loads(input_data)[0]
 
         self.assertEqual('test.512.512.bmp', data_dict['image'], 'filename not correct in .json')
-        self.assertEqual(2, len(data_dict['annotations']), 'outputfile contains to less annotations')
+        self.assertEqual(2, len(data_dict['annotations']), 'output file contains to less annotations')
         face = data_dict['annotations'][1]
-        self.assertEqual('face', face['label'], 'labelname is wrong')
+        self.assertEqual('face', face['label'], 'label name is wrong')
         face_coords = face['coordinates']
         self.assertEqual(expected_width, face_coords['width'], 'calculated width is wrong')
         self.assertEqual(expected_height, face_coords['height'], 'calculated height is wrong')
@@ -84,15 +84,15 @@ class TestCreateMLRW(unittest.TestCase):
         self.assertEqual('face', face[0], 'label is wrong')
 
         face_coords = face[1]
-        xmin = face_coords[0][0]
-        xmax = face_coords[1][0]
-        ymin = face_coords[0][1]
-        ymax = face_coords[2][1]
+        x_min = face_coords[0][0]
+        x_max = face_coords[1][0]
+        y_min = face_coords[0][1]
+        y_max = face_coords[2][1]
 
-        self.assertEqual(245, xmin, 'xmin is wrong')
-        self.assertEqual(350, xmax, 'xmax is wrong')
-        self.assertEqual(250, ymin, 'ymin is wrong')
-        self.assertEqual(365, ymax, 'ymax is wrong')
+        self.assertEqual(245, x_min, 'xmin is wrong')
+        self.assertEqual(350, x_max, 'xmax is wrong')
+        self.assertEqual(250, y_min, 'ymin is wrong')
+        self.assertEqual(365, y_max, 'ymax is wrong')
 
 
 if __name__ == '__main__':

@@ -11,26 +11,26 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 
 class CreateMLWriter:
-    def __init__(self, foldername, filename, imgsize, shapes, outputfile, databasesrc='Unknown', localimgpath=None):
-        self.foldername = foldername
+    def __init__(self, folder_name, filename, img_size, shapes, output_file, database_src='Unknown', local_img_path=None):
+        self.folder_name = folder_name
         self.filename = filename
-        self.databasesrc = databasesrc
-        self.imgsize = imgsize
-        self.boxlist = []
-        self.localimgpath = localimgpath
+        self.database_src = database_src
+        self.img_size = img_size
+        self.box_list = []
+        self.local_img_path = local_img_path
         self.verified = False
         self.shapes = shapes
-        self.outputfile = outputfile
+        self.output_file = output_file
 
     def write(self):
-        if os.path.isfile(self.outputfile):
-            with open(self.outputfile, "r") as file:
+        if os.path.isfile(self.output_file):
+            with open(self.output_file, "r") as file:
                 input_data = file.read()
-                outputdict = json.loads(input_data)
+                output_dict = json.loads(input_data)
         else:
-            outputdict = []
+            output_dict = []
 
-        outputimagedict = {
+        output_image_dict = {
             "image": self.filename,
             "annotations": []
         }
@@ -45,7 +45,7 @@ class CreateMLWriter:
 
             height, width, x, y = self.calculate_coordinates(x1, x2, y1, y2)
 
-            shapedict = {
+            shape_dict = {
                 "label": shape["label"],
                 "coordinates": {
                     "x": x,
@@ -54,77 +54,77 @@ class CreateMLWriter:
                     "height": height
                 }
             }
-            outputimagedict["annotations"].append(shapedict)
+            output_image_dict["annotations"].append(shape_dict)
 
         # check if image already in output
         exists = False
-        for i in range(0, len(outputdict)):
-            if outputdict[i]["image"] == outputimagedict["image"]:
+        for i in range(0, len(output_dict)):
+            if output_dict[i]["image"] == output_image_dict["image"]:
                 exists = True
-                outputdict[i] = outputimagedict
+                output_dict[i] = output_image_dict
                 break
 
         if not exists:
-            outputdict.append(outputimagedict)
+            output_dict.append(output_image_dict)
 
-        Path(self.outputfile).write_text(json.dumps(outputdict), ENCODE_METHOD)
+        Path(self.output_file).write_text(json.dumps(output_dict), ENCODE_METHOD)
 
     def calculate_coordinates(self, x1, x2, y1, y2):
         if x1 < x2:
-            xmin = x1
-            xmax = x2
+            x_min = x1
+            x_max = x2
         else:
-            xmin = x2
-            xmax = x1
+            x_min = x2
+            x_max = x1
         if y1 < y2:
-            ymin = y1
-            ymax = y2
+            y_min = y1
+            y_max = y2
         else:
-            ymin = y2
-            ymax = y1
-        width = xmax - xmin
+            y_min = y2
+            y_max = y1
+        width = x_max - x_min
         if width < 0:
             width = width * -1
-        height = ymax - ymin
+        height = y_max - y_min
         # x and y from center of rect
-        x = xmin + width / 2
-        y = ymin + height / 2
+        x = x_min + width / 2
+        y = y_min + height / 2
         return height, width, x, y
 
 
 class CreateMLReader:
-    def __init__(self, jsonpath, filepath):
-        self.jsonpath = jsonpath
+    def __init__(self, json_path, file_path):
+        self.json_path = json_path
         self.shapes = []
         self.verified = False
-        self.filename = filepath.split("/")[-1:][0]
+        self.filename = file_path.split("/")[-1:][0]
         try:
             self.parse_json()
         except ValueError:
             print("JSON decoding failed")
 
     def parse_json(self):
-        with open(self.jsonpath, "r") as file:
-            inputdata = file.read()
+        with open(self.json_path, "r") as file:
+            input_data = file.read()
 
-        outputdict = json.loads(inputdata)
+        output_dict = json.loads(input_data)
         self.verified = True
 
         if len(self.shapes) > 0:
             self.shapes = []
-        for image in outputdict:
+        for image in output_dict:
             if image["image"] == self.filename:
                 for shape in image["annotations"]:
                     self.add_shape(shape["label"], shape["coordinates"])
 
-    def add_shape(self, label, bndbox):
-        xmin = bndbox["x"] - (bndbox["width"] / 2)
-        ymin = bndbox["y"] - (bndbox["height"] / 2)
+    def add_shape(self, label, bnd_box):
+        x_min = bnd_box["x"] - (bnd_box["width"] / 2)
+        y_min = bnd_box["y"] - (bnd_box["height"] / 2)
 
-        xmax = bndbox["x"] + (bndbox["width"] / 2)
-        ymax = bndbox["y"] + (bndbox["height"] / 2)
+        x_max = bnd_box["x"] + (bnd_box["width"] / 2)
+        y_max = bnd_box["y"] + (bnd_box["height"] / 2)
 
-        points = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)]
+        points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
         self.shapes.append((label, points, None, None, True))
 
     def get_shapes(self):

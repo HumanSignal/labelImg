@@ -22,7 +22,7 @@ class ColorDialog(QColorDialog):
         self.default = None
         self.bb = self.layout().itemAt(1).widget()
         self.bb.addButton(BB.RestoreDefaults)
-        self.bb.clicked.connect(self.checkRestore)
+        self.bb.clicked.connect(self.check_restore)
 
     def getColor(self, value=None, title=None, default=None):
         self.default = default
@@ -32,6 +32,6 @@ class ColorDialog(QColorDialog):
             self.setCurrentColor(value)
         return self.currentColor() if self.exec_() else None
 
-    def checkRestore(self, button):
+    def check_restore(self, button):
         if self.bb.buttonRole(button) & BB.ResetRole and self.default:
             self.setCurrentColor(self.default)

@@ -18,7 +18,7 @@ import sys
 
 
 class LabelFileFormat(Enum):
-    PASCAL_VOC= 1
+    PASCAL_VOC = 1
     YOLO = 2
     CREATE_ML = 3
 
@@ -34,44 +34,44 @@ class LabelFile(object):
 
     def __init__(self, filename=None):
         self.shapes = ()
-        self.imagePath = None
-        self.imageData = None
+        self.image_path = None
+        self.image_data = None
         self.verified = False
 
-    def saveCreateMLFormat(self, filename, shapes, imagePath, imageData, classList, lineColor=None, fillColor=None, databaseSrc=None):
-        imgFolderPath = os.path.dirname(imagePath)
-        imgFolderName = os.path.split(imgFolderPath)[-1]
-        imgFileName = os.path.basename(imagePath)
-        outputFilePath = "/".join(filename.split("/")[:-1])
-        outputFile = outputFilePath + "/" + imgFolderName + JSON_EXT
+    def save_create_ml_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
+        img_folder_path = os.path.dirname(image_path)
+        img_folder_name = os.path.split(img_folder_path)[-1]
+        img_file_name = os.path.basename(image_path)
+        output_file_path = "/".join(filename.split("/")[:-1])
+        output_file = output_file_path + "/" + img_folder_name + JSON_EXT
 
         image = QImage()
-        image.load(imagePath)
-        imageShape = [image.height(), image.width(),
-                      1 if image.isGrayscale() else 3]
-        writer = CreateMLWriter(imgFolderName, imgFileName,
-                                imageShape, shapes, outputFile, localimgpath=imagePath)
+        image.load(image_path)
+        image_shape = [image.height(), image.width(),
+                       1 if image.isGrayscale() else 3]
+        writer = CreateMLWriter(img_folder_name, img_file_name,
+                                image_shape, shapes, output_file, local_img_path=image_path)
         writer.verified = self.verified
         writer.write()
 
 
-    def savePascalVocFormat(self, filename, shapes, imagePath, imageData,
-                            lineColor=None, fillColor=None, databaseSrc=None):
-        imgFolderPath = os.path.dirname(imagePath)
-        imgFolderName = os.path.split(imgFolderPath)[-1]
-        imgFileName = os.path.basename(imagePath)
-        #imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
+    def save_pascal_voc_format(self, filename, shapes, image_path, image_data,
+                               line_color=None, fill_color=None, database_src=None):
+        img_folder_path = os.path.dirname(image_path)
+        img_folder_name = os.path.split(img_folder_path)[-1]
+        img_file_name = os.path.basename(image_path)
+        # imgFileNameWithoutExt = os.path.splitext(img_file_name)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
-        if isinstance(imageData, QImage):
-            image = imageData
+        if isinstance(image_data, QImage):
+            image = image_data
         else:
             image = QImage()
-            image.load(imagePath)
-        imageShape = [image.height(), image.width(),
-                      1 if image.isGrayscale() else 3]
-        writer = PascalVocWriter(imgFolderName, imgFileName,
-                                 imageShape, localImgPath=imagePath)
+            image.load(image_path)
+        image_shape = [image.height(), image.width(),
+                       1 if image.isGrayscale() else 3]
+        writer = PascalVocWriter(img_folder_name, img_file_name,
+                                 image_shape, local_img_path=image_path)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -79,29 +79,29 @@ class LabelFile(object):
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
-            bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            bnd_box = LabelFile.convert_points_to_bnd_box(points)
+            writer.add_bnd_box(bnd_box[0], bnd_box[1], bnd_box[2], bnd_box[3], label, difficult)
 
-        writer.save(targetFile=filename)
+        writer.save(target_file=filename)
         return
 
-    def saveYoloFormat(self, filename, shapes, imagePath, imageData, classList,
-                            lineColor=None, fillColor=None, databaseSrc=None):
-        imgFolderPath = os.path.dirname(imagePath)
-        imgFolderName = os.path.split(imgFolderPath)[-1]
-        imgFileName = os.path.basename(imagePath)
-        #imgFileNameWithoutExt = os.path.splitext(imgFileName)[0]
+    def save_yolo_format(self, filename, shapes, image_path, image_data, class_list,
+                         line_color=None, fill_color=None, database_src=None):
+        img_folder_path = os.path.dirname(image_path)
+        img_folder_name = os.path.split(img_folder_path)[-1]
+        img_file_name = os.path.basename(image_path)
+        # imgFileNameWithoutExt = os.path.splitext(img_file_name)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
-        if isinstance(imageData, QImage):
-            image = imageData
+        if isinstance(image_data, QImage):
+            image = image_data
         else:
             image = QImage()
-            image.load(imagePath)
-        imageShape = [image.height(), image.width(),
-                      1 if image.isGrayscale() else 3]
-        writer = YOLOWriter(imgFolderName, imgFileName,
-                                 imageShape, localImgPath=imagePath)
+            image.load(image_path)
+        image_shape = [image.height(), image.width(),
+                       1 if image.isGrayscale() else 3]
+        writer = YOLOWriter(img_folder_name, img_file_name,
+                            image_shape, local_img_path=image_path)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -109,13 +109,13 @@ class LabelFile(object):
             label = shape['label']
             # Add Chris
             difficult = int(shape['difficult'])
-            bndbox = LabelFile.convertPoints2BndBox(points)
-            writer.addBndBox(bndbox[0], bndbox[1], bndbox[2], bndbox[3], label, difficult)
+            bnd_box = LabelFile.convert_points_to_bnd_box(points)
+            writer.add_bnd_box(bnd_box[0], bnd_box[1], bnd_box[2], bnd_box[3], label, difficult)
 
-        writer.save(targetFile=filename, classList=classList)
+        writer.save(target_file=filename, class_list=class_list)
         return
 
-    def toggleVerify(self):
+    def toggle_verify(self):
         self.verified = not self.verified
 
     ''' ttf is disable
@@ -148,31 +148,31 @@ class LabelFile(object):
     '''
 
     @staticmethod
-    def isLabelFile(filename):
-        fileSuffix = os.path.splitext(filename)[1].lower()
-        return fileSuffix == LabelFile.suffix
+    def is_label_file(filename):
+        file_suffix = os.path.splitext(filename)[1].lower()
+        return file_suffix == LabelFile.suffix
 
     @staticmethod
-    def convertPoints2BndBox(points):
-        xmin = float('inf')
-        ymin = float('inf')
-        xmax = float('-inf')
-        ymax = float('-inf')
+    def convert_points_to_bnd_box(points):
+        x_min = float('inf')
+        y_min = float('inf')
+        x_max = float('-inf')
+        y_max = float('-inf')
         for p in points:
             x = p[0]
             y = p[1]
-            xmin = min(x, xmin)
-            ymin = min(y, ymin)
-            xmax = max(x, xmax)
-            ymax = max(y, ymax)
+            x_min = min(x, x_min)
+            y_min = min(y, y_min)
+            x_max = max(x, x_max)
+            y_max = max(y, y_max)
 
         # Martin Kersner, 2015/11/12
         # 0-valued coordinates of BB caused an error while
         # training faster-rcnn object detector.
-        if xmin < 1:
-            xmin = 1
+        if x_min < 1:
+            x_min = 1
 
-        if ymin < 1:
-            ymin = 1
+        if y_min < 1:
+            y_min = 1
 
-        return (int(xmin), int(ymin), int(xmax), int(ymax))
+        return int(x_min), int(y_min), int(x_max), int(y_max)
