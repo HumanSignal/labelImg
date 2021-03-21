@@ -3,15 +3,14 @@
 # run xvfb with 32-bit color
 # xvfb-run -s '-screen 0 1600x1200x24+32' command_goes_here
 
-matrix:
+jobs:
   include:
 
     # Python 3 + QT5
     - os: linux
-      dist: trusty
-      sudo: required
+      dist: focal
       language: generic
-      python: "3.5"
+      python: "3.6"
       env:
         - QT=5
         - CONDA=4.2.0
@@ -27,21 +26,21 @@ matrix:
         - /bin/bash Anaconda3-2020.02-Linux-x86_64.sh -b -p $HOME/anaconda3
         - export PATH="$HOME/anaconda3/bin:$PATH"
         # ref: http://stackoverflow.com/questions/21637922/how-to-install-pyqt4-in-anaconda
-        - conda create -y -n labelImg-py3qt5 python=3.5
+        - conda create -y -n labelImg-py3qt5 python=3.6
         - source activate labelImg-py3qt5
         - conda install -y pyqt=5
         - conda install -y lxml
         - make qt5py3
         - xvfb-run make testpy3
 
-    # Pipenv Python 3 + QT5 - Build .app
+    # Pipenv Python 3.7.5 + QT5 - Build .app
     - os: osx
       language: generic
-      python: "3.7"
       env:
         - PIPENV_VENV_IN_PROJECT=1
         - PIPENV_IGNORE_VIRTUALENVS=1
       install:
+        - python3 --version
         - pip3 install pipenv
         - pipenv install pyqt5 lxml
         - pipenv run pip install pyqt5==5.13.2 lxml
