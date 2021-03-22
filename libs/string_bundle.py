@@ -64,11 +64,11 @@ class StringBundle:
                 text = QTextStream(f)
                 text.setCodec("UTF-8")
 
-            while not text.atEnd():
-                line = ustr(text.readLine())
-                key_value = line.split(prop_seperator)
-                key = key_value[0].strip()
-                value = prop_seperator.join(key_value[1:]).strip().strip('"')
-                self.id_to_message[key] = value
+                while not text.atEnd():
+                    line = ustr(text.readLine())
+                    key_value = line.split(prop_seperator)
+                    key = key_value[0].strip()
+                    value = prop_seperator.join(key_value[1:]).strip().strip('"')
+                    self.id_to_message[key] = value
 
             f.close()
