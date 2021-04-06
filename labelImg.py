@@ -1109,10 +1109,9 @@ class MainWindow(QMainWindow, WindowMixin):
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
-            file_dir = file_path.split(basename)[0].split(os.path.sep)[-2:-1][0]
             xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
             txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
-            json_path = os.path.join(self.default_save_dir, file_dir + JSON_EXT)
+            json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
 
             """Annotation file priority:
             PascalXML > YOLO
