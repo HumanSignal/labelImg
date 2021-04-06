@@ -129,10 +129,10 @@ class YoloReader:
         y_min = max(float(y_center) - float(h) / 2, 0)
         y_max = min(float(y_center) + float(h) / 2, 1)
 
-        x_min = int(self.img_size[1] * x_min)
-        x_max = int(self.img_size[1] * x_max)
-        y_min = int(self.img_size[0] * y_min)
-        y_max = int(self.img_size[0] * y_max)
+        x_min = round(self.img_size[1] * x_min)
+        x_max = round(self.img_size[1] * x_max)
+        y_min = round(self.img_size[0] * y_min)
+        y_max = round(self.img_size[0] * y_max)
 
         return label, x_min, y_min, x_max, y_max
 
