@@ -174,7 +174,7 @@ if __name__ == "__main__":
     res = []
     # Get all the file in dir
     for training_type_dir in os.listdir(args["location"]):
-        # Get the dirname
+        # Get the dir_name
         dir_name = f"{args['location']}/{training_type_dir}"
 
         # Check whether is dir

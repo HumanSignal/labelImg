@@ -69,7 +69,8 @@ class CreateMLWriter:
 
         Path(self.output_file).write_text(json.dumps(output_dict), ENCODE_METHOD)
 
-    def calculate_coordinates(self, x1, x2, y1, y2):
+    @staticmethod
+    def calculate_coordinates(x1, x2, y1, y2):
         if x1 < x2:
             x_min = x1
             x_max = x2

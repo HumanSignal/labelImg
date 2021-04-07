@@ -80,7 +80,7 @@ class Canvas(QWidget):
     def focusOutEvent(self, ev):
         self.restore_cursor()
 
-    def isVisible(self, shape):
+    def is_visible(self, shape):
         return self.visible.get(shape, True)
 
     def drawing(self):
@@ -135,7 +135,7 @@ class Canvas(QWidget):
                     clipped_y = min(max(0, pos.y()), size.height())
                     pos = QPointF(clipped_x, clipped_y)
                 elif len(self.current) > 1 and self.close_enough(pos, self.current[0]):
-                    # Attract line to starting point and colorise to alert the
+                    # Attract line to starting point and colorize to alert the
                     # user:
                     pos = self.current[0]
                     color = self.current.line_color
@@ -197,7 +197,7 @@ class Canvas(QWidget):
         # - Highlight vertex
         # Update shape/vertex fill and tooltip value accordingly.
         self.setToolTip("Image")
-        for shape in reversed([s for s in self.shapes if self.isVisible(s)]):
+        for shape in reversed([s for s in self.shapes if self.is_visible(s)]):
             # Look for a nearby vertex to highlight. If that fails,
             # check if we happen to be inside a shape.
             index = shape.nearest_vertex(pos, self.epsilon)
@@ -342,7 +342,7 @@ class Canvas(QWidget):
             self.select_shape(shape)
             return self.h_vertex
         for shape in reversed(self.shapes):
-            if self.isVisible(shape) and shape.contains_point(point):
+            if self.is_visible(shape) and shape.contains_point(point):
                 self.select_shape(shape)
                 self.calculate_offsets(shape, point)
                 return self.selected_shape
@@ -395,8 +395,6 @@ class Canvas(QWidget):
 
         left_index = (index + 1) % 4
         right_index = (index + 3) % 4
-        left_shift = None
-        right_shift = None
         if index % 2 == 0:
             right_shift = QPointF(shift_pos.x(), 0)
             left_shift = QPointF(0, shift_pos.y())
@@ -481,7 +479,7 @@ class Canvas(QWidget):
         Shape.scale = self.scale
         Shape.label_font_size = self.label_font_size
         for shape in self.shapes:
-            if (shape.selected or not self._hide_background) and self.isVisible(shape):
+            if (shape.selected or not self._hide_background) and self.is_visible(shape):
                 shape.fill = shape.selected or shape == self.h_shape
                 shape.paint(p)
         if self.current:
@@ -503,8 +501,8 @@ class Canvas(QWidget):
 
         if self.drawing() and not self.prev_point.isNull() and not self.out_of_pixmap(self.prev_point):
             p.setPen(QColor(0, 0, 0))
-            p.drawLine(self.prev_point.x(), 0, self.prev_point.x(), self.pixmap.height())
-            p.drawLine(0, self.prev_point.y(), self.pixmap.width(), self.prev_point.y())
+            p.drawLine(int(self.prev_point.x()), 0, int(self.prev_point.x()), int(self.pixmap.height()))
+            p.drawLine(0, int(self.prev_point.y()), int(self.pixmap.width()), int(self.prev_point.y()))
 
         self.setAutoFillBackground(True)
         if self.verified:
@@ -681,7 +679,8 @@ class Canvas(QWidget):
         self.visible[shape] = value
         self.repaint()
 
-    def current_cursor(self):
+    @staticmethod
+    def current_cursor():
         cursor = QApplication.overrideCursor()
         if cursor is not None:
             cursor = cursor.shape()
@@ -694,7 +693,8 @@ class Canvas(QWidget):
         else:
             QApplication.changeOverrideCursor(cursor)
 
-    def restore_cursor(self):
+    @staticmethod
+    def restore_cursor():
         QApplication.restoreOverrideCursor()
 
     def reset_state(self):

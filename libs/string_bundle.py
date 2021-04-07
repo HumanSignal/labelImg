@@ -42,7 +42,8 @@ class StringBundle:
         assert(string_id in self.id_to_message), "Missing string id : " + string_id
         return self.id_to_message[string_id]
 
-    def __create_lookup_fallback_list(self, locale_str):
+    @staticmethod
+    def __create_lookup_fallback_list(locale_str):
         result_paths = []
         base_path = ":/strings"
         result_paths.append(base_path)
@@ -56,18 +57,18 @@ class StringBundle:
         return result_paths
 
     def __load_bundle(self, path):
-        PROP_SEPERATOR = '='
+        prop_seperator = '='
         f = QFile(path)
         if f.exists():
             if f.open(QIODevice.ReadOnly | QFile.Text):
                 text = QTextStream(f)
                 text.setCodec("UTF-8")
 
-            while not text.atEnd():
-                line = ustr(text.readLine())
-                key_value = line.split(PROP_SEPERATOR)
-                key = key_value[0].strip()
-                value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')
-                self.id_to_message[key] = value
+                while not text.atEnd():
+                    line = ustr(text.readLine())
+                    key_value = line.split(prop_seperator)
+                    key = key_value[0].strip()
+                    value = prop_seperator.join(key_value[1:]).strip().strip('"')
+                    self.id_to_message[key] = value
 
             f.close()
