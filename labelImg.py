@@ -1109,10 +1109,9 @@ class MainWindow(QMainWindow, WindowMixin):
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
-            file_dir = file_path.split(basename)[0].split(os.path.sep)[-2:-1][0]
             xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
             txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
-            json_path = os.path.join(self.default_save_dir, file_dir + JSON_EXT)
+            json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
 
             """Annotation file priority:
             PascalXML > YOLO
@@ -1584,14 +1583,19 @@ def get_main_app(argv=[]):
     # Tzutalin 201705+: Accept extra agruments to change predefined class file
     argparser = argparse.ArgumentParser()
     argparser.add_argument("image_dir", nargs="?")
-    argparser.add_argument("predefined_classes_file",
+    argparser.add_argument("class_file",
                            default=os.path.join(os.path.dirname(__file__), "data", "predefined_classes.txt"),
                            nargs="?")
     argparser.add_argument("save_dir", nargs="?")
     args = argparser.parse_args(argv[1:])
-    # Usage : labelImg.py image predefClassFile saveDir
+
+    args.image_dir = args.image_dir and os.path.normpath(args.image_dir)
+    args.class_file = args.class_file and os.path.normpath(args.class_file)
+    args.save_dir = args.save_dir and os.path.normpath(args.save_dir)
+
+    # Usage : labelImg.py image classFile saveDir
     win = MainWindow(args.image_dir,
-                     args.predefined_classes_file,
+                     args.class_file,
                      args.save_dir)
     win.show()
     return app, win

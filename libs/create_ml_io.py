@@ -97,7 +97,7 @@ class CreateMLReader:
         self.json_path = json_path
         self.shapes = []
         self.verified = False
-        self.filename = file_path.split("/")[-1:][0]
+        self.filename = os.path.basename(file_path)
         try:
             self.parse_json()
         except ValueError:

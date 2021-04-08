@@ -39,18 +39,15 @@ class LabelFile(object):
         self.verified = False
 
     def save_create_ml_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
-        img_folder_path = os.path.dirname(image_path)
-        img_folder_name = os.path.split(img_folder_path)[-1]
+        img_folder_name = os.path.basename(os.path.dirname(image_path))
         img_file_name = os.path.basename(image_path)
-        output_file_path = "/".join(filename.split("/")[:-1])
-        output_file = output_file_path + "/" + img_folder_name + JSON_EXT
 
         image = QImage()
         image.load(image_path)
         image_shape = [image.height(), image.width(),
                        1 if image.isGrayscale() else 3]
         writer = CreateMLWriter(img_folder_name, img_file_name,
-                                image_shape, shapes, output_file, local_img_path=image_path)
+                                image_shape, shapes, filename, local_img_path=image_path)
         writer.verified = self.verified
         writer.write()
 
