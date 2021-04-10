@@ -213,14 +213,12 @@ class MainWindow(QMainWindow, WindowMixin):
         open_dir = action(get_str('openDir'), self.open_dir_dialog,
                           'Ctrl+u', 'open', get_str('openDir'))
 
-        copy_prev_bounding = action(get_str('copyPrevBounding'), self.copy_previous_bounding_boxes,
-                                    'Ctrl+v', 'paste', get_str('copyPrevBounding'))
-
         change_save_dir = action(get_str('changeSaveDir'), self.change_save_dir_dialog,
                                  'Ctrl+r', 'open', get_str('changeSavedAnnotationDir'))
 
         open_annotation = action(get_str('openAnnotation'), self.open_annotation_dialog,
                                  'Ctrl+Shift+O', 'open', get_str('openAnnotationDetail'))
+        copy_prev_bounding = action(get_str('copyPrevBounding'), self.copy_previous_bounding_boxes, 'Ctrl+v', 'copy', get_str('copyPrevBounding'))
 
         open_next_image = action(get_str('nextImg'), self.open_next_image,
                                  'd', 'next', get_str('nextImgDetail'))
@@ -396,7 +394,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.display_label_option.triggered.connect(self.toggle_paint_labels_option)
 
         add_actions(self.menus.file,
-                    (open, open_dir, copy_prev_bounding, change_save_dir, open_annotation, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
+                    (open, open_dir, change_save_dir, open_annotation, copy_prev_bounding, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
         add_actions(self.menus.help, (help, show_info))
         add_actions(self.menus.view, (
             self.auto_saving,

@@ -12,7 +12,7 @@ class TestPascalVocRW(unittest.TestCase):
         from pascal_voc_io import PascalVocReader
 
         # Test Write/Read
-        writer = PascalVocWriter('tests', 'test', (512, 512, 1), localImgPath='tests/test.512.512.bmp')
+        writer = PascalVocWriter('tests', 'test', (512, 512, 1), local_img_path='tests/test.512.512.bmp')
         difficult = 1
         writer.add_bnd_box(60, 40, 430, 504, 'person', difficult)
         writer.add_bnd_box(113, 40, 450, 403, 'face', difficult)
@@ -49,7 +49,7 @@ class TestCreateMLRW(unittest.TestCase):
         output_file = dir_name + "/tests.json"
 
         writer = CreateMLWriter('tests', 'test.512.512.bmp', (512, 512, 1), shapes, output_file,
-                                localimgpath='tests/test.512.512.bmp')
+                                local_img_path='tests/test.512.512.bmp')
         writer.write()
 
         # check written json
