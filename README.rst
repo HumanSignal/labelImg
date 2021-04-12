@@ -234,7 +234,7 @@ Hotkeys
 +--------------------+--------------------------------------------+
 | Ctrl--             | Zoom out                                   |
 +--------------------+--------------------------------------------+
-| ↑→↓←              | Keyboard arrows to move selected rect box  |
+| ↑→↓←               | Keyboard arrows to move selected rect box  |
 +--------------------+--------------------------------------------+
 
 **Verify Image:**
@@ -269,7 +269,7 @@ License
 Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
 
 Related and additional tools
-~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
