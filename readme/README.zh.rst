@@ -20,11 +20,9 @@ LabelImg
     :width: 200px
     :align: center
 
-LabelImg 是影像標註工具，它是用寫成的
+LabelImg 是影像標註工具，它是用python 和 QT 寫成的.
 
-It is written in Python and uses Qt for its graphical interface.
-
-支持的儲存格式包括PASCAL VOC format, YOLO, createML
+支持的儲存格式包括PASCAL VOC format, YOLO, createML.
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
@@ -41,11 +39,7 @@ It is written in Python and uses Qt for its graphical interface.
 透過編譯原始碼
 ~~~~~~~~~~~~~~~~~
 
-Linux/Ubuntu/Mac 需要 `Python
-2.6 <https://www.python.org/getit/>`__ and has been tested with `PyQt
-4.8 <https://www.riverbankcomputing.com/software/pyqt/intro>`__. However, `Python
-3 or above <https://www.python.org/getit/>`__ and  `PyQt5 <https://pypi.org/project/PyQt5/>`__ 是最好的選擇
-
+Linux/Ubuntu/Mac 需要 Python 和 `PyQt <https://pypi.org/project/PyQt5/>`__
 
 Ubuntu Linux
 ^^^^^^^^^^^^
@@ -153,7 +147,7 @@ Use Docker
 
     make qt4py2;./labelImg.py
 
-你可以參考影片 `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__
+`你可以參考影片  <https://youtu.be/nw1GexJzbCI>`__
 
 
 使用方法
