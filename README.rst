@@ -7,6 +7,15 @@ LabelImg
 .. image:: https://img.shields.io/travis/tzutalin/labelImg.svg
         :target: https://travis-ci.org/tzutalin/labelImg
 
+.. image:: https://img.shields.io/badge/lang-en-blue.svg
+        :target: https://github.com/tzutalin/labelImg/blob/master/README.zh.rst
+
+.. image:: https://img.shields.io/badge/lang-zh-green.svg
+        :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.zh.rst
+
+.. image:: https://img.shields.io/badge/lang-zh--TW-green.svg
+    :target: (https://github.com/jonatasemidio/multilanguage-readme-pattern/blob/master/README.pt-br.md
+
 .. image:: /resources/icons/app.png
     :width: 200px
     :align: center
@@ -16,7 +25,7 @@ LabelImg is a graphical image annotation tool.
 It is written in Python and uses Qt for its graphical interface.
 
 Annotations are saved as XML files in PASCAL VOC format, the format used
-by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO format
+by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO and CreateML formats.
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
@@ -225,7 +234,7 @@ Hotkeys
 +--------------------+--------------------------------------------+
 | Ctrl--             | Zoom out                                   |
 +--------------------+--------------------------------------------+
-| ↑→↓←             |  Keyboard arrows to move selected rect box   |
+| ↑→↓←              | Keyboard arrows to move selected rect box  |
 +--------------------+--------------------------------------------+
 
 **Verify Image:**
