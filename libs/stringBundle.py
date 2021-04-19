@@ -34,7 +34,7 @@ class StringBundle:
                     locale.getlocale()) > 0 else os.getenv('LANG')
             except:
                 print('Invalid locale')
-                locale_str = 'en'
+                locale_str = 'zh-CN'
 
         return StringBundle(cls.__create_key, locale_str)
 
