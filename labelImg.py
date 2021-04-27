@@ -96,6 +96,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dir_name = None
         self.label_hist = []
         self.last_open_dir = None
+        self.cur_img_idx = 0
+        self.img_count = 1
 
         # Whether we need to save or not.
         self.dirty = False
@@ -714,11 +716,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def file_item_double_clicked(self, item=None):
-        current_index = self.m_img_list.index(ustr(item.text()))
-        if current_index < len(self.m_img_list):
-            filename = self.m_img_list[current_index]
-            if filename:
-                self.load_file(filename)
+        self.cur_img_idx = self.m_img_list.index(ustr(item.text()))
+        filename = self.m_img_list[self.cur_img_idx]
+        if filename:
+            self.load_file(filename)
 
     # Add chris
     def button_state(self, item=None):
@@ -1093,7 +1094,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.toggle_actions(True)
             self.show_bounding_box_from_annotation_file(file_path)
 
-            self.setWindowTitle(__appname__ + ' ' + file_path)
+            counter = self.counter_str()
+            self.setWindowTitle(__appname__ + ' ' + file_path + ' ' + counter)
 
             # Default : select last item if there is at least one item
             if self.label_list.count():
@@ -1103,6 +1105,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.setFocus(True)
             return True
         return False
+
+    def counter_str(self):
+        """
+        Converts image counter to string representation.
+        """
+        return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
@@ -1274,6 +1282,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.file_path = None
         self.file_list_widget.clear()
         self.m_img_list = self.scan_all_images(dir_path)
+        self.img_count = len(self.m_img_list)
         self.open_next_image()
         for imgPath in self.m_img_list:
             item = QListWidgetItem(imgPath)
@@ -1310,15 +1319,15 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.may_continue():
             return
 
-        if len(self.m_img_list) <= 0:
+        if self.img_count <= 0:
             return
 
         if self.file_path is None:
             return
 
-        current_index = self.m_img_list.index(self.file_path)
-        if current_index - 1 >= 0:
-            filename = self.m_img_list[current_index - 1]
+        if self.cur_img_idx - 1 >= 0:
+            self.cur_img_idx -= 1
+            filename = self.m_img_list[self.cur_img_idx]
             if filename:
                 self.load_file(filename)
 
@@ -1335,16 +1344,17 @@ class MainWindow(QMainWindow, WindowMixin):
         if not self.may_continue():
             return
 
-        if len(self.m_img_list) <= 0:
+        if self.img_count <= 0:
             return
 
         filename = None
         if self.file_path is None:
             filename = self.m_img_list[0]
+            self.cur_img_idx = 0
         else:
-            current_index = self.m_img_list.index(self.file_path)
-            if current_index + 1 < len(self.m_img_list):
-                filename = self.m_img_list[current_index + 1]
+            if self.cur_img_idx + 1 < self.img_count:
+                self.cur_img_idx += 1
+                filename = self.m_img_list[self.cur_img_idx]
 
         if filename:
             self.load_file(filename)
@@ -1359,6 +1369,8 @@ class MainWindow(QMainWindow, WindowMixin):
         if filename:
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
+            self.cur_img_idx = 0
+            self.img_count = 1
             self.load_file(filename)
 
     def save_file(self, _value=False):
@@ -1417,6 +1429,8 @@ class MainWindow(QMainWindow, WindowMixin):
         delete_path = self.file_path
         if delete_path is not None:
             self.open_next_image()
+            self.cur_img_idx -= 1
+            self.img_count -= 1
             if os.path.exists(delete_path):
                 os.remove(delete_path)
             self.import_dir_images(self.last_open_dir)
