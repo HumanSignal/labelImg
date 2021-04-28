@@ -8,6 +8,7 @@ import platform
 import re
 import sys
 import subprocess
+import webbrowser as wb
 
 from functools import partial
 from collections import defaultdict
@@ -16,6 +17,7 @@ try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
     from PyQt5.QtWidgets import *
+    from PyQt5.QtWebEngineWidgets import *
 except ImportError:
     # needed for py3+qt4
     # Ref:
@@ -82,6 +84,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.settings = Settings()
         self.settings.load()
         settings = self.settings
+
+        self.os_name = platform.system()
 
         # Load string bundle for i18n
         self.string_bundle = StringBundle.get_bundle()
@@ -286,8 +290,12 @@ class MainWindow(QMainWindow, WindowMixin):
                           'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
-        help = action(get_str('tutorial'), self.show_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
+        # help = action(get_str('tutorial'), self.show_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
+        # show_info = action(get_str('info'), self.show_info_dialog, None, 'help', get_str('info'))
+        help_default = action(get_str('tutorialDefault'), self.show_default_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
+        help_chrome = action(get_str('tutorialChrome'), self.show_chrome_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
         show_info = action(get_str('info'), self.show_info_dialog, None, 'help', get_str('info'))
+        show_shortcuts = action(get_str('shortcut'), self.show_shortcuts_dialog, None, 'help', get_str('shortcut'))
 
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoom_widget)
@@ -397,7 +405,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         add_actions(self.menus.file,
                     (open, open_dir, change_save_dir, open_annotation, copy_prev_bounding, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
-        add_actions(self.menus.help, (help, show_info))
+        if self.os_name == "Windows":
+            add_actions(self.menus.help, (help_default, help_chrome, show_info, show_shortcuts))
+        else:
+            add_actions(self.menus.help, (help_default, show_info, show_shortcuts))
         add_actions(self.menus.view, (
             self.auto_saving,
             self.single_class_mode,
@@ -635,23 +646,40 @@ class MainWindow(QMainWindow, WindowMixin):
         return not self.beginner()
 
     def get_available_screencast_viewer(self):
-        os_name = platform.system()
+        # os_name = platform.system()
 
-        if os_name == 'Windows':
-            return ['C:\\Program Files\\Internet Explorer\\iexplore.exe']
-        elif os_name == 'Linux':
+        if self.os_name == 'Windows':
+            return ['C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe']
+        elif self.os_name == 'Linux':
             return ['xdg-open']
-        elif os_name == 'Darwin':
+        elif self.os_name == 'Darwin':
             return ['open']
 
     # Callbacks #
-    def show_tutorial_dialog(self):
-        subprocess.Popen(self.screencast_viewer + [self.screencast])
+    # def show_tutorial_dialog(self):
+        # subprocess.Popen(self.screencast_viewer + [self.screencast])
+    def show_tutorial_dialog(self, browser='default'):
+        if browser.lower() == 'default':
+            wb.open(self.screencast, new=2)
+        elif browser.lower() == 'chrome' and self.os_name == 'Windows':
+            chrome_path="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+            wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
+            wb.get('chrome').open(self.screencast, new=2)
+
+    def show_default_tutorial_dialog(self):
+        self.show_tutorial_dialog(browser='default')
+
+    def show_chrome_tutorial_dialog(self):
+        self.show_tutorial_dialog(browser='chrome')
 
     def show_info_dialog(self):
         from libs.__init__ import __version__
         msg = u'Name:{0} \nApp Version:{1} \n{2} '.format(__appname__, __version__, sys.version_info)
         QMessageBox.information(self, u'Information', msg)
+
+    def show_shortcuts_dialog(self):
+        msg = u'To write....'  # TODO
+        QMessageBox.information(self, u'Shortcuts', msg)
 
     def create_shape(self):
         assert self.beginner()
