@@ -16,10 +16,6 @@ LabelImg
 .. image:: https://img.shields.io/badge/lang-zh--TW-green.svg
     :target: (https://github.com/jonatasemidio/multilanguage-readme-pattern/blob/master/README.pt-br.md
 
-.. image:: /resources/icons/app.png
-    :width: 200px
-    :align: center
-
 LabelImg is a graphical image annotation tool.
 
 It is written in Python and uses Qt for its graphical interface.
