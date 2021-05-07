@@ -296,7 +296,7 @@ class MainWindow(QMainWindow, WindowMixin):
         help_default = action(get_str('tutorialDefault'), self.show_default_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
         help_chrome = action(get_str('tutorialChrome'), self.show_chrome_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
         show_info = action(get_str('info'), self.show_info_dialog, None, 'help', get_str('info'))
-        show_shortcuts = action(get_str('shortcut'), self.show_shortcuts_dialog, None, 'help', get_str('shortcut'))
+        # show_shortcuts = action(get_str('shortcut'), self.show_shortcuts_dialog, None, 'help', get_str('shortcut'))
 
         zoom = QWidgetAction(self)
         zoom.setDefaultWidget(self.zoom_widget)
@@ -407,9 +407,11 @@ class MainWindow(QMainWindow, WindowMixin):
         add_actions(self.menus.file,
                     (open, open_dir, change_save_dir, open_annotation, copy_prev_bounding, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
         if self.os_name == "Windows":
-            add_actions(self.menus.help, (help_default, help_chrome, show_info, show_shortcuts))
+            # add_actions(self.menus.help, (help_default, help_chrome, show_info, show_shortcuts))
+            add_actions(self.menus.help, (help_default, help_chrome, show_info))
         else:
-            add_actions(self.menus.help, (help_default, show_info, show_shortcuts))
+            # add_actions(self.menus.help, (help_default, show_info, show_shortcuts))
+            add_actions(self.menus.help, (help_default, show_info))
         add_actions(self.menus.view, (
             self.auto_saving,
             self.single_class_mode,

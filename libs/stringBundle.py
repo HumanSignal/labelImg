@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 if items were added in files in the resources/strings folder,
-then execute "pyrcc5 resources.qrc -o resources.py" in Git Bash in the root directory
-and execute "pyrcc5 ../resources.qrc -o resources.py" in Git Bash in the libs directory
+then execute "pyrcc5 resources.qrc -o resources.py" in the root directory
+and execute "pyrcc5 ../resources.qrc -o resources.py" in the libs directory
 """
 import re
 import os
