@@ -8,6 +8,7 @@ import platform
 import re
 import sys
 import subprocess
+import shutil
 import webbrowser as wb
 
 from functools import partial
@@ -108,7 +109,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self._no_selection_slot = False
         self._beginner = True
-        self.screencast_viewer = self.get_available_screencast_viewer()
+        self.screencast_viewer = self.get_available_screencast_viewer()  # deprecated
         self.screencast = "https://youtu.be/p0nR2YsCY_U"
 
         # Load predefined classes to the list
@@ -646,6 +647,7 @@ class MainWindow(QMainWindow, WindowMixin):
         return not self.beginner()
 
     def get_available_screencast_viewer(self):
+        # deprecated, use webbrowser instead
         # os_name = platform.system()
 
         if self.os_name == 'Windows':
@@ -662,9 +664,17 @@ class MainWindow(QMainWindow, WindowMixin):
         if browser.lower() == 'default':
             wb.open(self.screencast, new=2)
         elif browser.lower() == 'chrome' and self.os_name == 'Windows':
-            chrome_path="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
-            wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
-            wb.get('chrome').open(self.screencast, new=2)
+            if shutil.which(browser.lower()):  # 'chrome' not in wb._browsers
+                wb.register('chrome', None, wb.BackgroundBrowser('chrome'))
+            else:
+                chrome_path="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+                wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
+            try:
+                wb.get('chrome').open(self.screencast, new=2)
+            except:
+                wb.open(self.screencast, new=2)
+        elif browser.lower() in wb._browsers:
+            wb.get(browser.lower()).open(self.screencast, new=2)
 
     def show_default_tutorial_dialog(self):
         self.show_tutorial_dialog(browser='default')
@@ -1456,15 +1466,12 @@ class MainWindow(QMainWindow, WindowMixin):
     def delete_image(self):
         delete_path = self.file_path
         if delete_path is not None:
-            del self.m_img_list[self.cur_img_idx]
-            self.file_list_widget.takeItem(self.cur_img_idx)
-
-            self.cur_img_idx -= 1  # self.open_next_img will increment idx.
-            self.img_count -= 1
             self.open_next_image()
-
+            self.cur_img_idx -= 1
+            self.img_count -= 1
             if os.path.exists(delete_path):
                 os.remove(delete_path)
+            self.import_dir_images(self.last_open_dir)
 
     def reset_all(self):
         self.settings.reset()
