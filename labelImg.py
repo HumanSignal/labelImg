@@ -664,11 +664,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if browser.lower() == 'default':
             wb.open(self.screencast, new=2)
         elif browser.lower() == 'chrome' and self.os_name == 'Windows':
-            if shutil.which(browser.lower()):  # 'chrome' not in wb._browsers
+            if shutil.which(browser.lower()):  # 'chrome' not in wb._browsers in windows
                 wb.register('chrome', None, wb.BackgroundBrowser('chrome'))
             else:
-                chrome_path="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
-                wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
+                chrome_path="D:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+                if os.path.isfile(chrome_path):
+                    wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
             try:
                 wb.get('chrome').open(self.screencast, new=2)
             except:
