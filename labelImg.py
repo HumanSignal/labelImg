@@ -1456,12 +1456,15 @@ class MainWindow(QMainWindow, WindowMixin):
     def delete_image(self):
         delete_path = self.file_path
         if delete_path is not None:
-            self.open_next_image()
-            self.cur_img_idx -= 1
+            del self.m_img_list[self.cur_img_idx]
+            self.file_list_widget.takeItem(self.cur_img_idx)
+
+            self.cur_img_idx -= 1  # self.open_next_img will increment idx.
             self.img_count -= 1
+            self.open_next_image()
+
             if os.path.exists(delete_path):
                 os.remove(delete_path)
-            self.import_dir_images(self.last_open_dir)
 
     def reset_all(self):
         self.settings.reset()
