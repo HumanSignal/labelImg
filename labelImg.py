@@ -18,7 +18,6 @@ try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
     from PyQt5.QtWidgets import *
-    # from PyQt5.QtWebEngineWidgets import *
 except ImportError:
     # needed for py3+qt4
     # Ref:
