@@ -13,3 +13,10 @@ ribs
 pulled pork
 hamburger
 cavity
+fire
+bottle
+microwave
+oven
+toaster
+cigarette
+lighter
