@@ -35,5 +35,6 @@
 <file alias="strings">resources/strings/strings.properties</file>
 <file alias="strings-zh-TW">resources/strings/strings-zh-TW.properties</file>
 <file alias="strings-zh-CN">resources/strings/strings-zh-CN.properties</file>
+<file alias="strings-ja-JP">resources/strings/strings-ja-JP.properties</file>
 </qresource>
 </RCC>
