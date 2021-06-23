@@ -88,7 +88,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.os_name = platform.system()
 
         # Load string bundle for i18n
-        self.string_bundle = StringBundle.get_bundle("ja-JP")
+        self.string_bundle = StringBundle.get_bundle()
         get_str = lambda str_id: self.string_bundle.get_string(str_id)
 
         # Save as Pascal voc xml
