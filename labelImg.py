@@ -267,8 +267,8 @@ class MainWindow(QMainWindow, WindowMixin):
 
         create_mode = action(get_str('crtBox'), self.set_create_mode,
                              'w', 'new', get_str('crtBoxDetail'), enabled=False)
-        edit_mode = action('&Edit\nRectBox', self.set_edit_mode,
-                           'Ctrl+J', 'edit', u'Move and edit Boxs', enabled=False)
+        edit_mode = action(get_str('editBox'), self.set_edit_mode,
+                           'Ctrl+J', 'edit', get_str('editBoxDetail'), enabled=False)
 
         create = action(get_str('crtBox'), self.create_shape,
                         'w', 'new', get_str('crtBoxDetail'), enabled=False)
@@ -282,10 +282,10 @@ class MainWindow(QMainWindow, WindowMixin):
                                'Ctrl+Shift+A', 'expert', get_str('advancedModeDetail'),
                                checkable=True)
 
-        hide_all = action('&Hide\nRectBox', partial(self.toggle_polygons, False),
+        hide_all = action(get_str('hideAllBox'), partial(self.toggle_polygons, False),
                           'Ctrl+H', 'hide', get_str('hideAllBoxDetail'),
                           enabled=False)
-        show_all = action('&Show\nRectBox', partial(self.toggle_polygons, True),
+        show_all = action(get_str('showAllBox'), partial(self.toggle_polygons, True),
                           'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
@@ -348,7 +348,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.pop_label_list_menu)
 
         # Draw squares/rectangles
-        self.draw_squares_option = QAction('Draw Squares', self)
+        self.draw_squares_option = QAction(get_str('drawSquares'), self)
         self.draw_squares_option.setShortcut('Ctrl+Shift+R')
         self.draw_squares_option.setCheckable(True)
         self.draw_squares_option.setChecked(settings.get(SETTING_DRAW_SQUARE, False))
@@ -1500,7 +1500,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 action.setEnabled(False)
 
     def choose_shape_line_color(self):
-        color = self.color_dialog.getColor(self.line_color, u'Choose line color',
+        color = self.color_dialog.getColor(self.line_color, u'Choose Line Color',
                                            default=DEFAULT_LINE_COLOR)
         if color:
             self.canvas.selected_shape.line_color = color
@@ -1508,7 +1508,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_dirty()
 
     def choose_shape_fill_color(self):
-        color = self.color_dialog.getColor(self.fill_color, u'Choose fill color',
+        color = self.color_dialog.getColor(self.fill_color, u'Choose Fill Color',
                                            default=DEFAULT_FILL_COLOR)
         if color:
             self.canvas.selected_shape.fill_color = color
