@@ -203,6 +203,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dockFeatures = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
+        self.gender: str = 'None'
+        self.age: str = 'None'
+
         # Actions
         action = partial(newAction, self)
         quit = action(getStr('quit'), self.close,
@@ -233,7 +236,38 @@ class MainWindow(QMainWindow, WindowMixin):
                         'space', 'verify', getStr('verifyImgDetail'))
 
         save = action(getStr('save'), self.saveFile,
-                      'Ctrl+S', 'save', getStr('saveDetail'), enabled=True)
+                      's', 'save', getStr('saveDetail'), enabled=True)
+
+        saveMale = action(getStr('saveMale'), self.saveMale,
+                          'm', 'saveMale', getStr('saveMale'), enabled=True)
+
+        saveFemale = action(getStr('saveFemale'), self.saveFemale,
+                            'n', 'saveFemale', getStr('saveFemale'), enabled=True)
+        
+        saveAgeRangeONE = action(getStr('saveAgeRangeONE'), self.saveAgeRangeONE,
+                                 '1', 'saveAgeRangeONE', getStr('saveAgeRangeONE'), enabled=True)
+        
+        saveAgeRangeTWO = action(getStr('saveAgeRangeTWO'), self.saveAgeRangeTWO,
+                                 '2', 'saveAgeRangeTWO', getStr('saveAgeRangeTWO'), enabled=True)
+
+        saveAgeRangeTHREE = action(getStr('saveAgeRangeTHREE'), self.saveAgeRangeTHREE,
+                                  '3', 'saveAgeRangeTHREE', getStr('saveAgeRangeTHREE'), enabled=True)
+
+        saveAgeRangeFOUR = action(getStr('saveAgeRangeFOUR'), self.saveAgeRangeFOUR,
+                                  '4', 'saveAgeRangeFOUR', getStr('saveAgeRangeFOUR'), enabled=True)
+        
+        saveAgeRangeFIVE = action(getStr('saveAgeRangeFIVE'), self.saveAgeRangeFIVE,
+                                  '5', 'saveAgeRangeFIVE', getStr('saveAgeRangeFIVE'), enabled=True)
+
+        saveAgeRangeSIX = action(getStr('saveAgeRangeSIX'), self.saveFile,
+                                 '6', 'saveAgeRangeSIX', getStr('saveAgeRangeSIX'), enabled=True)
+
+        saveAgeRangeSEVEN = action(getStr('saveAgeRangeSEVEN'), self.saveFile,
+                                   '7', 'saveAgeRangeSEVEN', getStr('saveAgeRangeSEVEN'), enabled=True)
+        
+        saveAgeRangeEIGHT = action(getStr('saveAgeRangeEIGHT'), self.saveFile,
+                                   '8', 'saveAgeRangeEIGHT', getStr('saveAgeRangeEIGHT'), enabled=True)
+
 
         def getFormatMeta(format):
             """
@@ -1282,24 +1316,6 @@ class MainWindow(QMainWindow, WindowMixin):
             item = QListWidgetItem(imgPath)
             self.fileListWidget.addItem(item)
 
-    def verifyImg(self, _value=False):
-        # Proceding next image without dialog if having any label
-        if self.filePath is not None:
-            try:
-                self.labelFile.toggleVerify()
-            except AttributeError:
-                # If the labelling file does not exist yet, create if and
-                # re-save it with the verified attribute.
-                self.saveFile()
-                if self.labelFile != None:
-                    self.labelFile.toggleVerify()
-                else:
-                    return
-
-            self.canvas.verified = self.labelFile.verified
-            self.paintCanvas()
-            self.saveFile()
-
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label
         if self.autoSaving.isChecked():
@@ -1363,32 +1379,6 @@ class MainWindow(QMainWindow, WindowMixin):
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
             self.loadFile(filename)
-
-    def saveFile(self, _value=False):
-        currIndex = self.mImgList.index(self.filePath)
-
-        parser = configparser.RawConfigParser()
-        parser.read('data/config.cfg')
-        save_to: str = parser.get('save_config', 'save_path')
-
-        if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
-
-            if self.filePath:
-                imgFileName = os.path.basename(self.filePath)
-                savedFileName = os.path.splitext(imgFileName)[0]
-                savedPath = os.path.join(ustr(save_to), savedFileName)
-                self.image.save(savedPath + '.jpg', imgFileName)
-                self._saveFile(savedPath)
-
-        else:
-            imgFileDir = os.path.dirname(self.filePath)
-            imgFileName = os.path.basename(self.filePath)
-            savedFileName = os.path.splitext(imgFileName)[0]
-            savedPath = os.path.join(ustr(save_to), savedFileName)
-            print(imgFileName)
-            self.image.save(savedPath + '.jpg')
-            self._saveFile(savedPath + '.xml',imgFileName)
-
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
@@ -1570,6 +1560,34 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toogleDrawSquare(self):
         self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
+    
+    # our methods
+
+    def saveFile(self, _value=False):
+        currIndex = self.mImgList.index(self.filePath)
+
+        save_to: str = parser.get('save_config', 'save_path')
+
+        if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
+
+            if self.filePath:
+                imgFileName = os.path.basename(self.filePath)
+                savedFileName = os.path.splitext(imgFileName)[0]
+                savedPath = os.path.join(ustr(save_to), savedFileName)
+                self.image.save(savedPath + '.jpg', imgFileName)
+                self._saveFile(savedPath)
+
+        else:
+            imgFileDir = os.path.dirname(self.filePath)
+            imgFileName = os.path.basename(self.filePath)
+            savedFileName = os.path.splitext(imgFileName)[0]
+            savedPath = os.path.join(ustr(save_to), savedFileName)
+            print(imgFileName)
+            self.image.save(savedPath + '.jpg')
+            self._saveFile(savedPath + '.xml',imgFileName)
+
+
+    def 
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
