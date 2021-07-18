@@ -75,7 +75,7 @@ class LabelDialog(QDialog):
             if cursor_pos.x() > max_global.x():
                 cursor_pos.setX(max_global.x())
             if cursor_pos.y() > max_global.y():
-                cursor_pos.setY(max_global.y())
+                cursor_pos.setY(max_global.y()-100)
             self.move(cursor_pos)
         return self.edit.text() if self.exec_() else None
 
