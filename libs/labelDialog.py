@@ -6,7 +6,7 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from libs.utils import new_icon, label_validator
+from libs.utils import new_icon, label_validator, trimmed
 
 BB = QDialogButtonBox
 
@@ -47,22 +47,18 @@ class LabelDialog(QDialog):
         self.setLayout(layout)
 
     def validate(self):
-        try:
-            if self.edit.text().trimmed():
-                self.accept()
-        except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
-            if self.edit.text().strip():
-                self.accept()
+        if trimmed(self.edit.text()):
+            self.accept()
 
     def post_process(self):
-        try:
-            self.edit.setText(self.edit.text().trimmed())
-        except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
-            self.edit.setText(self.edit.text())
+        self.edit.setText(trimmed(self.edit.text()))
 
     def pop_up(self, text='', move=True):
+        """
+        Shows the dialog, setting the current text to `text`, and blocks the caller until the user has made a choice.
+        If the user entered a label, that label is returned, otherwise (i.e. if the user cancelled the action)
+        `None` is returned.
+        """
         self.edit.setText(text)
         self.edit.setSelection(0, len(text))
         self.edit.setFocus(Qt.PopupFocusReason)
@@ -77,14 +73,10 @@ class LabelDialog(QDialog):
             if cursor_pos.y() > max_global.y():
                 cursor_pos.setY(max_global.y())
             self.move(cursor_pos)
-        return self.edit.text() if self.exec_() else None
+        return trimmed(self.edit.text()) if self.exec_() else None
 
     def list_item_click(self, t_qlist_widget_item):
-        try:
-            text = t_qlist_widget_item.text().trimmed()
-        except AttributeError:
-            # PyQt5: AttributeError: 'str' object has no attribute 'trimmed'
-            text = t_qlist_widget_item.text().strip()
+        text = trimmed(t_qlist_widget_item.text())
         self.edit.setText(text)
 
     def list_item_double_click(self, t_qlist_widget_item):
