@@ -16,11 +16,12 @@ about = {}
 with open(os.path.join(here, 'libs', '__init__.py')) as f:
     exec(f.read(), about)
 
-with open("README.rst", "rb") as readme_file:
-    readme = readme_file.read().decode("UTF-8")
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
 
-with open("HISTORY.rst", "rb") as history_file:
-    history = history_file.read().decode("UTF-8")
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
+
 
 # OS specific settings
 SET_REQUIRES = []
