@@ -9,6 +9,9 @@ import re
 import sys
 import subprocess
 import configparser
+from typing import DefaultDict
+from numpy.lib.npyio import save
+import pandas as pd
 
 from functools import partial
 from collections import defaultdict
@@ -101,6 +104,9 @@ class MainWindow(QMainWindow, WindowMixin):
         # Whether we need to save or not.
         self.dirty = False
 
+        # Whether we delete last or not.
+        self.removeLast = False
+
         self._noSelectionSlot = False
         self._beginner = True
         self.screencastViewer = self.getAvailableScreencastViewer()
@@ -115,6 +121,28 @@ class MainWindow(QMainWindow, WindowMixin):
         self.itemsToShapes = {}
         self.shapesToItems = {}
         self.prevLabelText = ''
+
+        self.config = configparser.ConfigParser()
+        self.config.read('data/config.cfg')
+        self.config.sections()
+        self.save_demography: bool = self.config.getboolean('save_config', 'save_demography')
+        self.save_fullbody_mask: bool = self.config.getboolean('save_config', 'save_fullbody_mask')
+
+        try:
+            self.demography_file = pd.read_csv(self.config.get('save_config', 'demography_path'), sep=';')
+            self.check_if_compatible_demography()
+        except Exception:
+            self.demography_file = pd.DataFrame()
+
+        try:
+            self.fullbody_mask_file = pd.read_csv(self.config.get('save_config', 'fullbody_mask_path'), sep=';')
+            self.check_if_compatible_fullbody_mask()
+        except Exception:
+            self.fullbody_mask_file = pd.DataFrame()
+
+        self.gender: str = ''
+        self.age: str = ''
+        self.fullbody_mask = ''
 
         listLayout = QVBoxLayout()
         listLayout.setContentsMargins(0, 0, 0, 0)
@@ -155,8 +183,6 @@ class MainWindow(QMainWindow, WindowMixin):
         # Connect to itemChanged to detect checkbox changes.
         self.labelList.itemChanged.connect(self.labelItemChanged)
         listLayout.addWidget(self.labelList)
-
-
 
         self.dock = QDockWidget(getStr('boxLabelText'), self)
         self.dock.setObjectName(getStr('labels'))
@@ -203,9 +229,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dockFeatures = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dockFeatures)
 
-        self.gender: str = 'None'
-        self.age: str = 'None'
-
         # Actions
         action = partial(newAction, self)
         quit = action(getStr('quit'), self.close,
@@ -232,42 +255,51 @@ class MainWindow(QMainWindow, WindowMixin):
         openPrevImg = action(getStr('prevImg'), self.openPrevImg,
                              'a', 'prev', getStr('prevImgDetail'))
 
-        verify = action(getStr('verifyImg'), self.verifyImg,
-                        'space', 'verify', getStr('verifyImgDetail'))
-
         save = action(getStr('save'), self.saveFile,
                       's', 'save', getStr('saveDetail'), enabled=True)
 
-        saveMale = action(getStr('saveMale'), self.saveMale,
-                          'm', 'saveMale', getStr('saveMale'), enabled=True)
+        saveMale = action('saveMale', self.saveMale,
+                          'm', 'saveMale', 'saveMale', enabled=True)
 
-        saveFemale = action(getStr('saveFemale'), self.saveFemale,
-                            'n', 'saveFemale', getStr('saveFemale'), enabled=True)
+        saveFemale = action('saveFemale', self.saveFemale,
+                            'n', 'saveFemale', 'saveFemale', enabled=True)
         
-        saveAgeRangeONE = action(getStr('saveAgeRangeONE'), self.saveAgeRangeONE,
-                                 '1', 'saveAgeRangeONE', getStr('saveAgeRangeONE'), enabled=True)
+        saveAgeRangeONE = action('saveAgeRangeONE', self.saveAgeRangeONE,
+                                 '5', 'saveAgeRangeONE', 'saveAgeRangeONE', enabled=True)
         
-        saveAgeRangeTWO = action(getStr('saveAgeRangeTWO'), self.saveAgeRangeTWO,
-                                 '2', 'saveAgeRangeTWO', getStr('saveAgeRangeTWO'), enabled=True)
+        saveAgeRangeTWO = action('saveAgeRangeTWO', self.saveAgeRangeTWO,
+                                 '6', 'saveAgeRangeTWO', 'saveAgeRangeTWO', enabled=True)
 
-        saveAgeRangeTHREE = action(getStr('saveAgeRangeTHREE'), self.saveAgeRangeTHREE,
-                                  '3', 'saveAgeRangeTHREE', getStr('saveAgeRangeTHREE'), enabled=True)
+        saveAgeRangeTHREE = action('saveAgeRangeTHREE', self.saveAgeRangeTHREE,
+                                  '7', 'saveAgeRangeTHREE', 'saveAgeRangeTHREE', enabled=True)
 
-        saveAgeRangeFOUR = action(getStr('saveAgeRangeFOUR'), self.saveAgeRangeFOUR,
-                                  '4', 'saveAgeRangeFOUR', getStr('saveAgeRangeFOUR'), enabled=True)
+        saveAgeRangeFOUR = action('saveAgeRangeFOUR', self.saveAgeRangeFOUR,
+                                  '8', 'saveAgeRangeFOUR', 'saveAgeRangeFOUR', enabled=True)
         
-        saveAgeRangeFIVE = action(getStr('saveAgeRangeFIVE'), self.saveAgeRangeFIVE,
-                                  '5', 'saveAgeRangeFIVE', getStr('saveAgeRangeFIVE'), enabled=True)
+        saveAgeRangeFIVE = action('saveAgeRangeFIVE', self.saveAgeRangeFIVE,
+                                  '9', 'saveAgeRangeFIVE', 'saveAgeRangeFIVE', enabled=True)
 
-        saveAgeRangeSIX = action(getStr('saveAgeRangeSIX'), self.saveFile,
-                                 '6', 'saveAgeRangeSIX', getStr('saveAgeRangeSIX'), enabled=True)
+        saveAgeRangeSIX = action('saveAgeRangeSIX', self.saveAgeRangeSIX,
+                                 '0', 'saveAgeRangeSIX', 'saveAgeRangeSIX', enabled=True)
 
-        saveAgeRangeSEVEN = action(getStr('saveAgeRangeSEVEN'), self.saveFile,
-                                   '7', 'saveAgeRangeSEVEN', getStr('saveAgeRangeSEVEN'), enabled=True)
+        saveAgeRangeSEVEN = action('saveAgeRangeSEVEN', self.saveAgeRangeSEVEN,
+                                   '-', 'saveAgeRangeSEVEN', 'saveAgeRangeSEVEN', enabled=True)
         
-        saveAgeRangeEIGHT = action(getStr('saveAgeRangeEIGHT'), self.saveFile,
-                                   '8', 'saveAgeRangeEIGHT', getStr('saveAgeRangeEIGHT'), enabled=True)
+        saveAgeRangeEIGHT = action('saveAgeRangeEIGHT', self.saveAgeRangeEIGHT,
+                                   '=', 'saveAgeRangeEIGHT', 'saveAgeRangeEIGHT', enabled=True)
 
+        saveFullbodyMask = action('saveFullbodyMask', self.saveMaskStatusMask,
+                                   'j', 'saveFullbodyMask', 'saveFullbodyMask', enabled=True)
+                            
+        saveFullbodyNoMask = action('saveFullbodyNoMask', self.saveMaskStatusNoMask,
+                                     'k', 'saveFullbodyNoMask', 'saveFullbodyNoMask', enabled=True)
+
+        resetDemography = action('resetDemography', self.resetDemography,
+                                 'e', 'resetDemography', 'resetDemography', enabled=True)
+        
+        deleteDemography = action('deleteDemography', self.deleteDemography,
+                                  'r', 'deleteDemography', 'deleteDemography', enabled=True)
+                                  
 
         def getFormatMeta(format):
             """
@@ -386,9 +418,17 @@ class MainWindow(QMainWindow, WindowMixin):
         self.drawSquaresOption.triggered.connect(self.toogleDrawSquare)
 
         # Store actions for further handling.
-        self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open, close=close, resetAll = resetAll, deleteImg = deleteImg,
+        self.actions = struct(save=save, save_format=save_format, saveAs=saveAs, open=open,
+                              close=close, resetAll = resetAll, deleteImg = deleteImg,
                               lineColor=color1, create=create, delete=delete, edit=edit, copy=copy,
                               createMode=createMode, editMode=editMode, advancedMode=advancedMode,
+                              saveMale=saveMale, saveFemale=saveFemale, saveAgeRangeONE=saveAgeRangeONE,
+                              saveAgeRangeTWO=saveAgeRangeTWO, saveAgeRangeTHREE=saveAgeRangeTHREE,
+                              saveAgeRangeFOUR=saveAgeRangeFOUR, saveAgeRangeFIVE=saveAgeRangeFIVE,
+                              saveAgeRangeSIX=saveAgeRangeSIX, saveAgeRangeSEVEN=saveAgeRangeSEVEN,
+                              saveAgeRangeEIGHT=saveAgeRangeEIGHT, resetDemography=resetDemography,
+                              deleteDemography=deleteDemography, saveFullbodyMask=saveFullbodyMask,
+                              saveFullbodyNoMask=saveFullbodyNoMask,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
                               fitWindow=fitWindow, fitWidth=fitWidth,
@@ -430,8 +470,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.displayLabelOption.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.displayLabelOption.triggered.connect(self.togglePaintLabelsOption)
 
-        addActions(self.menus.file,
-                   (open, opendir, copyPrevBounding, changeSavedir, openAnnotation, self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit))
+        addActions(self.menus.file,(
+                        open, opendir, copyPrevBounding, changeSavedir, openAnnotation,
+                        self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit,
+                        saveMale, saveFemale, saveAgeRangeONE, saveAgeRangeTWO, saveAgeRangeTHREE,
+                        saveAgeRangeFOUR, saveAgeRangeFIVE, saveAgeRangeSIX, saveAgeRangeSEVEN, saveAgeRangeEIGHT,
+                        resetDemography, deleteDemography, saveFullbodyMask, saveFullbodyNoMask
+                    ))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
             self.autoSaving,
@@ -452,7 +497,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.tools = self.toolbar('Tools')
         self.actions.beginner = (
-            open, opendir, changeSavedir, openNextImg, openPrevImg, verify, save, save_format, None, create, copy, delete, None,
+            open, opendir, changeSavedir, openNextImg, openPrevImg, save, save_format, None, create, copy, delete, None,
             zoomIn, zoom, zoomOut, fitWindow, fitWidth)
 
         self.actions.advanced = (
@@ -756,6 +801,10 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[currIndex]
             if filename:
                 self.loadFile(filename)
+                if self.save_demography:
+                    self.loadDemography()
+                if self.save_fullbody_mask:
+                    self.loadFullbodyMask()
 
     # Add chris
     def btnstate(self, item= None):
@@ -1065,6 +1114,7 @@ class MainWindow(QMainWindow, WindowMixin):
         """Load the specified file, or the last opened file if None."""
         self.resetState()
         self.canvas.setEnabled(False)
+        
         if filePath is None:
             filePath = self.settings.get(SETTING_FILENAME)
 
@@ -1237,6 +1287,11 @@ class MainWindow(QMainWindow, WindowMixin):
     def loadRecent(self, filename):
         if self.mayContinue():
             self.loadFile(filename)
+            if self.save_demography:
+                self.loadDemography()
+            if self.save_fullbody_mask:
+                self.loadFullbodyMask()
+
 
     def scanAllImages(self, folderPath):
         extensions = ['.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
@@ -1318,10 +1373,22 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def openPrevImg(self, _value=False):
         # Proceding prev image without dialog if having any label
+
         if self.autoSaving.isChecked():
             if self.defaultSaveDir is not None:
                 if self.dirty is True:
                     self.saveFile()
+                if self.save_demography:
+                    try:
+                        self.saveDemography()
+                    except:
+                        print(f'Failed to save demography of {self.filePath}')
+                if self.save_fullbody_mask:
+                    try:
+                        self.saveMaskStatusMask()
+                    except:
+                        print(f'Failed to save fullbody mask of {self.filePath}')
+
             else:
                 self.changeSavedirDialog()
                 return
@@ -1337,16 +1404,31 @@ class MainWindow(QMainWindow, WindowMixin):
 
         currIndex = self.mImgList.index(self.filePath)
         if currIndex - 1 >= 0:
+
             filename = self.mImgList[currIndex - 1]
             if filename:
                 self.loadFile(filename)
+        if self.save_demography:
+            self.loadDemography()
+        if self.save_fullbody_mask:
+            self.loadFullbodyMask()
 
     def openNextImg(self, _value=False):
         # Proceding prev image without dialog if having any label
-        if self.autoSaving.isChecked():
+        if self.autoSaving.isChecked() and not self.removeLast:
             if self.defaultSaveDir is not None:
                 if self.dirty is True:
                     self.saveFile()
+                if self.save_demography:
+                    try:
+                        self.saveDemography()
+                    except:
+                        print(f'Failed to save demography of {self.filePath}')
+                if self.save_fullbody_mask:
+                    try:
+                        self.saveMaskStatusMask()
+                    except:
+                        print(f'Failed to save fullbody mask of {self.filePath}')
             else:
                 self.changeSavedirDialog()
                 return
@@ -1362,11 +1444,20 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = self.mImgList[0]
         else:
             currIndex = self.mImgList.index(self.filePath)
+            lastFile = self.filePath
             if currIndex + 1 < len(self.mImgList):
                 filename = self.mImgList[currIndex + 1]
+            if self.removeLast:
+                os.remove(lastFile)
+                self.mImgList = self.scanAllImages(self.dirname)
+                self.removeLast = False
 
         if filename:
             self.loadFile(filename)
+            if self.save_demography:
+                self.loadDemography()
+            if self.save_fullbody_mask:
+                self.loadFullbodyMask()
 
     def openFile(self, _value=False):
         if not self.mayContinue():
@@ -1379,6 +1470,10 @@ class MainWindow(QMainWindow, WindowMixin):
             if isinstance(filename, (tuple, list)):
                 filename = filename[0]
             self.loadFile(filename)
+            if self.save_demography:
+                self.loadDemography()
+            if self.save_fullbody_mask:
+                self.loadFullbodyMask()
 
     def saveFileAs(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
@@ -1432,6 +1527,11 @@ class MainWindow(QMainWindow, WindowMixin):
         proc.startDetached(os.path.abspath(__file__))
 
     def mayContinue(self):
+        if self.config.getboolean('save_config', 'skip_save_confirmation'):
+            try:
+                self.saveFile()
+            except:
+                print(f'Could Not save {self.filePath}')
         if not self.dirty:
             return True
         else:
@@ -1560,38 +1660,272 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toogleDrawSquare(self):
         self.canvas.setDrawingShapeToSquare(self.drawSquaresOption.isChecked())
-    
+
     # our methods
 
     def saveFile(self, _value=False):
         currIndex = self.mImgList.index(self.filePath)
 
-        save_to: str = parser.get('save_config', 'save_path')
+        save_to: str = self.config.get('save_config', 'save_path')
+        imgFileName = os.path.basename(self.filePath)
+        savedFileName = os.path.splitext(imgFileName)[0]
+        savedPath = os.path.join(ustr(save_to), savedFileName)
+
+        if self.save_demography:
+            self.image.save(savedPath + '.jpg')
+            self.saveDemography()
+            self.setClean()
+
+            return
+        
+        if self.save_fullbody_mask:
+            self.image.save(savedPath + '.jpg')
+            self.saveStatus()
+            self.setClean()
+
+            return 
 
         if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
 
             if self.filePath:
-                imgFileName = os.path.basename(self.filePath)
-                savedFileName = os.path.splitext(imgFileName)[0]
-                savedPath = os.path.join(ustr(save_to), savedFileName)
+
                 self.image.save(savedPath + '.jpg', imgFileName)
                 self._saveFile(savedPath)
+        else:
+
+            self.image.save(savedPath + '.jpg')
+            self._saveFile(savedPath + '.xml', imgFileName)
+
+    def saveDemography(self):
+            
+        relative_path = '/'.join(self.filePath.split('/')[-2:]) ##olhar
+        indexes = self.getIndexes(self.demography_file, relative_path)
+        if len(indexes) >= 1:
+            self.demography_file = self.demography_file.drop(indexes,0)
+
+        if len(indexes) <= 1:
+            output_dict: DefaultDict = DefaultDict(list)
+            output_dict['original_image'].append(relative_path)
+            output_dict['age'].append(self.age)
+            output_dict['gender'].append(self.gender)
+            output_dict['x'].append('0')
+            output_dict['y'].append('0')
+            output_dict['dx'].append('0')
+            output_dict['dy'].append('0')
+            new_record = pd.DataFrame.from_dict(output_dict)
+
+            self.demography_file = pd.concat([self.demography_file, new_record], ignore_index=True).fillna('')
+            self.demography_file.to_csv(self.config.get('save_config','new_demography'), sep=';', index=False)
+            self.resetDemography()
 
         else:
-            imgFileDir = os.path.dirname(self.filePath)
-            imgFileName = os.path.basename(self.filePath)
-            savedFileName = os.path.splitext(imgFileName)[0]
-            savedPath = os.path.join(ustr(save_to), savedFileName)
-            print(imgFileName)
-            self.image.save(savedPath + '.jpg')
-            self._saveFile(savedPath + '.xml',imgFileName)
+            print(f'Error whith the record {relative_path}')
+            self.resetDemography()
+    
+    def saveStatus(self):
+            
+        relative_path = '/'.join(self.filePath.split('/')[-2:]) ##olhar
+        indexes = self.getIndexes(self.fullbody_mask_file, relative_path)
+        print(indexes)
+        if len(indexes) >= 1:
+            self.fullbody_mask_file = self.fullbody_mask_file.drop(indexes,0)
 
+        if len(indexes) <= 1:
+            output_dict: DefaultDict = DefaultDict(list)
+            output_dict['original_image'].append(relative_path)
+            output_dict['status'].append(self.fullbody_mask)
+            new_record = pd.DataFrame.from_dict(output_dict)
 
-    def 
+            self.fullbody_mask_file = pd.concat([self.fullbody_mask_file, new_record], ignore_index=True).fillna('')
+            self.fullbody_mask_file.to_csv(self.config.get('save_config','new_fullbody_mask'), sep=';', index=False)
+            self.resetFullbodyMask()
+
+        else:
+            print(f'Error whith the record {relative_path}')
+            self.resetFullbodyMask()
+
+    def getIndexes(self, data_frame, value):
+        ''' Get index positions of value in dataframe i.e. dfObj.'''
+        listOfPos = list()
+
+        result = data_frame.isin([value])
+
+        series = result.any()
+        columnNames = list(series[series == True].index)
+
+        for col in columnNames:
+            rows = list(result[col][result[col] == True].index)
+            for row in rows:
+                listOfPos.append(row)
+
+        return listOfPos
+
+    def saveMale(self):
+        self.gender = self.config.get('demography_config', 'male')
+        self.statusBar().showMessage(f'Saved annotation {self.gender}')
+        self.dirty = True
+        
+    def saveFemale(self):
+        self.gender = self.config.get('demography_config', 'female')
+        self.statusBar().showMessage(f'Saved annotation {self.gender}')
+        self.dirty = True
+        
+    def saveAgeRangeONE(self):
+        self.age = self.config.get('demography_config', 'range_one')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+    
+    def saveAgeRangeTWO(self):
+        self.age = self.config.get('demography_config', 'range_two')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+
+    def saveAgeRangeTHREE(self):
+        self.age = self.config.get('demography_config', 'range_three')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+    
+    def saveAgeRangeFOUR(self):
+        self.age = self.config.get('demography_config', 'range_four')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+
+    def saveAgeRangeFIVE(self):
+        self.age = self.config.get('demography_config', 'range_five')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+
+    def saveAgeRangeSIX(self):
+        self.age = self.config.get('demography_config', 'range_six')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+       
+    def saveAgeRangeSEVEN(self):
+        self.age = self.config.get('demography_config', 'range_seven')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+
+    def saveAgeRangeEIGHT(self):
+        self.age = self.config.get('demography_config', 'range_eight')
+        self.statusBar().showMessage(f'Saved annotation {self.age}')
+        self.dirty = True
+    
+    def saveMaskStatusMask(self):
+        self.fullbody_mask = self.config.get('demography_config', 'mask')
+        self.statusBar().showMessage(f'Saved annotation {self.fullbody_mask}')
+        self.dirty = True
+    
+    def saveMaskStatusNoMask(self):
+        self.fullbody_mask = self.config.get('demography_config', 'no_mask')
+        self.statusBar().showMessage(f'Saved annotation {self.fullbody_mask}')
+        self.dirty = True
+
+    def resetDemography(self):
+        self.age = ''
+        self.gender = ''
+
+    def resetFullbodyMask(self):
+        self.fullbody_mask = ''
+
+    def loadDemography(self):
+        relative_path = '/'.join(self.filePath.split('/')[-2:])
+        indexes = self.getIndexes(self.demography_file, relative_path)
+
+        if len(indexes) == 1:
+
+            demography = self.demography_file.loc[indexes[0]]
+            self.age = demography['age']
+            self.gender = demography['gender']
+            self.statusBar().showMessage(f'Loaded annotation Gender:{self.gender}\tAge: {self.age} ')
+
+        elif len(indexes) > 1:
+            self.demography_file = self.demography_file.drop(indexes[0],0)
+            print(f'Multiple instances of the record {relative_path}')
+
+        elif len(indexes) == 0:
+            output_dict: DefaultDict = DefaultDict(list)
+            output_dict['original_image'].append(relative_path)
+            output_dict['age'].append(self.age)
+            output_dict['gender'].append(self.gender)
+            output_dict['x'].append('0')
+            output_dict['y'].append('0')
+            output_dict['dx'].append('0')
+            output_dict['dy'].append('0')
+            new_record = pd.DataFrame.from_dict(output_dict)
+
+            self.demography_file = pd.concat([self.demography_file, new_record], ignore_index=True).fillna('')
+            self.demography_file.to_csv(self.config.get('save_config','new_demography'), sep=';', index=False)
+
+    def loadFullbodyMask(self):
+
+        relative_path = '/'.join(self.filePath.split('/')[-2:])
+        indexes = self.getIndexes(self.fullbody_mask_file , relative_path)
+
+        if len(indexes) == 1:
+
+            fullbody_mask = self.fullbody_mask_file.loc[indexes[0]]
+            self.fullbody_mask = fullbody_mask['status']
+            self.statusBar().showMessage(f'Loaded annotation Fullbody Mask:{self.fullbody_mask}')
+
+        elif len(indexes) > 1:
+
+            self.fullbody_mask_file = self.fullbody_mask_file.drop(indexes[0],0)
+            print(f'Multiple instances of the record {relative_path}')
+
+        elif len(indexes) == 0:
+
+            output_dict: DefaultDict = DefaultDict(list)
+            output_dict['original_image'].append(relative_path)
+            output_dict['status'].append(self.fullbody_mask)
+            new_record = pd.DataFrame.from_dict(output_dict)
+
+            self.fullbody_mask_file = pd.concat([self.fullbody_mask_file, new_record], ignore_index=True).fillna('')
+            self.fullbody_mask_file.to_csv(self.config.get('save_config','new_fullbody_mask'), sep=';', index=False)
+
+    def deleteDemography(self):
+
+        folder_path = self.config.get('save_config', 'save_path')
+        relative_path = '/'.join(self.filePath.split('/')[-2:])
+        indexes = self.getIndexes(self.demography_file, relative_path)
+        if len(indexes) == 1:
+            self.demography_file = self.demography_file.drop(indexes[0],0)
+        if self.filePath.split('/')[-1] in os.listdir(folder_path):
+            os.remove(os.path.join(folder_path, self.filePath.split('/')[-1]))
+            self.removeLast = True
+            self.dirty = False
+            self.openPrevImg()
+
+    def deleteFullbodyMask(self):
+
+        folder_path = self.config.get('save_config', 'save_path')
+        relative_path = '/'.join(self.filePath.split('/')[-2:])
+        indexes = self.getIndexes(self.fullbody_mask_file, relative_path)
+        if len(indexes) == 1:
+            self.fullbody_mask_file = self.fullbody_mask_file.drop(indexes[0],0)
+        if self.filePath.split('/')[-1] in os.listdir(folder_path):
+            os.remove(os.path.join(folder_path, self.filePath.split('/')[-1]))
+            self.removeLast = True
+            self.dirty = False
+            self.openPrevImg()
+    
+    def check_if_compatible_fullbody_mask(self):
+        if ['gender', 'age', 'original_image'] not in self.demography_file.keys():
+            print(
+                f'Did not fond an compatible mask status at {self.config.get("save_config", "fullbody_mask_path")}'
+                'Be aware that it will be overwritten'
+            )
+            raise Exception
+
+    def check_if_compatible_demography(self):
+        if ['status', 'original_image'] not in self.fullbody_mask_file.keys():
+            print(
+                f'Did not fond an compatible demography at {self.config.get("save_config", "demography_path")}\n'
+                'Be aware that it will be overwritten'
+            )
+            raise Exception
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
-
 
 def read(filename, default=None):
     try:
