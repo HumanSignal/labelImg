@@ -1,6 +1,7 @@
 resources/icons/.DS_Store
 env
 resources.py
+Pipfile
 
 .idea*
 labelImg.egg-info*
