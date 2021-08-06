@@ -129,15 +129,19 @@ class MainWindow(QMainWindow, WindowMixin):
         self.save_fullbody_mask: bool = self.config.getboolean('save_config', 'save_fullbody_mask')
 
         try:
+
             self.demography_file = pd.read_csv(self.config.get('save_config', 'demography_path'), sep=';')
             self.check_if_compatible_demography()
         except Exception:
+            
             self.demography_file = pd.DataFrame()
 
         try:
+
             self.fullbody_mask_file = pd.read_csv(self.config.get('save_config', 'fullbody_mask_path'), sep=';')
             self.check_if_compatible_fullbody_mask()
         except Exception:
+
             self.fullbody_mask_file = pd.DataFrame()
 
         self.gender: str = ''
@@ -297,8 +301,8 @@ class MainWindow(QMainWindow, WindowMixin):
         resetDemography = action('resetDemography', self.resetDemography,
                                  'e', 'resetDemography', 'resetDemography', enabled=True)
         
-        deleteDemography = action('deleteDemography', self.deleteDemography,
-                                  'r', 'deleteDemography', 'deleteDemography', enabled=True)
+        deleteAnnotations = action('deleteAnnotations', self.deleteAnnotations,
+                                  'r', 'deleteAnnotations', 'deleteAnnotations', enabled=True)
                                   
 
         def getFormatMeta(format):
@@ -427,7 +431,7 @@ class MainWindow(QMainWindow, WindowMixin):
                               saveAgeRangeFOUR=saveAgeRangeFOUR, saveAgeRangeFIVE=saveAgeRangeFIVE,
                               saveAgeRangeSIX=saveAgeRangeSIX, saveAgeRangeSEVEN=saveAgeRangeSEVEN,
                               saveAgeRangeEIGHT=saveAgeRangeEIGHT, resetDemography=resetDemography,
-                              deleteDemography=deleteDemography, saveFullbodyMask=saveFullbodyMask,
+                              deleteAnnotations=deleteAnnotations, saveFullbodyMask=saveFullbodyMask,
                               saveFullbodyNoMask=saveFullbodyNoMask,
                               shapeLineColor=shapeLineColor, shapeFillColor=shapeFillColor,
                               zoom=zoom, zoomIn=zoomIn, zoomOut=zoomOut, zoomOrg=zoomOrg,
@@ -475,7 +479,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.menus.recentFiles, save, save_format, saveAs, close, resetAll, deleteImg, quit,
                         saveMale, saveFemale, saveAgeRangeONE, saveAgeRangeTWO, saveAgeRangeTHREE,
                         saveAgeRangeFOUR, saveAgeRangeFIVE, saveAgeRangeSIX, saveAgeRangeSEVEN, saveAgeRangeEIGHT,
-                        resetDemography, deleteDemography, saveFullbodyMask, saveFullbodyNoMask
+                        resetDemography, deleteAnnotations, saveFullbodyMask, saveFullbodyNoMask
                     ))
         addActions(self.menus.help, (help, showInfo))
         addActions(self.menus.view, (
@@ -1385,7 +1389,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         print(f'Failed to save demography of {self.filePath}')
                 if self.save_fullbody_mask:
                     try:
-                        self.saveMaskStatusMask()
+                        self.saveStatus()
                     except:
                         print(f'Failed to save fullbody mask of {self.filePath}')
 
@@ -1426,7 +1430,7 @@ class MainWindow(QMainWindow, WindowMixin):
                         print(f'Failed to save demography of {self.filePath}')
                 if self.save_fullbody_mask:
                     try:
-                        self.saveMaskStatusMask()
+                        self.saveStatus()
                     except:
                         print(f'Failed to save fullbody mask of {self.filePath}')
             else:
@@ -1448,7 +1452,10 @@ class MainWindow(QMainWindow, WindowMixin):
             if currIndex + 1 < len(self.mImgList):
                 filename = self.mImgList[currIndex + 1]
             if self.removeLast:
-                os.remove(lastFile)
+                try:
+                    os.remove(lastFile)
+                except FileNotFoundError:
+                    print(f'File {lastFile} not found')
                 self.mImgList = self.scanAllImages(self.dirname)
                 self.removeLast = False
 
@@ -1881,46 +1888,67 @@ class MainWindow(QMainWindow, WindowMixin):
 
             self.fullbody_mask_file = pd.concat([self.fullbody_mask_file, new_record], ignore_index=True).fillna('')
             self.fullbody_mask_file.to_csv(self.config.get('save_config','new_fullbody_mask'), sep=';', index=False)
+    
+    def deleteAnnotations(self):
+        if self.save_demography:
+            self.deleteDemography()
+        elif self.save_fullbody_mask:
+            self.deleteFullbodyMask()
 
     def deleteDemography(self):
 
         folder_path = self.config.get('save_config', 'save_path')
         relative_path = '/'.join(self.filePath.split('/')[-2:])
         indexes = self.getIndexes(self.demography_file, relative_path)
+
         if len(indexes) == 1:
+
             self.demography_file = self.demography_file.drop(indexes[0],0)
+
         if self.filePath.split('/')[-1] in os.listdir(folder_path):
+
             os.remove(os.path.join(folder_path, self.filePath.split('/')[-1]))
-            self.removeLast = True
-            self.dirty = False
-            self.openPrevImg()
+
+        self.removeLast = True
+        self.dirty = False
+        self.openNextImg()
 
     def deleteFullbodyMask(self):
-
+        
         folder_path = self.config.get('save_config', 'save_path')
+
         relative_path = '/'.join(self.filePath.split('/')[-2:])
         indexes = self.getIndexes(self.fullbody_mask_file, relative_path)
+
         if len(indexes) == 1:
+
             self.fullbody_mask_file = self.fullbody_mask_file.drop(indexes[0],0)
+
         if self.filePath.split('/')[-1] in os.listdir(folder_path):
+        
             os.remove(os.path.join(folder_path, self.filePath.split('/')[-1]))
-            self.removeLast = True
-            self.dirty = False
-            self.openPrevImg()
+
+        self.removeLast = True
+        self.dirty = False
+        self.openNextImg()
     
     def check_if_compatible_fullbody_mask(self):
-        if ['gender', 'age', 'original_image'] not in self.demography_file.keys():
+
+        if not set(['status', 'original_image']).issubset(self.fullbody_mask_file.keys()):
+
             print(
-                f'Did not fond an compatible mask status at {self.config.get("save_config", "fullbody_mask_path")}'
-                'Be aware that it will be overwritten'
+                f'Did not fond an compatible mask status at {self.config.get("save_config", "fullbody_mask_path")}\n'
+                'Be aware that it can be overwritten'
             )
             raise Exception
 
     def check_if_compatible_demography(self):
-        if ['status', 'original_image'] not in self.fullbody_mask_file.keys():
+
+        if not set(['gender', 'age', 'original_image']).issubset(self.demography_file.keys()):
+
             print(
                 f'Did not fond an compatible demography at {self.config.get("save_config", "demography_path")}\n'
-                'Be aware that it will be overwritten'
+                'Be aware that it can be overwritten'
             )
             raise Exception
 
