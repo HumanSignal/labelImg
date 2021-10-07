@@ -34,6 +34,16 @@ by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO and
 Installation
 ------------------
 
+Get from PyPI but only python3.0 or above
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is the simplest (one-command) install method on modern Linux distributions such as Ubuntu and Fedora.
+
+.. code:: shell
+
+    pip3 install labelImg
+    labelImg
+    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
 
 Build from source
 ~~~~~~~~~~~~~~~~~
@@ -123,17 +133,6 @@ Open the Anaconda Prompt and go to the `labelImg <#labelimg>`__ directory
     pyrcc5 -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-Get from PyPI but only python3.0 or above
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This is the simplest (one-command) install method on modern Linux distributions such as Ubuntu and Fedora.
-
-.. code:: shell
-
-    pip3 install labelImg
-    labelImg
-    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
 
 Use Docker
 ~~~~~~~~~~~~~~~~~
