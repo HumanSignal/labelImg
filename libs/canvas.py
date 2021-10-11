@@ -178,11 +178,27 @@ class Canvas(QWidget):
                 self.bounded_move_vertex(pos)
                 self.shapeMoved.emit()
                 self.repaint()
+
+                # Display annotation width and height while moving vertex
+                point1 = self.h_shape[1]
+                point3 = self.h_shape[3]
+                current_width = abs(point1.x() - point3.x())
+                current_height = abs(point1.y() - point3.y())
+                self.parent().window().label_coordinates.setText(
+                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             elif self.selected_shape and self.prev_point:
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
+
+                # Display annotation width and height while moving shape
+                point1 = self.selected_shape[1]
+                point3 = self.selected_shape[3]
+                current_width = abs(point1.x() - point3.x())
+                current_height = abs(point1.y() - point3.y())
+                self.parent().window().label_coordinates.setText(
+                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             else:
                 # pan
                 delta_x = pos.x() - self.pan_initial_pos.x()
@@ -220,6 +236,14 @@ class Canvas(QWidget):
                 self.setStatusTip(self.toolTip())
                 self.override_cursor(CURSOR_GRAB)
                 self.update()
+
+                # Display annotation width and height while hovering inside
+                point1 = self.h_shape[1]
+                point3 = self.h_shape[3]
+                current_width = abs(point1.x() - point3.x())
+                current_height = abs(point1.y() - point3.y())
+                self.parent().window().label_coordinates.setText(
+                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
                 break
         else:  # Nothing found, clear highlights, reset state.
             if self.h_shape:
