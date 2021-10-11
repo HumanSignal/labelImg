@@ -81,7 +81,7 @@ VirtualenvはQtとPythonのバージョン衝突問題を解消できます。
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.12.1 lxml
+    pipenv run pip install pyqt5==5.15.2 lxml
     pipenv run make qt5py3
     pipenv run python3 labelImg.py
     [任意で] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
@@ -125,9 +125,9 @@ Anaconda Promptを起動し `labelImg <#labelimg>`__ インストールされて
 PyPIから入手する（Python 3以降のみ）
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 現代的なLinuxディストリビューションの場合は以下のコマンドを入力するだけでインストールできます。
-    
+
 .. code:: shell
-    
+
     pip3 install labelImg
     labelImg
     labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
