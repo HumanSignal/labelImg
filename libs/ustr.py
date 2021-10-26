@@ -1,11 +1,14 @@
 import sys
+
+from lxml.builder import unicode
+
 from libs.constants import DEFAULT_ENCODING
 
-def ustr(x):
+def ustr(x): #I believe this is not necessary
     """py2/py3 unicode helper"""
 
     if sys.version_info < (3, 0, 0):
-        from PyQt4.QtCore import QString
+        from PySide6.QtCore import QString
         if type(x) == str:
             return x.decode(DEFAULT_ENCODING)
         if type(x) == QString:
