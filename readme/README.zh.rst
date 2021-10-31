@@ -48,27 +48,20 @@ Python 3 + Qt5
 
 .. code:: shell
 
-    sudo apt-get install pyqt5-dev-tools
     sudo pip3 install -r requirements/requirements-linux-python3.txt
-    make qt5py3
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 macOS
 ^^^^^
 
-Python 3 + Qt5
+Python 3 + PySide6
 
 .. code:: shell
 
-    brew install qt  # Install qt-5.x.x by Homebrew
-    brew install libxml2
-
-    or using pip
-
-    pip3 install pyqt5 lxml # Install qt and lxml by pip
-
-    make qt5py3
+    pip3 install pyside6 lxml
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -81,26 +74,20 @@ Virtualenv 可以避免版本和相依性問題
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.15.2 lxml
-    pipenv run make qt5py3
+    pipenv run pip install pyside6 lxml
+    pipenv run make pyside6
     pipenv run python3 labelImg.py
-    [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 
 
 Windows
 ^^^^^^^
 
-安裝 `Python <https://www.python.org/downloads/windows/>`__,
-`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`__
-和 `install lxml <http://lxml.de/installation.html>`__.
-
-安裝並到 `labelImg <#labelimg>`__ 目錄
+Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    pyrcc4 -o libs/resources.py resources.qrc
-    For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
-
+    pip install pyside6 lxml
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -113,45 +100,17 @@ Windows + Anaconda
 
 .. code:: shell
 
-    conda install pyqt=5
+    conda install pyside6
     conda install -c anaconda lxml
-    pyrcc5 -o libs/resources.py resources.qrc
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-Get from PyPI but only python3.0 or above
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: shell
-
-    pip3 install labelImg
-    labelImg
-    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-
-Use Docker
-~~~~~~~~~~~~~~~~~
-.. code:: shell
-
-    docker run -it \
-    --user $(id -u) \
-    -e DISPLAY=unix$DISPLAY \
-    --workdir=$(pwd) \
-    --volume="/home/$USER:/home/$USER" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    tzutalin/py2qt4
-
-    make qt4py2;./labelImg.py
-
-`你可以參考影片  <https://youtu.be/nw1GexJzbCI>`__
 
 
 使用方法
 -----
+
+`你可以參考影片  <https://youtu.be/nw1GexJzbCI>`__
 
 你可以先產生標籤
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

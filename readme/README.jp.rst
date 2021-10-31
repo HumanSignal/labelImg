@@ -1,4 +1,4 @@
-labelImg
+LabelImg
 ========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
@@ -48,27 +48,20 @@ Python 3とQt5を使う場合
 
 .. code:: shell
 
-    sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install -r requirements/requirements-linux-python3.txt
-    make qt5py3
+    pip install -r requirements/requirements-linux-python3.txt
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-macOSの場合
-^^^^^^^^^^^
+macOS
+^^^^^
 
-Python 3とQt5を使う場合
+Python 3 + PySide6
 
 .. code:: shell
 
-    brew install qt  # Install qt-5.x.x by Homebrew
-    brew install libxml2
-
-    or using pip
-
-    pip3 install pyqt5 lxml # Install qt and lxml by pip
-
-    make qt5py3
+    pip3 install pyside6 lxml
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -81,31 +74,24 @@ VirtualenvはQtとPythonのバージョン衝突問題を解消できます。
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.15.2 lxml
-    pipenv run make qt5py3
+    pipenv run pip install pyside6 lxml
+    pipenv run make pyside6
     pipenv run python3 labelImg.py
-    [任意で] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
-
-
-注意：最後のコマンドを実行すると、/ApplicationsフォルダにSVGアイコンを含む.appファイルが生成されます。build-tools/build-for-macos.shというスクリプトの仕様も検討してください。
+    [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 
 
 Windowsの場合
 ^^^^^^^^^^^^^
 
-最初に`Python <https://www.python.org/downloads/windows/>`__ と
-`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`__ と
-`install lxml <http://lxml.de/installation.html>`__ をインストールしてください。
 
-コマンドプロンプトを起動し `labelImg <#labelimg>`__ がインストールされているフォルダに移動してから以下のコマンドを実行します。
+Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    pyrcc4 -o libs/resources.py resources.qrc
-    （pyqt5の場合は、 pyrcc5 -o libs/resources.py resources.qrc）
-
+    pip install pyside6 lxml
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
-    python labelImg.py [画像パス] [定義済みクラスファイル]
+    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Windows + Anaconda
 ^^^^^^^^^^^^^^^^^^
@@ -116,9 +102,9 @@ Anaconda Promptを起動し `labelImg <#labelimg>`__ インストールされて
 
 .. code:: shell
 
-    conda install pyqt=5
+    conda install pyside6
     conda install -c anaconda lxml
-    pyrcc5 -o libs/resources.py resources.qrc
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -134,24 +120,6 @@ PyPIから入手する（Python 3以降のみ）
 
 Dockerの場合
 ~~~~~~~~~~~~~~~~~
-.. code:: shell
-
-    docker run -it \
-    --user $(id -u) \
-    -e DISPLAY=unix$DISPLAY \
-    --workdir=$(pwd) \
-    --volume="/home/$USER:/home/$USER" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    tzutalin/py2qt4
-
-    make qt4py2;./labelImg.py
-
-あとは`サンプル動画<https://youtu.be/nw1GexJzbCI>`__
-を見るだけです。
 
 
 定義済みクラスを作成するには？
