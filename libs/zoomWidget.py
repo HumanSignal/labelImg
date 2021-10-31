@@ -1,10 +1,7 @@
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+
+from PySide6.QtCore import QSize,Qt
+from PySide6.QtGui import QFontMetrics
+from PySide6.QtWidgets import QSpinBox, QAbstractSpinBox
 
 
 class ZoomWidget(QSpinBox):
@@ -22,5 +19,6 @@ class ZoomWidget(QSpinBox):
     def minimumSizeHint(self):
         height = super(ZoomWidget, self).minimumSizeHint().height()
         fm = QFontMetrics(self.font())
-        width = fm.width(str(self.maximum()))
+        #width = fm.width(str(self.maximum()))
+        width = fm.maxWidth()
         return QSize(width, height)

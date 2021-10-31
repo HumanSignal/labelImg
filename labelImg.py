@@ -14,20 +14,11 @@ import webbrowser as wb
 from functools import partial
 from collections import defaultdict
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    # needed for py3+qt4
-    # Ref:
-    # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-    # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
-    if sys.version_info.major >= 3:
-        import sip
-        sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PySide6.QtGui import QTextLine, QAction, QImage, QColor, QCursor, QPixmap, QImageReader
+from PySide6.QtCore import QObject, Qt, QPoint, QSize, QByteArray, QTimer, QFileInfo, QPointF, QProcess
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QCheckBox, QLineEdit, QHBoxLayout, QWidget, QToolButton, \
+    QListWidget, QDockWidget, QScrollArea, QWidgetAction, QMenu, QApplication, QLabel, QMessageBox, QFileDialog, \
+    QListWidgetItem
 
 from libs.combobox import ComboBox
 from libs.resources import *
@@ -446,19 +437,20 @@ class MainWindow(QMainWindow, WindowMixin):
         self.difficult = False
 
         # Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
-        if settings.get(SETTING_RECENT_FILES):
-            if have_qstring():
-                recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
-                self.recent_files = [ustr(i) for i in recent_file_qstring_list]
-            else:
-                self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
+        # if settings.get(SETTING_RECENT_FILES):
+        #     if have_qstring():
+        #         recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
+        #         self.recent_files = [ustr(i) for i in recent_file_qstring_list]
+        #     else:
+        #         self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
         saved_position = settings.get(SETTING_WIN_POSE, position)
         # Fix the multiple monitors issue
-        for i in range(QApplication.desktop().screenCount()):
-            if QApplication.desktop().availableGeometry(i).contains(saved_position):
+        # https://github.com/enthought/pyface/discussions/849
+        for i in range(len(QApplication.screens())):
+            if QApplication.screens()[i].availableGeometry().contains(saved_position):
                 position = saved_position
                 break
         self.resize(size)
@@ -478,14 +470,15 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add chris
         Shape.difficult = self.difficult
 
-        def xbool(x):
-            if isinstance(x, QVariant):
-                return x.toBool()
-            return bool(x)
-
-        if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
-            self.actions.advancedMode.setChecked(True)
-            self.toggle_advanced_mode()
+        #it is no longer necessary to use QVariant convert
+        # def xbool(x):
+        #     if isinstance(x, QVariant):
+        #         return x.toBool()
+        #     return bool(x)
+        #
+        # if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
+        #     self.actions.advancedMode.setChecked(True)
+        #     self.toggle_advanced_mode()
 
         # Populate the File menu dynamically.
         self.update_file_menu()
@@ -715,7 +708,7 @@ class MainWindow(QMainWindow, WindowMixin):
             menu.addAction(action)
 
     def pop_label_list_menu(self, point):
-        self.menus.labelList.exec_(self.label_list.mapToGlobal(point))
+        self.menus.labelList.exec(self.label_list.mapToGlobal(point))
 
     def edit_label(self):
         if not self.canvas.editing():
@@ -894,11 +887,11 @@ class MainWindow(QMainWindow, WindowMixin):
         text = self.combo_box.cb.itemText(index)
         for i in range(self.label_list.count()):
             if text == "":
-                self.label_list.item(i).setCheckState(2)
+                self.label_list.item(i).setCheckState(Qt.CheckState(2))
             elif text != self.label_list.item(i).text():
-                self.label_list.item(i).setCheckState(0)
+                self.label_list.item(i).setCheckState(Qt.CheckState(0))
             else:
-                self.label_list.item(i).setCheckState(2)
+                self.label_list.item(i).setCheckState(Qt.CheckState(2))
 
     def label_selection_changed(self):
         item = self.current_item()
@@ -1118,7 +1111,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.label_list.setCurrentItem(self.label_list.item(self.label_list.count() - 1))
                 self.label_list.item(self.label_list.count() - 1).setSelected(True)
 
-            self.canvas.setFocus(True)
+            self.canvas.setFocus()
             return True
         return False
 
@@ -1632,7 +1625,7 @@ def get_main_app(argv=[]):
 def main():
     """construct main app and run it"""
     app, _win = get_main_app(sys.argv)
-    return app.exec_()
+    return app.exec()
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -1,11 +1,14 @@
 # ex: set ts=8 noet:
 
-all: qt5 test
+all: pyside6 test
 
 test: testpy3
 
 testpy2:
 	python -m unittest discover tests
+
+pyside6:
+	pyside6-rcc -o libs/resources.py resources.qrc
 
 testpy3:
 	python3 -m unittest discover tests

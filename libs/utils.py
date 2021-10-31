@@ -1,19 +1,12 @@
 from math import sqrt
+
+
 from libs.ustr import ustr
 import hashlib
 import re
-import sys
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-    QT5 = True
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-    QT5 = False
-
+from PySide6.QtGui import QIcon, QAction, QColor, QRegularExpressionValidator
+from PySide6.QtWidgets import QPushButton, QMenu
 
 def new_icon(icon):
     return QIcon(':/' + icon)
@@ -61,8 +54,9 @@ def add_actions(widget, actions):
 
 
 def label_validator():
-    return QRegExpValidator(QRegExp(r'^[^ \t].+'), None)
-
+     #from PySide6.QtCore import QReg
+     #return QValidator(QRegularExpression(r'^[^ \t].+'), None)
+     return QRegularExpressionValidator(r'^[^ \t].+',None)
 
 class Struct(object):
 
@@ -88,14 +82,14 @@ def generate_color_by_text(text):
     return QColor(r, g, b, 100)
 
 
-def have_qstring():
-    """p3/qt5 get rid of QString wrapper as py3 has native unicode str type"""
-    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
+ #def have_qstring():
+ #    """p3/qt5 get rid of QString wrapper as py3 has native unicode str type"""
+ #    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
 
 
-def util_qt_strlistclass():
-    return QStringList if have_qstring() else list
-
+# def util_qt_strlistclass():
+#     return QStringList if have_qstring() else list
+#
 
 def natural_sort(list, key=lambda s:s):
     """
@@ -107,11 +101,12 @@ def natural_sort(list, key=lambda s:s):
     sort_key = get_alphanum_key_func(key)
     list.sort(key=sort_key)
 
-
+def trimmed(text):
+    return text.strip()
 # QT4 has a trimmed method, in QT5 this is called strip
-if QT5:
-    def trimmed(text):
-        return text.strip()
-else:
-    def trimmed(text):
-        return text.trimmed()
+# if QT5:
+#     def trimmed(text):
+#         return text.strip()
+# else:
+#     def trimmed(text):
+#         return text.trimmed()
