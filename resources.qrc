@@ -20,6 +20,7 @@
 <file alias="save">resources/icons/save.png</file>
 <file alias="format_voc">resources/icons/format_voc.png</file>
 <file alias="format_yolo">resources/icons/format_yolo.png</file>
+<file alias="format_createml">resources/icons/format_createml.png</file>
 <file alias="save-as">resources/icons/save-as.png</file>
 <file alias="color">resources/icons/color.png</file>
 <file alias="color_line">resources/icons/color_line.png</file>
@@ -34,5 +35,6 @@
 <file alias="strings">resources/strings/strings.properties</file>
 <file alias="strings-zh-TW">resources/strings/strings-zh-TW.properties</file>
 <file alias="strings-zh-CN">resources/strings/strings-zh-CN.properties</file>
+<file alias="strings-ja-JP">resources/strings/strings-ja-JP.properties</file>
 </qresource>
 </RCC>

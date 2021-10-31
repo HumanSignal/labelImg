@@ -7,16 +7,21 @@ LabelImg
 .. image:: https://img.shields.io/travis/tzutalin/labelImg.svg
         :target: https://travis-ci.org/tzutalin/labelImg
 
-.. image:: /resources/icons/app.png
-    :width: 200px
-    :align: center
+.. image:: https://img.shields.io/badge/lang-en-blue.svg
+        :target: https://github.com/tzutalin/labelImg/blob/master/README.zh.rst
+
+.. image:: https://img.shields.io/badge/lang-zh-green.svg
+        :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.zh.rst
+
+.. image:: https://img.shields.io/badge/lang-zh--TW-green.svg
+    :target: (https://github.com/jonatasemidio/multilanguage-readme-pattern/blob/master/README.pt-br.md
 
 LabelImg is a graphical image annotation tool.
 
 It is written in Python and uses Qt for its graphical interface.
 
 Annotations are saved as XML files in PASCAL VOC format, the format used
-by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO format
+by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO and CreateML formats.
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
@@ -29,62 +34,41 @@ by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO for
 Installation
 ------------------
 
+Get from PyPI but only support python3.0 or above
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is the simplest (one-command) install method on modern Linux distributions such as Ubuntu and Fedora.
+
+.. code:: shell
+
+    pip3 install labelImg
+    labelImg
+    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+
 
 Build from source
 ~~~~~~~~~~~~~~~~~
 
-Linux/Ubuntu/Mac requires at least `Python
-2.6 <https://www.python.org/getit/>`__ and has been tested with `PyQt
-4.8 <https://www.riverbankcomputing.com/software/pyqt/intro>`__. However, `Python
-3 or above <https://www.python.org/getit/>`__ and  `PyQt5 <https://pypi.org/project/PyQt5/>`__ are strongly recommended.
-
-
 Ubuntu Linux
 ^^^^^^^^^^^^
-Python 2 + Qt4
+
+Python 3 + PySide6
 
 .. code:: shell
 
-    sudo apt-get install pyqt4-dev-tools
-    sudo pip install lxml
-    make qt4py2
-    python labelImg.py
-    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-Python 3 + Qt5 (Recommended)
-
-.. code:: shell
-
-    sudo apt-get install pyqt5-dev-tools
-    sudo pip3 install -r requirements/requirements-linux-python3.txt
-    make qt5py3
+    pip install -r requirements/requirements-linux-python3.txt
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 macOS
 ^^^^^
-Python 2 + Qt4
+
+Python 3 + PySide6
 
 .. code:: shell
 
-    brew install qt qt4
-    brew install libxml2
-    make qt4py2
-    python labelImg.py
-    python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-Python 3 + Qt5 (Recommended)
-
-.. code:: shell
-
-    brew install qt  # Install qt-5.x.x by Homebrew
-    brew install libxml2
-
-    or using pip
-
-    pip3 install pyqt5 lxml # Install qt and lxml by pip
-
-    make qt5py3
+    pip3 install pyside6 lxml
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -97,9 +81,9 @@ Virtualenv can avoid a lot of the QT / Python version issues
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.13.2 lxml
-    pipenv run make qt5py3
-    python3 labelImg.py
+    pipenv run pip install pyside6 lxml
+    pipenv run make pyside6
+    pipenv run python3 labelImg.py
     [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 
 Note: The Last command gives you a nice .app file with a new SVG Icon in your /Applications folder. You can consider using the script: build-tools/build-for-macos.sh
@@ -108,63 +92,29 @@ Note: The Last command gives you a nice .app file with a new SVG Icon in your /A
 Windows
 ^^^^^^^
 
-Install `Python <https://www.python.org/downloads/windows/>`__,
-`PyQt5 <https://www.riverbankcomputing.com/software/pyqt/download5>`__
-and `install lxml <http://lxml.de/installation.html>`__.
-
 Open cmd and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    pyrcc4 -o lib/resources.py resources.qrc
-    For pyqt5, pyrcc5 -o libs/resources.py resources.qrc
-    
+    pip install pyside6 lxml
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
 Windows + Anaconda
 ^^^^^^^^^^^^^^^^^^
 
-Download and install `Anaconda <https://www.anaconda.com/download/#download>`__ (Python 3+)
-
 Open the Anaconda Prompt and go to the `labelImg <#labelimg>`__ directory
 
 .. code:: shell
 
-    conda install pyqt=5
-    pyrcc5 -o libs/resources.py resources.qrc
+    conda install pyside6
+    conda install -c anaconda lxml
+    pyside6-rcc -o libs/resources.py resources.qrc
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
-Get from PyPI but only python3.0 or above
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. code:: shell
-
-    pip3 install labelImg
-    labelImg
-    labelImg [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
-
-
-Use Docker
-~~~~~~~~~~~~~~~~~
-.. code:: shell
-
-    docker run -it \
-    --user $(id -u) \
-    -e DISPLAY=unix$DISPLAY \
-    --workdir=$(pwd) \
-    --volume="/home/$USER:/home/$USER" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    --volume="/etc/sudoers.d:/etc/sudoers.d:ro" \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    tzutalin/py2qt4
-
-    make qt4py2;./labelImg.py
-
 You can pull the image which has all of the installed and required dependencies. `Watch a demo video <https://youtu.be/nw1GexJzbCI>`__
-
 
 Usage
 -----
@@ -215,31 +165,33 @@ to load pre-defined classes
 Hotkeys
 ~~~~~~~
 
-+------------+--------------------------------------------+
-| Ctrl + u   | Load all of the images from a directory    |
-+------------+--------------------------------------------+
-| Ctrl + r   | Change the default annotation target dir   |
-+------------+--------------------------------------------+
-| Ctrl + s   | Save                                       |
-+------------+--------------------------------------------+
-| Ctrl + d   | Copy the current label and rect box        |
-+------------+--------------------------------------------+
-| Space      | Flag the current image as verified         |
-+------------+--------------------------------------------+
-| w          | Create a rect box                          |
-+------------+--------------------------------------------+
-| d          | Next image                                 |
-+------------+--------------------------------------------+
-| a          | Previous image                             |
-+------------+--------------------------------------------+
-| del        | Delete the selected rect box               |
-+------------+--------------------------------------------+
-| Ctrl++     | Zoom in                                    |
-+------------+--------------------------------------------+
-| Ctrl--     | Zoom out                                   |
-+------------+--------------------------------------------+
-| ↑→↓←       | Keyboard arrows to move selected rect box  |
-+------------+--------------------------------------------+
++--------------------+--------------------------------------------+
+| Ctrl + u           | Load all of the images from a directory    |
++--------------------+--------------------------------------------+
+| Ctrl + r           | Change the default annotation target dir   |
++--------------------+--------------------------------------------+
+| Ctrl + s           | Save                                       |
++--------------------+--------------------------------------------+
+| Ctrl + d           | Copy the current label and rect box        |
++--------------------+--------------------------------------------+
+| Ctrl + Shift + d   | Delete the current image                   |
++--------------------+--------------------------------------------+
+| Space              | Flag the current image as verified         |
++--------------------+--------------------------------------------+
+| w                  | Create a rect box                          |
++--------------------+--------------------------------------------+
+| d                  | Next image                                 |
++--------------------+--------------------------------------------+
+| a                  | Previous image                             |
++--------------------+--------------------------------------------+
+| del                | Delete the selected rect box               |
++--------------------+--------------------------------------------+
+| Ctrl++             | Zoom in                                    |
++--------------------+--------------------------------------------+
+| Ctrl--             | Zoom out                                   |
++--------------------+--------------------------------------------+
+| ↑→↓←               | Keyboard arrows to move selected rect box  |
++--------------------+--------------------------------------------+
 
 **Verify Image:**
 
@@ -272,8 +224,8 @@ License
 
 Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/labelImg
 
-Related
-~~~~~~~
+Related and additional tools
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
@@ -282,4 +234,10 @@ Related
 4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
 5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
 6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
+7. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
+
+Stargazers over time
+~~~~~~~~~~~~~~~~~~~~
+
+.. image:: https://starchart.cc/tzutalin/labelImg.svg
 
