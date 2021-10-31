@@ -7,12 +7,9 @@ import os.path
 import platform
 import re
 import sys
-import subprocess
 import shutil
 import webbrowser as wb
-
 from functools import partial
-from collections import defaultdict
 
 from PySide6.QtGui import QTextLine, QAction, QImage, QColor, QCursor, QPixmap, QImageReader
 from PySide6.QtCore import QObject, Qt, QPoint, QSize, QByteArray, QTimer, QFileInfo, QPointF, QProcess
@@ -39,7 +36,6 @@ from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.create_ml_io import CreateMLReader
 from libs.create_ml_io import JSON_EXT
-from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
 __appname__ = 'labelImg'
@@ -425,7 +421,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Application state.
         self.image = QImage()
-        self.file_path = ustr(default_filename)
+        self.file_path = default_filename
         self.last_open_dir = None
         self.recent_files = []
         self.max_recent = 7
@@ -433,17 +429,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.fill_color = None
         self.zoom_level = 100
         self.fit_window = False
-        # Add Chris
         self.difficult = False
-
-        # Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
-        # if settings.get(SETTING_RECENT_FILES):
-        #     if have_qstring():
-        #         recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
-        #         self.recent_files = [ustr(i) for i in recent_file_qstring_list]
-        #     else:
-        #         self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
-
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
         saved_position = settings.get(SETTING_WIN_POSE, position)
@@ -455,8 +441,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 break
         self.resize(size)
         self.move(position)
-        save_dir = ustr(settings.get(SETTING_SAVE_DIR, None))
-        self.last_open_dir = ustr(settings.get(SETTING_LAST_OPEN_DIR, None))
+        save_dir = settings.get(SETTING_SAVE_DIR, None)
+        self.last_open_dir = settings.get(SETTING_LAST_OPEN_DIR, None)
         if self.default_save_dir is None and save_dir is not None and os.path.exists(save_dir):
             self.default_save_dir = save_dir
             self.statusBar().showMessage('%s started. Annotation will be saved to %s' %
@@ -467,20 +453,7 @@ class MainWindow(QMainWindow, WindowMixin):
         Shape.line_color = self.line_color = QColor(settings.get(SETTING_LINE_COLOR, DEFAULT_LINE_COLOR))
         Shape.fill_color = self.fill_color = QColor(settings.get(SETTING_FILL_COLOR, DEFAULT_FILL_COLOR))
         self.canvas.set_drawing_color(self.line_color)
-        # Add chris
         Shape.difficult = self.difficult
-
-        #it is no longer necessary to use QVariant convert
-        # def xbool(x):
-        #     if isinstance(x, QVariant):
-        #         return x.toBool()
-        #     return bool(x)
-        #
-        # if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
-        #     self.actions.advancedMode.setChecked(True)
-        #     self.toggle_advanced_mode()
-
-        # Populate the File menu dynamically.
         self.update_file_menu()
 
         # Since loading the file may take some time, make sure it runs in the background.
@@ -725,7 +698,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Tzutalin 20160906 : Add file list and dock to move faster
     def file_item_double_clicked(self, item=None):
-        self.cur_img_idx = self.m_img_list.index(ustr(item.text()))
+        self.cur_img_idx = self.m_img_list.index(item.text())
         filename = self.m_img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
@@ -743,19 +716,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
         difficult = self.diffc_button.isChecked()
 
-        try:
-            shape = self.items_to_shapes[item]
-        except:
-            pass
-        # Checked and Update
-        try:
-            if difficult != shape.difficult:
-                shape.difficult = difficult
-                self.set_dirty()
-            else:  # User probably changed item visibility
-                self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
-        except:
-            pass
+        shape = self.items_to_shapes[item]
+        if difficult != shape.difficult:
+            shape.difficult = difficult
+            self.set_dirty()
+        else:
+            self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
 
     # React to canvas signals.
     def shape_selection_changed(self, selected=False):
@@ -780,6 +746,9 @@ class MainWindow(QMainWindow, WindowMixin):
         item.setCheckState(Qt.Checked)
         item.setBackground(generate_color_by_text(shape.label))
         self.items_to_shapes[item] = shape
+        print('darren add lable ' + str(self.items_to_shapes))
+        print('darren add item ' + str(item))
+        print('darren add shape ' + str(shape))
         self.shapes_to_items[shape] = item
         self.label_list.addItem(item)
         for action in self.actions.onShapesPresent:
@@ -788,7 +757,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def remove_label(self, shape):
         if shape is None:
-            # print('rm empty label')
             return
         item = self.shapes_to_items[shape]
         self.label_list.takeItem(self.label_list.row(item))
@@ -838,7 +806,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.combo_box.update_items(unique_text_list)
 
     def save_labels(self, annotation_file_path):
-        annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
             self.label_file = LabelFile()
             self.label_file.verified = self.canvas.verified
@@ -895,11 +862,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def label_selection_changed(self):
         item = self.current_item()
-        if item and self.canvas.editing():
+        if item and self.canvas.editing() and (item in self.items_to_shapes):
             self._no_selection_slot = True
             self.canvas.select_shape(self.items_to_shapes[item])
             shape = self.items_to_shapes[item]
-            # Add Chris
             self.diffc_button.setChecked(shape.difficult)
 
     def label_item_changed(self, item):
@@ -1041,33 +1007,26 @@ class MainWindow(QMainWindow, WindowMixin):
         if file_path is None:
             file_path = self.settings.get(SETTING_FILENAME)
 
-        # Make sure that filePath is a regular python string, rather than QString
-        file_path = ustr(file_path)
-
-        # Fix bug: An  index error after select a directory when open a new file.
-        unicode_file_path = ustr(file_path)
-        unicode_file_path = os.path.abspath(unicode_file_path)
-        # Tzutalin 20160906 : Add file list and dock to move faster
-        # Highlight the file item
-        if unicode_file_path and self.file_list_widget.count() > 0:
-            if unicode_file_path in self.m_img_list:
-                index = self.m_img_list.index(unicode_file_path)
+        abs_file_path = os.path.abspath(file_path)
+        if abs_file_path and self.file_list_widget.count() > 0:
+            if abs_file_path in self.m_img_list:
+                index = self.m_img_list.index(abs_file_path)
                 file_widget_item = self.file_list_widget.item(index)
                 file_widget_item.setSelected(True)
             else:
                 self.file_list_widget.clear()
                 self.m_img_list.clear()
 
-        if unicode_file_path and os.path.exists(unicode_file_path):
-            if LabelFile.is_label_file(unicode_file_path):
+        if abs_file_path and os.path.exists(abs_file_path):
+            if LabelFile.is_label_file(abs_file_path):
                 try:
-                    self.label_file = LabelFile(unicode_file_path)
+                    self.label_file = LabelFile(abs_file_path)
                 except LabelFileError as e:
                     self.error_message(u'Error opening file',
                                        (u"<p><b>%s</b></p>"
                                         u"<p>Make sure <i>%s</i> is a valid label file.")
-                                       % (e, unicode_file_path))
-                    self.status("Error reading %s" % unicode_file_path)
+                                       % (e, abs_file_path))
+                    self.status("Error reading %s" % abs_file_path)
                     return False
                 self.image_data = self.label_file.image_data
                 self.line_color = QColor(*self.label_file.lineColor)
@@ -1076,7 +1035,7 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 # Load image:
                 # read data first and store for saving into label file.
-                self.image_data = read(unicode_file_path, None)
+                self.image_data = read(abs_file_path, None)
                 self.label_file = None
                 self.canvas.verified = False
 
@@ -1086,12 +1045,12 @@ class MainWindow(QMainWindow, WindowMixin):
                 image = QImage.fromData(self.image_data)
             if image.isNull():
                 self.error_message(u'Error opening file',
-                                   u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
-                self.status("Error reading %s" % unicode_file_path)
+                                   u"<p>Make sure <i>%s</i> is a valid image file." % abs_file_path)
+                self.status("Error reading %s" % abs_file_path)
                 return False
-            self.status("Loaded %s" % os.path.basename(unicode_file_path))
+            self.status("Loaded %s" % os.path.basename(abs_file_path))
             self.image = image
-            self.file_path = unicode_file_path
+            self.file_path = abs_file_path
             self.canvas.load_pixmap(QPixmap.fromImage(image))
             if self.label_file:
                 self.load_labels(self.label_file.shapes)
@@ -1198,7 +1157,7 @@ class MainWindow(QMainWindow, WindowMixin):
         settings[SETTING_RECENT_FILES] = self.recent_files
         settings[SETTING_ADVANCE_MODE] = not self._beginner
         if self.default_save_dir and os.path.exists(self.default_save_dir):
-            settings[SETTING_SAVE_DIR] = ustr(self.default_save_dir)
+            settings[SETTING_SAVE_DIR] = self.default_save_dir
         else:
             settings[SETTING_SAVE_DIR] = ''
 
@@ -1226,20 +1185,20 @@ class MainWindow(QMainWindow, WindowMixin):
             for file in files:
                 if file.lower().endswith(tuple(extensions)):
                     relative_path = os.path.join(root, file)
-                    path = ustr(os.path.abspath(relative_path))
+                    path = os.path.abspath(relative_path)
                     images.append(path)
         natural_sort(images, key=lambda x: x.lower())
         return images
 
     def change_save_dir_dialog(self, _value=False):
         if self.default_save_dir is not None:
-            path = ustr(self.default_save_dir)
+            path = self.default_save_dir
         else:
             path = '.'
 
-        dir_path = ustr(QFileDialog.getExistingDirectory(self,
+        dir_path = QFileDialog.getExistingDirectory(self,
                                                          '%s - Save annotations to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
-                                                         | QFileDialog.DontResolveSymlinks))
+                                                         | QFileDialog.DontResolveSymlinks)
 
         if dir_path is not None and len(dir_path) > 1:
             self.default_save_dir = dir_path
@@ -1254,11 +1213,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.statusBar().show()
             return
 
-        path = os.path.dirname(ustr(self.file_path))\
+        path = os.path.dirname(self.file_path)\
             if self.file_path else '.'
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
             filters = "Open Annotation XML file (%s)" % ' '.join(['*.xml'])
-            filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a xml file' % __appname__, path, filters))
+            filename = QFileDialog.getOpenFileName(self, '%s - Choose a xml file' % __appname__, path, filters)
             if filename:
                 if isinstance(filename, (tuple, list)):
                     filename = filename[0]
@@ -1274,11 +1233,11 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             default_open_dir_path = os.path.dirname(self.file_path) if self.file_path else '.'
         if silent != True:
-            target_dir_path = ustr(QFileDialog.getExistingDirectory(self,
+            target_dir_path = QFileDialog.getExistingDirectory(self,
                                                                     '%s - Open Directory' % __appname__, default_open_dir_path,
-                                                                    QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
+                                                                    QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
         else:
-            target_dir_path = ustr(default_open_dir_path)
+            target_dir_path = default_open_dir_path
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
 
@@ -1371,7 +1330,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def open_file(self, _value=False):
         if not self.may_continue():
             return
-        path = os.path.dirname(ustr(self.file_path)) if self.file_path else '.'
+        path = os.path.dirname(self.file_path) if self.file_path else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
         filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
         filename = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
@@ -1383,11 +1342,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.load_file(filename)
 
     def save_file(self, _value=False):
-        if self.default_save_dir is not None and len(ustr(self.default_save_dir)):
+        if self.default_save_dir is not None and len(self.default_save_dir):
             if self.file_path:
                 image_file_name = os.path.basename(self.file_path)
                 saved_file_name = os.path.splitext(image_file_name)[0]
-                saved_path = os.path.join(ustr(self.default_save_dir), saved_file_name)
+                saved_path = os.path.join(self.default_save_dir, saved_file_name)
                 self._save_file(saved_path)
         else:
             image_file_dir = os.path.dirname(self.file_path)
@@ -1411,8 +1370,8 @@ class MainWindow(QMainWindow, WindowMixin):
         filename_without_extension = os.path.splitext(self.file_path)[0]
         dlg.selectFile(filename_without_extension)
         dlg.setOption(QFileDialog.DontUseNativeDialog, False)
-        if dlg.exec_():
-            full_file_path = ustr(dlg.selectedFiles()[0])
+        if dlg.exec():
+            full_file_path = dlg.selectedFiles()[0]
             if remove_ext:
                 return os.path.splitext(full_file_path)[0]  # Return file path without the extension.
             else:
@@ -1596,12 +1555,11 @@ def read(filename, default=None):
 def get_main_app(argv=[]):
     """
     Standard boilerplate Qt application code.
-    Do everything but app.exec_() -- so that we can test the application in one thread
+    Do everything but app.exec() -- so that we can test the application in one thread
     """
     app = QApplication(argv)
     app.setApplicationName(__appname__)
     app.setWindowIcon(new_icon("app"))
-    # Tzutalin 201705+: Accept extra agruments to change predefined class file
     argparser = argparse.ArgumentParser()
     argparser.add_argument("image_dir", nargs="?")
     argparser.add_argument("class_file",

@@ -57,7 +57,7 @@ Linux/Ubuntu/Mac requires at least `Python
 Ubuntu Linux
 ^^^^^^^^^^^^
 
-Python 3 + Qt5
+Python 3 + pyside6
 
 .. code:: shell
 
@@ -70,7 +70,7 @@ Python 3 + Qt5
 macOS
 ^^^^^
 
-Python 3 + Qt5
+Python 3 + pyside6
 
 .. code:: shell
 
@@ -81,7 +81,7 @@ Python 3 + Qt5
 
     pip3 install pyqt5 lxml # Install qt and lxml by pip
 
-    make qt5py3
+    make pyside6
     python3 labelImg.py
     python3 labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
@@ -94,8 +94,8 @@ Virtualenv can avoid a lot of the QT / Python version issues
 
     brew install python3
     pip3 install pipenv
-    pipenv run pip install pyqt5==5.15.2 lxml
-    pipenv run make qt5py3
+    pipenv run pip install pyside6 lxml
+    pipenv run make pyside6
     pipenv run python3 labelImg.py
     [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 

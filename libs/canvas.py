@@ -490,7 +490,6 @@ class Canvas(QWidget):
         p = self._painter
         p.begin(self)
         p.setRenderHint(QPainter.Antialiasing)
-        #p.setRenderHint(QPainter.HighQualityAntialiasing)#This value is obsolete and will be ignored, use the Antialiasing render hint instead.
         p.setRenderHint(QPainter.SmoothPixmapTransform)
 
         p.scale(self.scale, self.scale)

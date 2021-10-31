@@ -3,7 +3,6 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QComboBox
 
 
-
 class ComboBox(QWidget):
     def __init__(self, parent=None, items=[]):
         super(ComboBox, self).__init__(parent)

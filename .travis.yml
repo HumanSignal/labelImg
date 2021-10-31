@@ -6,7 +6,7 @@
 jobs:
   include:
 
-    # Python 3 + QT5
+    # Python 3 + pyside6
     - os: linux
       dist: focal
       language: generic

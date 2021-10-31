@@ -9,10 +9,6 @@ import re
 import os
 import locale
 
-
-
-from libs.ustr import ustr
-
 from PySide6.QtCore import QIODevice, QFile, QTextStream, QStringConverter
 
 
@@ -65,7 +61,7 @@ class StringBundle:
                 text.setEncoding(QStringConverter.Utf8)
 
             while not text.atEnd():
-                line = ustr(text.readLine())
+                line = text.readLine()
                 key_value = line.split(PROP_SEPERATOR)
                 key = key_value[0].strip()
                 value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')
