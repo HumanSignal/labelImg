@@ -63,7 +63,7 @@ class YOLOWriter:
         else:
             out_file = codecs.open(target_file, 'w', encoding=ENCODE_METHOD)
             classes_file = os.path.join(os.path.dirname(os.path.abspath(target_file)), "classes.txt")
-            out_class_file = open(classes_file, 'w')
+            out_class_file = open(classes_file, 'a')
 
 
         for box in self.box_list:
