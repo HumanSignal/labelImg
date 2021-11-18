@@ -201,6 +201,18 @@ You can edit the
 `data/predefined\_classes.txt <https://github.com/tzutalin/labelImg/blob/master/data/predefined_classes.txt>`__
 to load pre-defined classes
 
+Annotation visualization
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Copy the existing lables file to same folder with the images. The labels file name must be same with image file name.
+
+2. Click File and choose 'Open Dir' then Open the image folder.
+
+3. Select image in File List, it will appear the bounding box and label for all objects in that image.
+
+(Choose Display Labels mode in View to show/hide lablels)
+
+
 Hotkeys
 ~~~~~~~
 
