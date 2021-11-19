@@ -13,7 +13,7 @@ import webbrowser as wb
 
 from functools import partial
 from collections import defaultdict
-
+import imghdr
 try:
     from PyQt5.QtGui import *
     from PyQt5.QtCore import *
@@ -1091,6 +1091,11 @@ class MainWindow(QMainWindow, WindowMixin):
                 image = self.image_data
             else:
                 image = QImage.fromData(self.image_data)
+            # neglect images type
+            if image.isNull():
+                image = QImage(unicode_file_path, imghdr.what(unicode_file_path))
+                self.image_data = image
+                
             if image.isNull():
                 self.error_message(u'Error opening file',
                                    u"<p>Make sure <i>%s</i> is a valid image file." % unicode_file_path)
