@@ -101,7 +101,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.label_hist = []
         self.last_open_dir = None
         self.cur_img_idx = 0
-        self.img_count = 1
+        self.img_count = len(self.m_img_list)
 
         # Whether we need to save or not.
         self.dirty = False
@@ -1348,7 +1348,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_file(filename)
 
     def open_next_image(self, _value=False):
-        # Proceeding prev image without dialog if having any label
+        # Proceeding next image without dialog if having any label
         if self.auto_saving.isChecked():
             if self.default_save_dir is not None:
                 if self.dirty is True:
