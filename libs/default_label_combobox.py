@@ -25,9 +25,3 @@ class default_label_ComboBox(QWidget):
 
         layout.addWidget(self.cb)
         self.setLayout(layout)
-
-    def update_items(self, items):
-        self.items = items
-
-        self.cb.clear()
-        self.cb.addItems(self.items)
