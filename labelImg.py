@@ -934,7 +934,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if not self.use_default_label_checkbox.isChecked() :#or not self.default_label_text_line.text():
+        if not self.use_default_label_checkbox.isChecked():
             if len(self.label_hist) > 0:
                 self.label_dialog = LabelDialog(
                     parent=self, list_item=self.label_hist)
