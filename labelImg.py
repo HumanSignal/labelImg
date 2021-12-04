@@ -128,7 +128,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Create a widget for using default label
         self.use_default_label_checkbox = QCheckBox(get_str('useDefaultLabel'))
-        self.use_default_label_checkbox.setChecked(True)
+        self.use_default_label_checkbox.setChecked(False)
         self.default_label_combo_box = default_label_ComboBox(self)
 
         self.default_label_combo_box.update_items(self.label_hist)
