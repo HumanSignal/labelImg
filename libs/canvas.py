@@ -97,10 +97,11 @@ class Canvas(QWidget):
         self.prev_point = QPointF()
         self.repaint()
 
-    def un_highlight(self):
-        if self.h_shape:
-            self.h_shape.highlight_clear()
-        self.h_vertex = self.h_shape = None
+    def un_highlight(self, shape=None):
+        if shape == None or shape == self.h_shape:
+            if self.h_shape:
+                self.h_shape.highlight_clear()
+            self.h_vertex = self.h_shape = None
 
     def selected_vertex(self):
         return self.h_vertex is not None
@@ -463,6 +464,7 @@ class Canvas(QWidget):
     def delete_selected(self):
         if self.selected_shape:
             shape = self.selected_shape
+            self.un_highlight(shape)
             self.shapes.remove(self.selected_shape)
             self.selected_shape = None
             self.update()
