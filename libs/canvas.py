@@ -525,12 +525,12 @@ class Canvas(QWidget):
             p.setPen(self.drawing_rect_color)
             brush = QBrush(Qt.BDiagPattern)
             p.setBrush(brush)
-            p.drawRect(left_top.x(), left_top.y(), rect_width, rect_height)
+            p.drawRect(int(left_top.x()), int(left_top.y()), int(rect_width), int(rect_height))
 
         if self.drawing() and not self.prev_point.isNull() and not self.out_of_pixmap(self.prev_point):
             p.setPen(QColor(0, 0, 0))
-            p.drawLine(self.prev_point.x(), 0, self.prev_point.x(), self.pixmap.height())
-            p.drawLine(0, self.prev_point.y(), self.pixmap.width(), self.prev_point.y())
+            p.drawLine(int(self.prev_point.x()), 0, int(self.prev_point.x()), int(self.pixmap.height()))
+            p.drawLine(0, int(self.prev_point.y()), int(self.pixmap.width()), int(self.prev_point.y()))
 
         self.setAutoFillBackground(True)
         if self.verified:
