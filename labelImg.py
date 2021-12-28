@@ -1362,6 +1362,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         if self.img_count <= 0:
             return
+        
+        if not self.m_img_list:
+            return
 
         filename = None
         if self.file_path is None:
