@@ -30,7 +30,7 @@ except ImportError:
     from PyQt4.QtCore import *
 
 from libs.combobox import ComboBox
-from libs.default_label_combobox import default_label_ComboBox
+from libs.default_label_combobox import DefaultLabelComboBox
 from libs.resources import *
 from libs.constants import *
 from libs.utils import *
@@ -129,7 +129,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Create a widget for using default label
         self.use_default_label_checkbox = QCheckBox(get_str('useDefaultLabel'))
         self.use_default_label_checkbox.setChecked(False)
-        self.default_label_combo_box = default_label_ComboBox(self,items=self.label_hist)
+        self.default_label_combo_box = DefaultLabelComboBox(self,items=self.label_hist)
 
         use_default_label_qhbox_layout = QHBoxLayout()
         use_default_label_qhbox_layout.addWidget(self.use_default_label_checkbox)

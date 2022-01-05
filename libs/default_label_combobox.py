@@ -12,9 +12,9 @@ except ImportError:
     from PyQt4.QtGui import QWidget, QHBoxLayout, QComboBox
 
 
-class default_label_ComboBox(QWidget):
+class DefaultLabelComboBox(QWidget):
     def __init__(self, parent=None, items=[]):
-        super(default_label_ComboBox, self).__init__(parent)
+        super(DefaultLabelComboBox, self).__init__(parent)
 
         layout = QHBoxLayout()
         self.cb = QComboBox()
