@@ -249,7 +249,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 return '&CreateML', 'format_createml'
 
         save_format = action(get_format_meta(self.label_file_format)[0],
-                             self.change_format, 'Ctrl+',
+                             self.change_format, 'Ctrl+Y',
                              get_format_meta(self.label_file_format)[1],
                              get_str('changeSaveFormat'), enabled=True)
 
@@ -968,7 +968,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.fitWidth.setChecked(False)
         self.actions.fitWindow.setChecked(False)
         self.zoom_mode = self.MANUAL_ZOOM
-        self.zoom_widget.setValue(value)
+        # Arithmetic on scaling factor often results in float
+        # Convert to int to avoid type errors
+        self.zoom_widget.setValue(int(value))
 
     def add_zoom(self, increment=10):
         self.set_zoom(self.zoom_widget.value() + increment)
@@ -1009,7 +1011,7 @@ class MainWindow(QMainWindow, WindowMixin):
         move_y = min(max(move_y, 0), 1)
 
         # zoom in
-        units = delta / (8 * 15)
+        units = delta // (8 * 15)
         scale = 10
         self.add_zoom(scale * units)
 
@@ -1019,8 +1021,8 @@ class MainWindow(QMainWindow, WindowMixin):
         d_v_bar_max = v_bar.maximum() - v_bar_max
 
         # get the new scrollbar values
-        new_h_bar_value = h_bar.value() + move_x * d_h_bar_max
-        new_v_bar_value = v_bar.value() + move_y * d_v_bar_max
+        new_h_bar_value = int(h_bar.value() + move_x * d_h_bar_max)
+        new_v_bar_value = int(v_bar.value() + move_y * d_v_bar_max)
 
         h_bar.setValue(new_h_bar_value)
         v_bar.setValue(new_v_bar_value)
@@ -1519,6 +1521,9 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_dirty()
 
     def copy_shape(self):
+        if self.canvas.selected_shape is None:
+            # True if one accidentally touches the left mouse button before releasing
+            return
         self.canvas.end_move(copy=True)
         self.add_label(self.canvas.selected_shape)
         self.set_dirty()
