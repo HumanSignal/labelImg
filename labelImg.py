@@ -30,6 +30,7 @@ except ImportError:
     from PyQt4.QtCore import *
 
 from libs.combobox import ComboBox
+from libs.default_label_combobox import DefaultLabelComboBox
 from libs.resources import *
 from libs.constants import *
 from libs.utils import *
@@ -113,6 +114,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Load predefined classes to the list
         self.load_predefined_classes(default_prefdef_class_file)
 
+        self.default_label = self.label_hist[0]
+
         # Main widgets and related state.
         self.label_dialog = LabelDialog(parent=self, list_item=self.label_hist)
 
@@ -126,10 +129,11 @@ class MainWindow(QMainWindow, WindowMixin):
         # Create a widget for using default label
         self.use_default_label_checkbox = QCheckBox(get_str('useDefaultLabel'))
         self.use_default_label_checkbox.setChecked(False)
-        self.default_label_text_line = QLineEdit()
+        self.default_label_combo_box = DefaultLabelComboBox(self,items=self.label_hist)
+
         use_default_label_qhbox_layout = QHBoxLayout()
         use_default_label_qhbox_layout.addWidget(self.use_default_label_checkbox)
-        use_default_label_qhbox_layout.addWidget(self.default_label_text_line)
+        use_default_label_qhbox_layout.addWidget(self.default_label_combo_box)
         use_default_label_container = QWidget()
         use_default_label_container.setLayout(use_default_label_qhbox_layout)
 
@@ -900,6 +904,9 @@ class MainWindow(QMainWindow, WindowMixin):
             else:
                 self.label_list.item(i).setCheckState(2)
 
+    def default_label_combo_selection_changed(self, index):
+        self.default_label=self.label_hist[index]
+
     def label_selection_changed(self):
         item = self.current_item()
         if item and self.canvas.editing():
@@ -925,7 +932,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
-        if not self.use_default_label_checkbox.isChecked() or not self.default_label_text_line.text():
+        if not self.use_default_label_checkbox.isChecked():
             if len(self.label_hist) > 0:
                 self.label_dialog = LabelDialog(
                     parent=self, list_item=self.label_hist)
@@ -937,7 +944,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 text = self.label_dialog.pop_up(text=self.prev_label_text)
                 self.lastLabel = text
         else:
-            text = self.default_label_text_line.text()
+            text = self.default_label
 
         # Add Chris
         self.diffc_button.setChecked(False)
