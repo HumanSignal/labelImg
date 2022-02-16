@@ -1693,11 +1693,9 @@ class MainWindow(QMainWindow, WindowMixin):
             return 
 
         if self.defaultSaveDir is not None and len(ustr(self.defaultSaveDir)):
-
             if self.filePath:
-
                 self.image.save(savedPath + '.jpg', imgFileName)
-                self._saveFile(savedPath)
+                self._saveFile(savedPath, imgFileName)
         else:
 
             self.image.save(savedPath + '.jpg')
