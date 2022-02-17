@@ -2,17 +2,12 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
-import distutils.spawn
 import os.path
 import platform
-import re
-import sys
-import subprocess
 import shutil
+import sys
 import webbrowser as wb
-
 from functools import partial
-from collections import defaultdict
 
 try:
     from PyQt5.QtGui import *
@@ -31,7 +26,6 @@ except ImportError:
 
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
-from libs.resources import *
 from libs.constants import *
 from libs.utils import *
 from libs.settings import Settings
