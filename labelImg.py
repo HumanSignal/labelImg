@@ -26,6 +26,7 @@ except ImportError:
 
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
+from libs.resources import *
 from libs.constants import *
 from libs.utils import *
 from libs.settings import Settings
