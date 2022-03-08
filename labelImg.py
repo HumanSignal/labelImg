@@ -109,7 +109,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Load predefined classes to the list
         self.load_predefined_classes(default_prefdef_class_file)
 
-        if self.label_hist: #Fix IndexError: list index out of range
+        if self.label_hist:
             self.default_label = self.label_hist[0]
         else:
             print("Not find:/data/predefined_classes.txt (optional)")
