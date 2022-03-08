@@ -35,8 +35,8 @@ class StringBundle:
     def get_bundle(cls, locale_str=None):
         if locale_str is None:
             try:
-                locale_str = locale.getlocale()[0] if locale.getlocale() and len(
-                    locale.getlocale()) > 0 else os.getenv('LANG')
+                locale_str = locale.getdefaultlocale()[0] if locale.getdefaultlocale() and len(
+                    locale.getdefaultlocale()) > 0 else os.getenv('LANG')
             except:
                 print('Invalid locale')
                 locale_str = 'en'
