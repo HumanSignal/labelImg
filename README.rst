@@ -119,6 +119,15 @@ Open cmd and go to the `labelImg <#labelimg>`__ directory
     python labelImg.py
     python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
 
+If you want to package it into a separate EXE file
+
+.. code:: shell
+
+    Install pyinstaller and execute:
+    
+    pip install pyinstaller
+    pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+
 Windows + Anaconda
 ^^^^^^^^^^^^^^^^^^
 
