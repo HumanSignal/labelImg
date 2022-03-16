@@ -1054,7 +1054,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.setEnabled(False)
         if file_path is None:
             file_path = self.settings.get(SETTING_FILENAME)
-
+        #Deselect shape when loading new file
+        if self.canvas.selected_shape:
+            self.canvas.selected_shape.selected = False
+            self.canvas.selected_shape = None
         # Make sure that filePath is a regular python string, rather than QString
         file_path = ustr(file_path)
 
