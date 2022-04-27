@@ -13,12 +13,13 @@ from libs.create_ml_io import CreateMLWriter
 from libs.pascal_voc_io import PascalVocWriter
 from libs.pascal_voc_io import XML_EXT
 from libs.yolo_io import YOLOWriter
-
+from libs.pick_io import PickWriter
 
 class LabelFileFormat(Enum):
     PASCAL_VOC = 1
     YOLO = 2
     CREATE_ML = 3
+    PICK = 4
 
 
 class LabelFileError(Exception):
@@ -49,6 +50,18 @@ class LabelFile(object):
         writer.verified = self.verified
         writer.write()
 
+    def save_pick_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
+        img_folder_name = os.path.basename(os.path.dirname(image_path))
+        img_file_name = os.path.basename(image_path)
+
+        image = QImage()
+        image.load(image_path)
+        image_shape = [image.height(), image.width(),
+                       1 if image.isGrayscale() else 3]
+        writer = PickWriter(img_folder_name, img_file_name,
+                                image_shape, shapes, filename, local_img_path=image_path)
+        writer.verified = self.verified
+        writer.write()
 
     def save_pascal_voc_format(self, filename, shapes, image_path, image_data,
                                line_color=None, fill_color=None, database_src=None):

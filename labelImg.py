@@ -55,6 +55,7 @@ from libs.create_ml_io import CreateMLReader
 from libs.create_ml_io import JSON_EXT
 from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from libs.pick_io import PickReader
 
 __appname__ = 'labelImg'
 
@@ -255,6 +256,8 @@ class MainWindow(QMainWindow, WindowMixin):
             elif format == LabelFileFormat.YOLO:
                 return '&YOLO', 'format_yolo'
             elif format == LabelFileFormat.CREATE_ML:
+                return '&CreateML', 'format_createml'
+            elif format == LabelFileFormat.PICK:
                 return '&CreateML', 'format_createml'
 
         save_format = action(get_format_meta(self.label_file_format)[0],
@@ -558,6 +561,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.actions.save_format.setIcon(new_icon("format_createml"))
             self.label_file_format = LabelFileFormat.CREATE_ML
             LabelFile.suffix = JSON_EXT
+        
+        elif save_format == FORMAT_PICK:
+            self.actions.save_format.setText(FORMAT_PICK)
+            self.actions.save_format.setIcon(new_icon("format_pick"))
+            self.label_file_format = LabelFileFormat.CREATE_ML
+            LabelFile.suffix = TXT_EXT
 
     def change_format(self):
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
@@ -566,6 +575,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.set_format(FORMAT_CREATEML)
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
             self.set_format(FORMAT_PASCALVOC)
+        elif self.label_file_format == LabelFileFormat.PICK:
+            self.set_format(FORMAT_PICK)
         else:
             raise ValueError('Unknown label file format.')
         self.set_dirty()
@@ -912,6 +923,11 @@ class MainWindow(QMainWindow, WindowMixin):
                     annotation_file_path += JSON_EXT
                 self.label_file.save_create_ml_format(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
+            elif self.label_file_format == LabelFileFormat.PICK:
+                if annotation_file_path[-5:].lower() != ".txt":
+                    annotation_file_path += TXT_EXT
+                self.label_file.save_pick_format(annotation_file_path, shapes, self.file_path, self.image_data,
+                                                      self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
             else:
                 self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
                                      self.line_color.getRgb(), self.fill_color.getRgb())
@@ -1180,6 +1196,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_yolo_txt_by_filename(txt_path)
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
+            elif os.path.isfile(txt_path):
+                self.load_pick_txt_by_filename(json_path, file_path)
 
         else:
             xml_path = os.path.splitext(file_path)[0] + XML_EXT
@@ -1599,6 +1617,19 @@ class MainWindow(QMainWindow, WindowMixin):
         print(shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
+    
+    def load_pick_txt_by_filename(self, txt_path):
+        if self.file_path is None:
+            return
+        if os.path.isfile(txt_path) is False:
+            return
+
+        self.set_format(FORMAT_PICK)
+        t_pick_parse_reader = PickReader(txt_path, self.image)
+        shapes = t_pick_parse_reader.get_shapes()
+        print(shapes)
+        self.load_labels(shapes)
+        self.canvas.verified = t_pick_parse_reader.verified
 
     def load_create_ml_json_by_filename(self, json_path, file_path):
         if self.file_path is None:
