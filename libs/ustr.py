@@ -12,5 +12,4 @@ def ustr(x):
             # https://blog.csdn.net/friendan/article/details/51088476
             # https://blog.csdn.net/xxm524/article/details/74937308
             return unicode(x.toUtf8(), DEFAULT_ENCODING, 'ignore')
-        return x
     return x

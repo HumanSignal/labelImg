@@ -1,2 +1,4 @@
 pyqt5==5.14.1
 lxml==4.6.5
+pillow
+pytesseract

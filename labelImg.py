@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+i = 0
+from copy import deepcopy
 import argparse
 import codecs
 import os.path
+import os
 import platform
 import shutil
 import sys
 import webbrowser as wb
 from functools import partial
+import subprocess 
+import pytesseract
+#tesseract_path = subprocess.run(['where', 'tesseract'], capture_output=True, text=True).stdout
+#print(tesseract_path)
+pytesseract.pytesseract.tesseract_cmd = os.path.join(os.path.dirname(__file__),'tesseract.exe')#tesseract_path
+os.environ['TESSDATA_PREFIX'] = os.path.join(os.path.dirname(__file__),'tessdata')
+
+from PIL import Image, ImageOps
 
 try:
     from PyQt5.QtGui import *
@@ -51,7 +63,7 @@ __appname__ = 'labelImg'
 
 
 class WindowMixin(object):
-
+    
     def menu(self, title, actions=None):
         menu = self.menuBar().addMenu(title)
         if actions:
@@ -96,6 +108,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dir_name = None
         self.label_hist = []
         self.last_open_dir = None
+        self.last_shape_selected = None
         self.cur_img_idx = 0
         self.img_count = len(self.m_img_list)
 
@@ -168,17 +181,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setObjectName(get_str('labels'))
         self.dock.setWidget(label_list_container)
 
-        self.file_list_widget = QListWidget()
-        self.file_list_widget.itemDoubleClicked.connect(self.file_item_double_clicked)
-        file_list_layout = QVBoxLayout()
-        file_list_layout.setContentsMargins(0, 0, 0, 0)
-        file_list_layout.addWidget(self.file_list_widget)
-        file_list_container = QWidget()
-        file_list_container.setLayout(file_list_layout)
-        self.file_dock = QDockWidget(get_str('fileList'), self)
-        self.file_dock.setObjectName(get_str('files'))
-        self.file_dock.setWidget(file_list_container)
-
+        # Create Text zone to display correspondant text retrieved with ocr for a bbox
+        self.ocr_text_edit = QTextEdit()
+        #self.ocr_text_edit.focusOutEvent = self.ocr_focus_handler
+        ocr_text_edit_layout = QVBoxLayout()
+        ocr_text_edit_layout.setContentsMargins(0, 0, 0, 0)
+        ocr_text_edit_layout.addWidget(self.ocr_text_edit)
+        self.ocr_dock = QDockWidget(get_str('text'), self)
+        self.ocr_dock.setObjectName(get_str('text'))
+        self.ocr_dock.setWidget(self.ocr_text_edit)
+        
         self.zoom_widget = ZoomWidget()
         self.color_dialog = ColorDialog(parent=self)
 
@@ -203,12 +215,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.setCentralWidget(scroll)
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.file_dock)
-        self.file_dock.setFeatures(QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.ocr_dock)
+        self.dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
-        self.dock_features = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
-        self.dock.setFeatures(self.dock.features() ^ self.dock_features)
-
+        self.ocr_dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
         # Actions
         action = partial(new_action, self)
         quit = action(get_str('quit'), self.close,
@@ -435,6 +445,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.statusBar().show()
 
         # Application state.
+        self.pillow_image = None
         self.image = QImage()
         self.file_path = ustr(default_filename)
         self.last_open_dir = None
@@ -511,6 +522,17 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.file_path and os.path.isdir(self.file_path):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
+    def ocr_focus_handler(self,event) : 
+        print('bonjour dans le chat')
+        print(self.last_shape_selected)
+        #print(self.shapes_to_items[self.canvas.shapes[-1]])
+        """
+        shape = self.canvas.selected_shape
+        print(shape, ' shape ocr')
+        print(' self.shapes to item ocr', self.shapes_to_items[shape])
+        print(self.shapes_to_items[shape])
+        """
+
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
             self.canvas.set_drawing_shape_to_square(False)
@@ -564,7 +586,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.actions.editMode.setEnabled(False)
             self.dock.setFeatures(self.dock.features() | self.dock_features)
         else:
-            self.dock.setFeatures(self.dock.features() ^ self.dock_features)
+            self.dock.setFeatures(self.dock.features() ^ int(self.dock_features))
 
     def populate_mode_actions(self):
         if self.beginner():
@@ -772,8 +794,10 @@ class MainWindow(QMainWindow, WindowMixin):
             self._no_selection_slot = False
         else:
             shape = self.canvas.selected_shape
+            self.last_shape_selected = deepcopy(shape)
             if shape:
-                self.shapes_to_items[shape].setSelected(True)
+                self.shapes_to_items[shape][0].setSelected(True) # 0 = item
+                self.ocr_text_edit.setText(self.shapes_to_items[shape][1]) # Format shapes_to_items[shape] = (items, text)
             else:
                 self.label_list.clearSelection()
         self.actions.delete.setEnabled(selected)
@@ -783,23 +807,37 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.shapeFillColor.setEnabled(selected)
 
     def add_label(self, shape):
+    
         shape.paint_label = self.display_label_option.isChecked()
         item = HashableQListWidgetItem(shape.label)
         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         item.setCheckState(Qt.Checked)
         item.setBackground(generate_color_by_text(shape.label))
         self.items_to_shapes[item] = shape
-        self.shapes_to_items[shape] = item
+        p1,_,p3,_ = shape.points
+
+        crop = self.pillow_image.crop(box = (p1.x(),p1.y(),p3.x(),p3.y()))
+        grayscale = ImageOps.grayscale(crop)
+        
+        medium_crop = grayscale.resize((int(crop.size[0]*1.1),int(crop.size[1]*1.1)))
+        ocr_text = pytesseract.image_to_string(medium_crop,lang='fra')
+        taller_crop = grayscale.resize((int(crop.size[0]*1.6),int(crop.size[1]*1.6)))
+        taller_ocr_text = pytesseract.image_to_string(taller_crop,lang='fra')
+        if len(ocr_text) > len(taller_ocr_text) : 
+            self.shapes_to_items[shape] = (item, ocr_text)
+        else:
+            self.shapes_to_items[shape] = (item, taller_ocr_text)
         self.label_list.addItem(item)
+        self.ocr_text_edit.setText(self.shapes_to_items[shape][1])
+
         for action in self.actions.onShapesPresent:
             action.setEnabled(True)
         self.update_combo_box()
 
     def remove_label(self, shape):
         if shape is None:
-            # print('rm empty label')
             return
-        item = self.shapes_to_items[shape]
+        item,_ = self.shapes_to_items[shape]
         self.label_list.takeItem(self.label_list.row(item))
         del self.shapes_to_items[shape]
         del self.items_to_shapes[item]
@@ -851,7 +889,6 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.label_file is None:
             self.label_file = LabelFile()
             self.label_file.verified = self.canvas.verified
-
         def format_shape(s):
             return dict(label=s.label,
                         line_color=s.line_color.getRgb(),
@@ -911,6 +948,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self._no_selection_slot = True
             self.canvas.select_shape(self.items_to_shapes[item])
             shape = self.items_to_shapes[item]
+            self.last_shape_selected = self.items_to_shapes[item]
             # Add Chris
             self.diffc_button.setChecked(shape.difficult)
 
@@ -1060,21 +1098,12 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.selected_shape = None
         # Make sure that filePath is a regular python string, rather than QString
         file_path = ustr(file_path)
-
         # Fix bug: An  index error after select a directory when open a new file.
         unicode_file_path = ustr(file_path)
         unicode_file_path = os.path.abspath(unicode_file_path)
         # Tzutalin 20160906 : Add file list and dock to move faster
         # Highlight the file item
-        if unicode_file_path and self.file_list_widget.count() > 0:
-            if unicode_file_path in self.m_img_list:
-                index = self.m_img_list.index(unicode_file_path)
-                file_widget_item = self.file_list_widget.item(index)
-                file_widget_item.setSelected(True)
-            else:
-                self.file_list_widget.clear()
-                self.m_img_list.clear()
-
+        self.pillow_image = Image.open(file_path)
         if unicode_file_path and os.path.exists(unicode_file_path):
             if LabelFile.is_label_file(unicode_file_path):
                 try:
@@ -1306,13 +1335,9 @@ class MainWindow(QMainWindow, WindowMixin):
         self.last_open_dir = dir_path
         self.dir_name = dir_path
         self.file_path = None
-        self.file_list_widget.clear()
         self.m_img_list = self.scan_all_images(dir_path)
         self.img_count = len(self.m_img_list)
         self.open_next_image()
-        for imgPath in self.m_img_list:
-            item = QListWidgetItem(imgPath)
-            self.file_list_widget.addItem(item)
 
     def verify_image(self, _value=False):
         # Proceeding next image without dialog if having any label
@@ -1477,15 +1502,13 @@ class MainWindow(QMainWindow, WindowMixin):
     def may_continue(self):
         if not self.dirty:
             return True
-        else:
-            discard_changes = self.discard_changes_dialog()
-            if discard_changes == QMessageBox.No:
-                return True
-            elif discard_changes == QMessageBox.Yes:
-                self.save_file()
-                return True
-            else:
-                return False
+        discard_changes = self.discard_changes_dialog()
+        if discard_changes == QMessageBox.No:
+            return True
+        if discard_changes == QMessageBox.Yes:
+            self.save_file()
+            return True
+        return False
 
     def discard_changes_dialog(self):
         yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
