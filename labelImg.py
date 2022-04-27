@@ -181,7 +181,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Create Text zone to display correspondant text retrieved with ocr for a bbox
         self.ocr_text_edit = QTextEdit()
-        #self.ocr_text_edit.focusOutEvent = self.ocr_focus_handler
+        self.ocr_text_edit.focusOutEvent = self.ocr_focus_out_handler
         ocr_text_edit_layout = QVBoxLayout()
         ocr_text_edit_layout.setContentsMargins(0, 0, 0, 0)
         ocr_text_edit_layout.addWidget(self.ocr_text_edit)
@@ -522,16 +522,9 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.file_path and os.path.isdir(self.file_path):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
-    def ocr_focus_handler(self,event) : 
-        print('bonjour dans le chat')
-        print(self.last_shape_selected)
-        #print(self.shapes_to_items[self.canvas.shapes[-1]])
-        """
-        shape = self.canvas.selected_shape
-        print(shape, ' shape ocr')
-        print(' self.shapes to item ocr', self.shapes_to_items[shape])
-        print(self.shapes_to_items[shape])
-        """
+    def ocr_focus_out_handler(self,event):
+        if self.last_shape_selected:
+            self.shapes_to_items[self.last_shape_selected][1] = self.ocr_text_edit.toPlainText()
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
@@ -802,8 +795,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self._no_selection_slot = False
         else:
             shape = self.canvas.selected_shape
-            self.last_shape_selected = deepcopy(shape)
             if shape:
+                self.last_shape_selected = deepcopy(shape)
                 self.shapes_to_items[shape][0].setSelected(True) # 0 = item
                 self.ocr_text_edit.setText(self.shapes_to_items[shape][1]) # Format shapes_to_items[shape] = (items, text)
             else:
@@ -832,9 +825,9 @@ class MainWindow(QMainWindow, WindowMixin):
         taller_crop = grayscale.resize((int(crop.size[0]*1.6),int(crop.size[1]*1.6)))
         taller_ocr_text = pytesseract.image_to_string(taller_crop,lang='fra')#,config=tessdata_dir_config)
         if len(ocr_text) > len(taller_ocr_text) : 
-            self.shapes_to_items[shape] = (item, ocr_text)
+            self.shapes_to_items[shape] = [item, ocr_text]
         else:
-            self.shapes_to_items[shape] = (item, taller_ocr_text)
+            self.shapes_to_items[shape] = [item, taller_ocr_text]
         self.label_list.addItem(item)
         self.ocr_text_edit.setText(self.shapes_to_items[shape][1])
 
@@ -981,6 +974,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         position MUST be in global coordinates.
         """
+        
         if not self.use_default_label_checkbox.isChecked():
             if len(self.label_hist) > 0:
                 self.label_dialog = LabelDialog(
@@ -1001,6 +995,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.prev_label_text = text
             generate_color = generate_color_by_text(text)
             shape = self.canvas.set_last_label(text, generate_color, generate_color)
+            self.last_shape_selected = shape
             self.add_label(shape)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.set_editing(True)
