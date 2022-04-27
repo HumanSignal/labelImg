@@ -258,7 +258,7 @@ class MainWindow(QMainWindow, WindowMixin):
             elif format == LabelFileFormat.CREATE_ML:
                 return '&CreateML', 'format_createml'
             elif format == LabelFileFormat.PICK:
-                return '&CreateML', 'format_createml'
+                return '&Pick', 'format_pick'
 
         save_format = action(get_format_meta(self.label_file_format)[0],
                              self.change_format, 'Ctrl+Y',
@@ -565,7 +565,7 @@ class MainWindow(QMainWindow, WindowMixin):
         elif save_format == FORMAT_PICK:
             self.actions.save_format.setText(FORMAT_PICK)
             self.actions.save_format.setIcon(new_icon("format_pick"))
-            self.label_file_format = LabelFileFormat.CREATE_ML
+            self.label_file_format = LabelFileFormat.PICK
             LabelFile.suffix = TXT_EXT
 
     def change_format(self):
@@ -574,9 +574,9 @@ class MainWindow(QMainWindow, WindowMixin):
         elif self.label_file_format == LabelFileFormat.YOLO:
             self.set_format(FORMAT_CREATEML)
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            self.set_format(FORMAT_PASCALVOC)
-        elif self.label_file_format == LabelFileFormat.PICK:
             self.set_format(FORMAT_PICK)
+        elif self.label_file_format == LabelFileFormat.PICK:
+            self.set_format(FORMAT_PASCALVOC)
         else:
             raise ValueError('Unknown label file format.')
         self.set_dirty()
@@ -924,7 +924,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.label_file.save_create_ml_format(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
             elif self.label_file_format == LabelFileFormat.PICK:
-                if annotation_file_path[-5:].lower() != ".txt":
+                if annotation_file_path[-4:].lower() != ".txt":
                     annotation_file_path += TXT_EXT
                 self.label_file.save_pick_format(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())

@@ -50,7 +50,8 @@ class LabelFile(object):
         writer.verified = self.verified
         writer.write()
 
-    def save_pick_format(self, filename, shapes, image_path, image_data, class_list, line_color=None, fill_color=None, database_src=None):
+    def save_pick_format(self, filename, shapes, image_path,
+                        image_data, class_list, line_color=None, fill_color=None, database_src=None):
         img_folder_name = os.path.basename(os.path.dirname(image_path))
         img_file_name = os.path.basename(image_path)
 
