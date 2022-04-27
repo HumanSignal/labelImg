@@ -523,7 +523,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
     def ocr_focus_out_handler(self,event):
-        if self.last_shape_selected:
+        if self.last_shape_selected in self.shapes_to_items:
             self.shapes_to_items[self.last_shape_selected][1] = self.ocr_text_edit.toPlainText()
 
     def keyReleaseEvent(self, event):
