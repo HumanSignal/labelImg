@@ -12,10 +12,7 @@ import shutil
 import sys
 import webbrowser as wb
 from functools import partial
-import subprocess 
 import pytesseract
-#tesseract_path = subprocess.run(['where', 'tesseract'], capture_output=True, text=True).stdout
-#print(tesseract_path)
 pytesseract.pytesseract.tesseract_cmd = os.path.join(os.path.dirname(__file__),'tesseract.exe')#tesseract_path
 os.environ['TESSDATA_PREFIX'] = os.path.join(os.path.dirname(__file__),'tessdata')
 
@@ -820,9 +817,9 @@ class MainWindow(QMainWindow, WindowMixin):
         grayscale = ImageOps.grayscale(crop)
         
         medium_crop = grayscale.resize((int(crop.size[0]*1.1),int(crop.size[1]*1.1)))
-        ocr_text = pytesseract.image_to_string(medium_crop,lang='fra')
+        ocr_text = pytesseract.image_to_string(medium_crop,lang='fra')#,config=tessdata_dir_config)
         taller_crop = grayscale.resize((int(crop.size[0]*1.6),int(crop.size[1]*1.6)))
-        taller_ocr_text = pytesseract.image_to_string(taller_crop,lang='fra')
+        taller_ocr_text = pytesseract.image_to_string(taller_crop,lang='fra')#,config=tessdata_dir_config)
         if len(ocr_text) > len(taller_ocr_text) : 
             self.shapes_to_items[shape] = (item, ocr_text)
         else:
