@@ -8,7 +8,7 @@ from libs.constants import DEFAULT_ENCODING
 from libs.ustr import ustr
 
 
-XML_EXT = '.xml'
+TXT_EXT = '.txt'
 ENCODE_METHOD = DEFAULT_ENCODING
 
 class PickWriter:
@@ -114,7 +114,7 @@ class PickWriter:
         out_file = None
         if target_file is None:
             out_file = codecs.open(
-                self.filename + XML_EXT, 'w', encoding=ENCODE_METHOD)
+                self.filename + TXT_EXT, 'w', encoding=ENCODE_METHOD)
         else:
             out_file = codecs.open(target_file, 'w', encoding=ENCODE_METHOD)
 
@@ -148,7 +148,7 @@ class PickReader:
         self.shapes.append((label, points, None, None, difficult))
 
     def parse_xml(self):
-        assert self.file_path.endswith(XML_EXT), "Unsupported file format"
+        assert self.file_path.endswith(TXT_EXT), "Unsupported file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
         xml_tree = ElementTree.parse(self.file_path, parser=parser).getroot()
         filename = xml_tree.find('filename').text
