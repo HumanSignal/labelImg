@@ -94,7 +94,11 @@ class YoloReader:
 
         # print (file_path, self.class_list_path)
 
-        classes_file = open(self.class_list_path, 'r')
+        try:
+            classes_file = open(self.class_list_path, 'r')
+        except FileNotFoundError:
+            classes_file = open(os.path.join(os.path.dirname(__file__), "..", "data", "predefined_classes.txt"), 'r')
+            
         self.classes = classes_file.read().strip('\n').split('\n')
 
         # print (self.classes)
