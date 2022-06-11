@@ -27,6 +27,9 @@
 <file alias="zoom">resources/icons/zoom.png</file>
 <file alias="zoom-in">resources/icons/zoom-in.png</file>
 <file alias="zoom-out">resources/icons/zoom-out.png</file>
+<file alias="light_reset">resources/icons/light_reset.png</file>
+<file alias="light_lighten">resources/icons/light_lighten.png</file>
+<file alias="light_darken">resources/icons/light_darken.png</file>
 <file alias="delete">resources/icons/cancel.png</file>
 <file alias="next">resources/icons/next.png</file>
 <file alias="prev">resources/icons/prev.png</file>
