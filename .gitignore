@@ -1,8 +1,5 @@
 resources/icons/.DS_Store
-
 resources.py
-
-.idea*
 labelImg.egg-info*
 
 *.pyc
@@ -17,6 +14,8 @@ cscope*
 .subvimrc
 .vscode
 *.pkl
+Pipfile
+*.xml
 
 # MacOS System-Generated
 .DS_Store
@@ -27,4 +26,18 @@ cscope*
 ehthumbs.db
 Thumbs.db
 
-Pipfile
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# IDE
+*.DS_Store
+*.iml
+.idea
+.unison*
+.attach*
+tmp.*
