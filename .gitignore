@@ -26,3 +26,5 @@ cscope*
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+Pipfile
