@@ -737,6 +737,10 @@ class Canvas(QWidget):
         QApplication.restoreOverrideCursor()
 
     def reset_state(self):
+        self.de_select_shape()
+        self.un_highlight()
+        self.selected_shape_copy = None
+
         self.restore_cursor()
         self.pixmap = None
         self.update()
