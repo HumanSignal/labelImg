@@ -23,6 +23,7 @@ CURSOR_GRAB = Qt.OpenHandCursor
 
 class Canvas(QWidget):
     zoomRequest = pyqtSignal(int)
+    lightRequest = pyqtSignal(int)
     scrollRequest = pyqtSignal(int, int)
     newShape = pyqtSignal()
     selectionChanged = pyqtSignal(bool)
@@ -47,6 +48,7 @@ class Canvas(QWidget):
         self.prev_point = QPointF()
         self.offsets = QPointF(), QPointF()
         self.scale = 1.0
+        self.overlay_color = None
         self.label_font_size = 8
         self.pixmap = QPixmap()
         self.visible = {}
@@ -503,7 +505,15 @@ class Canvas(QWidget):
         p.scale(self.scale, self.scale)
         p.translate(self.offset_to_center())
 
-        p.drawPixmap(0, 0, self.pixmap)
+        temp = self.pixmap
+        if self.overlay_color:
+            temp = QPixmap(self.pixmap)
+            painter = QPainter(temp)
+            painter.setCompositionMode(painter.CompositionMode_Overlay)
+            painter.fillRect(temp.rect(), self.overlay_color)
+            painter.end()
+
+        p.drawPixmap(0, 0, temp)
         Shape.scale = self.scale
         Shape.label_font_size = self.label_font_size
         for shape in self.shapes:
@@ -607,7 +617,9 @@ class Canvas(QWidget):
             v_delta = delta.y()
 
         mods = ev.modifiers()
-        if Qt.ControlModifier == int(mods) and v_delta:
+        if int(Qt.ControlModifier) | int(Qt.ShiftModifier) == int(mods) and v_delta:
+            self.lightRequest.emit(v_delta)
+        elif Qt.ControlModifier == int(mods) and v_delta:
             self.zoomRequest.emit(v_delta)
         else:
             v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
