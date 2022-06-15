@@ -1,0 +1,66 @@
+name: Package
+on: [push, pull_request]
+
+jobs:
+  package-macos:
+    runs-on: macos-latest
+    env:
+      PIPENV_VENV_IN_PROJECT: 1
+      PIPENV_IGNORE_VIRTUALENVS: 1
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python Environment
+        run: |
+          pip3 install pipenv
+          pipenv install pyqt5 lxml
+          pipenv run pip install pyqt5==5.15.6 lxml
+      - name: Build LabelImg
+        run: |
+          pipenv run make qt5py3
+          rm -rf build dist
+      - name: Package LabelImg
+        run: |
+          pipenv run python setup.py py2app
+          open dist/labelImg.app
+      - name: Archive macOS app
+        run: |
+          cd dist/
+          tar czf labelImg.tgz labelImg.app
+      - uses: actions/upload-artifact@v3
+        with:
+          name: macOS artifact
+          path: dist/labelImg.tgz
+  package-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python Environment
+        run: |
+          pip3 install pyinstaller pyqt5==5.15.6 lxml
+      - name: Build LabelImg
+        run: |
+          pyrcc5 -o libs/resources.py resources.qrc
+      - name: Package LabelImg
+        run: |
+          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Windows artifact
+          path: dist/labelImg.exe
+  package-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python Environment
+        run: |
+          pip3 install pyinstaller pyqt5==5.15.6 lxml
+      - name: Build LabelImg
+        run: |
+          pyrcc5 -o libs/resources.py resources.qrc
+      - name: Package LabelImg
+        run: |
+          pyinstaller --hidden-import=pyqt5 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Linux artifact
+          path: dist/labelImg
