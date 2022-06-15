@@ -4,8 +4,8 @@ LabelImg
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
 
-.. image:: https://app.travis-ci.com/tzutalin/labelImg.svg?branch=master
-    :target: https://app.travis-ci.com/tzutalin/labelImg
+.. image:: https://github.com/tzutalin/labelImg/actions/workflows/package.yml/badge.svg
+    :target:https://github.com/tzutalin/labelImg/actions/workflows/package.yml
 
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
         :target: https://github.com/tzutalin/labelImg/blob/master/README.zh.rst
