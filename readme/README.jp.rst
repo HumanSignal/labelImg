@@ -6,14 +6,15 @@ labelImg
 
 .. image:: https://img.shields.io/github/workflow/status/tzutalin/labelImg/Package?style=for-the-badge   :alt: GitHub Workflow Status
 
+
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
-        :target: https://github.com/tzutalin/labelImg/blob/master/README.zh.rst
+        :target: https://github.com/tzutalin/labelImg
 
 .. image:: https://img.shields.io/badge/lang-zh-green.svg
         :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.zh.rst
 
-.. image:: https://img.shields.io/badge/lang-zh--TW-green.svg
-    :target: (https://github.com/jonatasemidio/multilanguage-readme-pattern/blob/master/README.pt-br.md
+.. image:: https://img.shields.io/badge/lang-jp-green.svg
+        :target: https://github.com/tzutalin/labelImg/blob/master/readme/README.jp.rst
 
 .. image:: /resources/icons/app.png
     :width: 200px
