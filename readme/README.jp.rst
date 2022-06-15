@@ -4,9 +4,7 @@ labelImg
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
 
-.. image:: https://github.com/tzutalin/labelImg/actions/workflows/package.yml/badge.svg
-    :target:https://github.com/tzutalin/labelImg/actions/workflows/package.yml
-
+.. image:: https://img.shields.io/github/workflow/status/tzutalin/labelImg/Package?style=for-the-badge   :alt: GitHub Workflow Status
 
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
         :target: https://github.com/tzutalin/labelImg/blob/master/README.zh.rst
