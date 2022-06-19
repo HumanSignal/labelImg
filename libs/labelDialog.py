@@ -71,7 +71,7 @@ class LabelDialog(QDialog):
             self.adjustSize()
             btn.adjustSize()
             offset = btn.mapToGlobal(btn.pos()) - self.pos()
-            offset += QPoint(btn.size().width()/4, btn.size().height()/2)
+            offset += QPoint(btn.size().width() // 4, btn.size().height() // 2)
             cursor_pos.setX(max(0, cursor_pos.x() - offset.x()))
             cursor_pos.setY(max(0, cursor_pos.y() - offset.y()))
 
