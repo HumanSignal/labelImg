@@ -1326,7 +1326,8 @@ class MainWindow(QMainWindow, WindowMixin):
             if filename:
                 if isinstance(filename, (tuple, list)):
                     filename = filename[0]
-            self.load_create_ml_json_by_filename(filename,self.file_path)          
+            print(f'json path: {filename}')
+            self.load_create_ml_json_by_filename(filename, self.file_path)          
 
     def open_dir_dialog(self, _value=False, dir_path=None, silent=False):
         if not self.may_continue():
