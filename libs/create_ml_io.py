@@ -109,7 +109,8 @@ class CreateMLReader:
             input_data = file.read()
 
         output_dict = json.loads(input_data)
-        self.verified = output_dict.get("verified", False)
+        
+        self.verified = output_dict[0].get("verified", False)
 
         if len(self.shapes) > 0:
             self.shapes = []
