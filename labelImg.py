@@ -1359,7 +1359,7 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
-        #self.default_save_dir = target_dir_path
+        self.default_save_dir = target_dir_path
         if self.file_path:
             self.show_bounding_box_from_annotation_file(file_path=self.file_path)
             #self.open_annotation_dialog()
