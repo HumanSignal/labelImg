@@ -90,7 +90,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Save as Pascal voc xml
         self.default_save_dir = default_save_dir
-        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.PASCAL_VOC)
+        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.CREATE_ML)
 
         # For loading all image under a directory
         self.m_img_list = []
@@ -1123,6 +1123,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                         u"<p>Make sure <i>%s</i> is a valid label file.")
                                        % (e, unicode_file_path))
                     self.status("Error reading %s" % unicode_file_path)
+                    
                     return False
                 self.image_data = self.label_file.image_data
                 self.line_color = QColor(*self.label_file.lineColor)
