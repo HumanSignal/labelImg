@@ -1333,7 +1333,6 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             print(f'json path: {filename}')
 
-            import os
             filename = os.path.splitext(self.file_path)+'.json'
             print(f'json path: {filename}')
 
