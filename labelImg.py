@@ -1332,10 +1332,10 @@ class MainWindow(QMainWindow, WindowMixin):
             if filename:
                 if isinstance(filename, (tuple, list)):
                     filename = filename[0]
-            print(f'json path: {filename}')
+            #print(f'json path: {filename}')
 
             filename = os.path.splitext(self.file_path)[0]+JSON_EXT
-            print(f'json path: {filename}')
+            #print(f'json path: {filename}')
 
             self.load_create_ml_json_by_filename(filename, self.file_path)         
             #self.load_create_ml_json_by_filename(filename, self.file_path)         
