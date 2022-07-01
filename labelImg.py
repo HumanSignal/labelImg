@@ -1196,10 +1196,15 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             xml_path = os.path.splitext(file_path)[0] + XML_EXT
             txt_path = os.path.splitext(file_path)[0] + TXT_EXT
+            json_path = os.path.splitext(file_path)[0] + JSON_EXT
+
             if os.path.isfile(xml_path):
                 self.load_pascal_xml_by_filename(xml_path)
             elif os.path.isfile(txt_path):
                 self.load_yolo_txt_by_filename(txt_path)
+            elif os.path.isfile(txt_path):
+                self.load_create_ml_json_by_filename(json_path, file_path)
+            
 
     def resizeEvent(self, event):
         if self.canvas and not self.image.isNull()\
@@ -1332,8 +1337,8 @@ class MainWindow(QMainWindow, WindowMixin):
             filename = os.path.splitext(self.file_path)+'.json'
             print(f'json path: {filename}')
 
-            self.load_create_ml_json_by_filename(filename, self.file_path)          
-            #self.load_create_ml_json_by_filename(filename, self.file_path)          
+            self.load_create_ml_json_by_filename(filename, self.file_path)         
+            #self.load_create_ml_json_by_filename(filename, self.file_path)         
 
     def open_dir_dialog(self, _value=False, dir_path=None, silent=False):
         if not self.may_continue():
