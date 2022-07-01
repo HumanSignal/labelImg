@@ -1320,6 +1320,14 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             self.load_pascal_xml_by_filename(filename)
 
+        elif self.label_file_format == LabelFileFormat.CREATE_ML:
+            filters = "Open Annotation JSON file (%s)" % ' '.join(['*.json'])
+            filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a json file' % __appname__, path, filters))
+            if filename:
+                if isinstance(filename, (tuple, list)):
+                    filename = filename[0]
+            self.load_create_ml_json_by_filename(filename)          
+
     def open_dir_dialog(self, _value=False, dir_path=None, silent=False):
         if not self.may_continue():
             return
