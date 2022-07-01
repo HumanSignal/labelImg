@@ -1310,8 +1310,8 @@ class MainWindow(QMainWindow, WindowMixin):
                                      ('Change saved folder', self.default_save_dir))
         self.statusBar().show()
 
-        if self.file_path is not None:
-            self.open_annotation_dialog()
+        #if self.file_path is not None:
+        #    self.open_annotation_dialog()
 
     def open_annotation_dialog(self, _value=False):
         if self.file_path is None:
@@ -1359,8 +1359,9 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
-        self.default_save_dir = target_dir_path
-
+        #self.default_save_dir = target_dir_path
+        if self.file_path:
+            self.open_annotation_dialog()
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
