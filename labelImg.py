@@ -1361,7 +1361,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.import_dir_images(target_dir_path)
         #self.default_save_dir = target_dir_path
         if self.file_path:
-            self.open_annotation_dialog()
+            self.show_bounding_box_from_annotation_file(file_path=self.file_path)
+            #self.open_annotation_dialog()
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
