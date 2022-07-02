@@ -1306,9 +1306,12 @@ class MainWindow(QMainWindow, WindowMixin):
         if dir_path is not None and len(dir_path) > 1:
             self.default_save_dir = dir_path
 
+        self.show_bounding_box_from_annotation_file(self.file_path)
+
         self.statusBar().showMessage('%s . Annotation will be saved to %s' %
                                      ('Change saved folder', self.default_save_dir))
         self.statusBar().show()
+
 
     def open_annotation_dialog(self, _value=False):
         if self.file_path is None:
