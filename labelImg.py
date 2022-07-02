@@ -1157,8 +1157,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paint_canvas()
             self.add_recent_file(self.file_path)
             self.toggle_actions(True)
-            self.open_annotation_dialog()
-            #self.show_bounding_box_from_annotation_file(file_path)
+            #self.open_annotation_dialog()
+            self.show_bounding_box_from_annotation_file(self.file_path)
 
             counter = self.counter_str()
             self.setWindowTitle(__appname__ + ' ' + file_path + ' ' + counter)
@@ -1331,14 +1331,14 @@ class MainWindow(QMainWindow, WindowMixin):
             self.load_pascal_xml_by_filename(filename)
 
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            """
+            
             filters = "Open Annotation JSON file (%s)" % ' '.join(['*.json'])
             filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a json file' % __appname__, path, filters))
             if filename:
                 if isinstance(filename, (tuple, list)):
                     filename = filename[0]
-            """
-            filename = os.path.splitext(self.file_path)[0]+JSON_EXT
+            
+            #filename = os.path.splitext(self.file_path)[0]+JSON_EXT
 
             self.load_create_ml_json_by_filename(filename, self.file_path)         
         
