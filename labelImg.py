@@ -1157,7 +1157,6 @@ class MainWindow(QMainWindow, WindowMixin):
             self.paint_canvas()
             self.add_recent_file(self.file_path)
             self.toggle_actions(True)
-            #self.open_annotation_dialog()
             self.show_bounding_box_from_annotation_file(self.file_path)
 
             counter = self.counter_str()
@@ -1311,9 +1310,6 @@ class MainWindow(QMainWindow, WindowMixin):
                                      ('Change saved folder', self.default_save_dir))
         self.statusBar().show()
 
-        #if self.file_path is not None:
-        #    self.open_annotation_dialog()
-
     def open_annotation_dialog(self, _value=False):
         if self.file_path is None:
             self.statusBar().showMessage('Please select image first')
@@ -1337,8 +1333,6 @@ class MainWindow(QMainWindow, WindowMixin):
             if filename:
                 if isinstance(filename, (tuple, list)):
                     filename = filename[0]
-            
-            #filename = os.path.splitext(self.file_path)[0]+JSON_EXT
 
             self.load_create_ml_json_by_filename(filename, self.file_path)         
         
@@ -1363,7 +1357,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.default_save_dir = target_dir_path
         if self.file_path:
             self.show_bounding_box_from_annotation_file(file_path=self.file_path)
-            #self.open_annotation_dialog()
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
