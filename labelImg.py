@@ -1203,7 +1203,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_pascal_xml_by_filename(xml_path)
             elif os.path.isfile(txt_path):
                 self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(txt_path):
+            elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
             
 
