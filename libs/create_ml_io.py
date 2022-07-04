@@ -32,7 +32,7 @@ class CreateMLWriter:
 
         output_image_dict = {
             "image": self.filename,
-            "verified": True if self.verified else False,
+            "verified": self.verified,
             "annotations": []
         }
 
