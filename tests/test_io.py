@@ -50,6 +50,8 @@ class TestCreateMLRW(unittest.TestCase):
 
         writer = CreateMLWriter('tests', 'test.512.512.bmp', (512, 512, 1), shapes, output_file,
                                 local_img_path='tests/test.512.512.bmp')
+        
+        writer.verified = True
         writer.write()
 
         # check written json
@@ -58,7 +60,7 @@ class TestCreateMLRW(unittest.TestCase):
 
         import json
         data_dict = json.loads(input_data)[0]
-
+        self.assertEqual(True, data_dict['verified'], 'verified tag not reflected')
         self.assertEqual('test.512.512.bmp', data_dict['image'], 'filename not correct in .json')
         self.assertEqual(2, len(data_dict['annotations']), 'output file contains to less annotations')
         face = data_dict['annotations'][1]

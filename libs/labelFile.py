@@ -48,6 +48,7 @@ class LabelFile(object):
                                 image_shape, shapes, filename, local_img_path=image_path)
         writer.verified = self.verified
         writer.write()
+        return
 
 
     def save_pascal_voc_format(self, filename, shapes, image_path, image_data,
