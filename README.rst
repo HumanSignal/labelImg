@@ -96,7 +96,7 @@ Virtualenv can avoid a lot of the QT / Python version issues
     pipenv run pip install pyqt5==5.15.2 lxml
     pipenv run make qt5py3
     pipenv run python3 labelImg.py
-    [Optional] rm -rf build dist; python setup.py py2app -A;mv "dist/labelImg.app" /Applications
+    [Optional] rm -rf build dist; pipenv run python setup.py py2app -A;mv "dist/labelImg.app" /Applications
 
 Note: The Last command gives you a nice .app file with a new SVG Icon in your /Applications folder. You can consider using the script: build-tools/build-for-macos.sh
 
