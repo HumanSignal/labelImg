@@ -81,11 +81,17 @@ def format_shortcut(text):
 
 def generate_color_by_text(text):
     s = ustr(text)
+    print('generating color by text...')
+    print(f'{s} {type(s)}')
     hash_code = int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16)
     r = int((hash_code / 255) % 255)
     g = int((hash_code / 65025) % 255)
     b = int((hash_code / 16581375) % 255)
-    return QColor(r, g, b, 100)
+    if text == '0':
+        color = QColor(255, 88, 59, 100)
+    else:
+        color = QColor(r, g, b, 100)
+    return color
 
 
 def have_qstring():
