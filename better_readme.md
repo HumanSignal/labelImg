@@ -8,7 +8,7 @@ pyrcc5 -o libs/resources.py resources.qrc
 ```
 Then finally run:
 ```
-
+labelImg.py
 ```
 
 ## To Do
@@ -18,5 +18,5 @@ Then finally run:
 - dark mode
 
 # Done
-- Several custom colors in constants.py file
-- toggle vertices in view tab
+- Several custom colors, changeable in constants.py file
+- toggle vertices on/off in view tab
