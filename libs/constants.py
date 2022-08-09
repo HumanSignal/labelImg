@@ -21,7 +21,7 @@ DEFAULT_ENCODING = 'utf-8'
 
 # DEFINE COLORS
 from PyQt5.QtGui import *
-CLASS_COLOR_0 = QColor(0, 0, 255, 200)
+CLASS_COLOR_0 = QColor(0, 0, 255, 255)
 DRAWING_COLOR = QColor(0, 0, 0)
 BACKGROUND_COLOR = QColor(0, 0, 0, 200)
 
