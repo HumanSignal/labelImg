@@ -1088,7 +1088,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_vertices(self, value):
         libs.shape.ENABLE_VERTICES = value
-        print(f'!!!!!!!!!!!!!!!!!!  {libs.shape.ENABLE_VERTICES}')
 
     def load_file(self, file_path=None):
         """Load the specified file, or the last opened file if None."""
