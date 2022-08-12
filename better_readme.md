@@ -17,6 +17,7 @@ labelImg.py
 - dark mode
 - Integrate Model
 - Model outputs preview/generate
+- poly labelling
 
 # Done
 - Several custom colors, changeable in constants.py file
