@@ -242,13 +242,13 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
-        eleteAct = QAction( "Delete Selected", self)
-        eleteAct.setShortcut("Ctrl+A")
+        actionSelectAll = QAction( "Delete Selected", self)
+        actionSelectAll.setShortcut("Ctrl+A")
         def selectAll():
             self.toggle_polygons(True)
             self.canvas.selectAll()
-        eleteAct.triggered.connect(selectAll)
-        self.addAction(eleteAct)
+        actionSelectAll.triggered.connect(selectAll)
+        self.addAction(actionSelectAll)
 
 
         def get_format_meta(format):
