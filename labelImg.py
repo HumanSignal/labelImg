@@ -244,7 +244,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         eleteAct = QAction( "Delete Selected", self)
         eleteAct.setShortcut("Ctrl+A")
-        eleteAct.triggered.connect(self.canvas.selectAll)
+        def selectAll():
+            self.toggle_polygons(True)
+            self.canvas.selectAll()
+        eleteAct.triggered.connect(selectAll)
         self.addAction(eleteAct)
 
 

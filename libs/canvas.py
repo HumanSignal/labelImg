@@ -11,6 +11,7 @@ except ImportError:
 
 from math import fabs
 from pickle import TRUE
+from turtle import isvisible
 from libs.shape import Shape
 from libs.utils import distance
 
@@ -304,6 +305,8 @@ class Canvas(QWidget):
         self.isMultySelected = True
         for shape in self.shapes:
             shape.selected = True
+            if self.isVisible(shape) != True:
+                self.set_shape_visible(shape, True)
 
 
     def mouseReleaseEvent(self, ev):
