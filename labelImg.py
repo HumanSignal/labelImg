@@ -242,6 +242,12 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
+        eleteAct = QAction( "Delete Selected", self)
+        eleteAct.setShortcut("Ctrl+A")
+        eleteAct.triggered.connect(self.canvas.selectAll)
+        self.addAction(eleteAct)
+
+
         def get_format_meta(format):
             """
             returns a tuple containing (title, icon_name) of the selected format
@@ -291,7 +297,7 @@ class MainWindow(QMainWindow, WindowMixin):
                           'Ctrl+H', 'hide', get_str('hideAllBoxDetail'),
                           enabled=False)
         show_all = action(get_str('showAllBox'), partial(self.toggle_polygons, True),
-                          'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
+                          'Ctrl+I', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
         help_default = action(get_str('tutorialDefault'), self.show_default_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
