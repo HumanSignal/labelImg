@@ -127,10 +127,12 @@ class Canvas(QWidget):
         
         if self.isKeyShortcutRotate:
             angle = angleFrom2Vector(QPoint(0,-1), pos - self.posRotate)
+            canvasSize = QPoint(self.pixmap.width(), self.pixmap.height())
             for _shape in self.shapes:
                 if _shape.selected:
-                    _shape.rotate(self.posRotate, angle)
+                    _shape.rotate(self.posRotate, angle, canvasSize)
             self.shapeMoved.emit()
+            self.lastPos = pos
             return
         # Update coordinates in status bar if image is opened
         window = self.parent().window()
@@ -280,12 +282,11 @@ class Canvas(QWidget):
                 self.update()
             self.h_vertex, self.h_shape = None, None
             self.override_cursor(CURSOR_DEFAULT)
-
         self.lastPos = pos
 
     def drawIconRotate(self):
         size = 200
-        angle = angleFrom2Vector(QPoint(0,-1), self.lastPos - self.posRotate)
+        angle = angleFrom2Vector(QPointF(0,-1), self.lastPos - self.posRotate)
         degree = angle * 180 / math.pi
         self._painter.translate(self.posRotate.x(),self.posRotate.y())
         self._painter.rotate(degree)

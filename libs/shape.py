@@ -42,7 +42,6 @@ class Shape(object):
     lastAction : list[QPointF] = []
 
     def __init__(self, label=None, line_color=None, difficult=False, paint_label=False):
-        print("init")
         self.label = label
         self.historyActions = []
         self.lastAction = []
@@ -228,12 +227,16 @@ class Shape(object):
     def __setitem__(self, key, value):
         self.points[key] = value
 
-    def rotate(self, origin: QPoint, angleRadian: float):
+    def rotate(self, origin: QPoint, angleRadian: float, canvasSize: QPoint):
 
-        point0 = self.pointsBeforRotate[0] - origin
-        point1 = self.pointsBeforRotate[1] - origin
-        point2 = self.pointsBeforRotate[2] - origin
-        point3 = self.pointsBeforRotate[3] - origin
+        # point0 = self.pointsBeforRotate[0] - origin
+        # point1 = self.pointsBeforRotate[1] - origin
+        # point2 = self.pointsBeforRotate[2] - origin
+        # point3 = self.pointsBeforRotate[3] - origin
+        point0 = (self.pointsBeforRotate[0] + self.pointsBeforRotate[1])/2 - origin
+        point1 = (self.pointsBeforRotate[1] + self.pointsBeforRotate[2])/2 - origin
+        point2 = (self.pointsBeforRotate[2] + self.pointsBeforRotate[3])/2 - origin
+        point3 = (self.pointsBeforRotate[3] + self.pointsBeforRotate[0])/2 - origin
 
         newPoint0 =  origin + rotateVector(point0, angleRadian)
         newPoint1 = origin + rotateVector(point1, angleRadian)
@@ -241,11 +244,25 @@ class Shape(object):
         newPoint3 = origin + rotateVector(point3, angleRadian)
         points = [newPoint0, newPoint1, newPoint2, newPoint3]
 
-        self.points = self.reCacularPoints(points)
+        self.points = self.reCacularPoints(points, canvasSize)
 
         pass
-    
-    def reCacularPoints(self, points: list[QPointF]):
+    def snap_point_to_canvas(self, point : QPointF, canvasSize: QPoint):
+        """
+        Moves a point x,y to within the boundaries of the canvas.
+        :return: (x,y,snapped) where snapped is True if x or y were changed, False if not.
+        """
+        x = point.x()
+        y = point.y()
+        if x < 0 or x > canvasSize.x() or y < 0 or y > canvasSize.y():
+            x = max(x, 0)
+            y = max(y, 0)
+            x = min(x, canvasSize.x())
+            y = min(y, canvasSize.y())
+            return QPointF(x,y)
+        return point
+
+    def reCacularPoints(self, points: list[QPointF], canvasSize: QPoint):
         minPoint = QPointF(sys.maxsize, sys.maxsize)
         maxPoint = QPointF(0,0)
         for i in range(0,4):
@@ -258,10 +275,10 @@ class Shape(object):
                 maxPoint.setX(point.x())
             if point.y() > maxPoint.y():
                 maxPoint.setY(point.y())
-        point0 = QPointF(minPoint.x(), maxPoint.y())
-        point1 = QPointF(maxPoint.x(), maxPoint.y())
-        point2 = QPointF(maxPoint.x(), minPoint.y())
-        point3 = QPointF(minPoint.x(), minPoint.y())
+        point0 = self.snap_point_to_canvas(QPointF(minPoint.x(), maxPoint.y()), canvasSize)
+        point1 = self.snap_point_to_canvas(QPointF(maxPoint.x(), maxPoint.y()), canvasSize)
+        point2 = self.snap_point_to_canvas(QPointF(maxPoint.x(), minPoint.y()), canvasSize)
+        point3 = self.snap_point_to_canvas(QPointF(minPoint.x(), minPoint.y()), canvasSize)
         return [point0, point1, point2, point3]
 
 

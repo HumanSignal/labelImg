@@ -252,10 +252,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.addAction(actionSelectAll)
 
         #add action undo
-        actionUndo =QAction("Undo", self)
-        actionUndo.setShortcut("Ctrl+Z")
-        actionUndo.triggered.connect(self.undoActions)
-        self.addAction(actionUndo)
+        # actionUndo =QAction("Undo", self)
+        # actionUndo.setShortcut("Ctrl+Z")
+        # actionUndo.triggered.connect(self.undoActions)
+        # self.addAction(actionUndo)
 
         def get_format_meta(format):
             """
@@ -1464,9 +1464,10 @@ class MainWindow(QMainWindow, WindowMixin):
         if filename:
             self.load_file(filename)
     def saveHistoryBoxes(self, firstTime = False):
-        print("save history")
-        for shape in self.canvas.shapes:
-            shape.saveHistory()
+        pass
+        # for shape in self.canvas.shapes:
+        #     shape.saveHistory()
+
     def undoActions(self):
         print("Undo")
         for shape in self.canvas.shapes:
