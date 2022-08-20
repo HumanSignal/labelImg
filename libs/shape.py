@@ -9,7 +9,8 @@ except ImportError:
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
 
-from libs.utils import distance
+import math
+from libs.utils import distance, rotateVector
 import sys
 
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
@@ -24,7 +25,7 @@ class Shape(object):
     P_SQUARE, P_ROUND = range(2)
 
     MOVE_VERTEX, NEAR_VERTEX = range(2)
-
+    pointsBeforRotate : list[QPointF] = []
     # The following class variables influence the drawing
     # of _all_ shape objects.
     line_color = DEFAULT_LINE_COLOR
@@ -37,9 +38,14 @@ class Shape(object):
     point_size = 16
     scale = 1.0
     label_font_size = 8
+    historyActions : list[list[QPointF]] = []
+    lastAction : list[QPointF] = []
 
     def __init__(self, label=None, line_color=None, difficult=False, paint_label=False):
+        print("init")
         self.label = label
+        self.historyActions = []
+        self.lastAction = []
         self.points = []
         self.fill = False
         self.selected = False
@@ -52,7 +58,6 @@ class Shape(object):
             self.NEAR_VERTEX: (4, self.P_ROUND),
             self.MOVE_VERTEX: (1.5, self.P_SQUARE),
         }
-
         self._closed = False
 
         if line_color is not None:
@@ -61,6 +66,21 @@ class Shape(object):
             # is used for drawing the pending line a different color.
             self.line_color = line_color
 
+    def saveHistory(self):
+        if self.reach_max_points() and self.isCurrentActionSaved() == False:
+            print("saved")
+            self.historyActions.append(self.points)
+            self.lastAction = self.points.copy()
+
+    def isCurrentActionSaved(self):
+        return self.lastAction == self.points
+    
+    def undoAction(self):
+        if len(self.historyActions) > 0:
+            points = self.historyActions.pop()
+            self.points = points
+            #self.lastAction = self.points.copy()
+                
     def close(self):
         self._closed = True
 
@@ -207,3 +227,41 @@ class Shape(object):
 
     def __setitem__(self, key, value):
         self.points[key] = value
+
+    def rotate(self, origin: QPoint, angleRadian: float):
+
+        point0 = self.pointsBeforRotate[0] - origin
+        point1 = self.pointsBeforRotate[1] - origin
+        point2 = self.pointsBeforRotate[2] - origin
+        point3 = self.pointsBeforRotate[3] - origin
+
+        newPoint0 =  origin + rotateVector(point0, angleRadian)
+        newPoint1 = origin + rotateVector(point1, angleRadian)
+        newPoint2 = origin + rotateVector(point2, angleRadian)
+        newPoint3 = origin + rotateVector(point3, angleRadian)
+        points = [newPoint0, newPoint1, newPoint2, newPoint3]
+
+        self.points = self.reCacularPoints(points)
+
+        pass
+    
+    def reCacularPoints(self, points: list[QPointF]):
+        minPoint = QPointF(sys.maxsize, sys.maxsize)
+        maxPoint = QPointF(0,0)
+        for i in range(0,4):
+            point = points[i]
+            if point.x() < minPoint.x():
+                minPoint.setX(point.x())
+            if point.y() < minPoint.y():
+                minPoint.setY(point.y())
+            if point.x() > maxPoint.x():
+                maxPoint.setX(point.x())
+            if point.y() > maxPoint.y():
+                maxPoint.setY(point.y())
+        point0 = QPointF(minPoint.x(), maxPoint.y())
+        point1 = QPointF(maxPoint.x(), maxPoint.y())
+        point2 = QPointF(maxPoint.x(), minPoint.y())
+        point3 = QPointF(minPoint.x(), minPoint.y())
+        return [point0, point1, point2, point3]
+
+

@@ -1,4 +1,5 @@
 from math import sqrt
+import math
 from libs.ustr import ustr
 import hashlib
 import re
@@ -107,6 +108,15 @@ def natural_sort(list, key=lambda s:s):
     sort_key = get_alphanum_key_func(key)
     list.sort(key=sort_key)
 
+def rotateVector(vector: QPointF, angleRadian: QPointF):
+    newX = vector.x() * math.cos(angleRadian) - vector.y() * math.sin(angleRadian)
+    newY = vector.x() * math.sin(angleRadian) + vector.y() * math.cos(angleRadian)
+    return QPointF(newX, newY)
+
+def angleFrom2Vector(vectorA: QPointF, vectorB: QPointF):
+    dot = vectorA.x() * vectorB.x() + vectorA.y() * vectorB.y()
+    det = vectorA.x()* vectorB.y() - vectorA.y()*vectorB.x()      # determinant
+    return math.atan2(det, dot)  # atan2(y, x) or atan2(sin, cos)
 
 # QT4 has a trimmed method, in QT5 this is called strip
 if QT5:
