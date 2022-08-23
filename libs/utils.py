@@ -80,6 +80,8 @@ def generate_color_by_text(text):
     b = int((hash_code / 16581375) % 255)
     if text == '0':
         color = CLASS_COLOR_0
+    if text == '1':
+        color = CLASS_COLOR_1
     else:
         color = QColor(r, g, b, 100)
     return color
