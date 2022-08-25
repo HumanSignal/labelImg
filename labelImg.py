@@ -1357,7 +1357,11 @@ class MainWindow(QMainWindow, WindowMixin):
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
-        self.default_save_dir = target_dir_path
+        if not self.default_save_dir:
+            self.default_save_dir = target_dir_path
+        file_containing_labels = os.path.join(self.default_save_dir, 'classes.txt')
+        if not self.label_hist:
+            self.load_predefined_classes(file_containing_labels)
         if self.file_path:
             self.show_bounding_box_from_annotation_file(file_path=self.file_path)
 
