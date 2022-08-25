@@ -245,8 +245,7 @@ class Shape(object):
         points = [newPoint0, newPoint1, newPoint2, newPoint3]
 
         self.points = self.reCacularPoints(points, canvasSize)
-
-        pass
+        
     def snap_point_to_canvas(self, point : QPointF, canvasSize: QPoint):
         """
         Moves a point x,y to within the boundaries of the canvas.
