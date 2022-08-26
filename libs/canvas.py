@@ -754,6 +754,9 @@ class Canvas(QWidget):
             v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
             h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
         ev.accept()
+        
+    def focusOutEvent(self, a0):
+        self.isKeyControlPressed = False
 
     def keyReleaseEvent(self, ev):
         key = ev.key()

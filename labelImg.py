@@ -554,14 +554,16 @@ class MainWindow(QMainWindow, WindowMixin):
         if self.file_path and os.path.isdir(self.file_path):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
-    # def keyReleaseEvent(self, event):
-    #     if event.key() == Qt.Key_Control:
-    #         self.canvas.set_drawing_shape_to_square(False)
+    def keyReleaseEvent(self, event):
+        print("key release")
+        # if event.key() == Qt.Key_Control:
+        #     self.canvas.set_drawing_shape_to_square(False)
 
-    # def keyPressEvent(self, event):
-    #     if event.key() == Qt.Key_Control:
-    #         # Draw rectangle if Ctrl is pressed
-    #         self.canvas.set_drawing_shape_to_square(True)
+    def keyPressEvent(self, event):
+        print("key Pressed")
+        # if event.key() == Qt.Key_Control:
+        #     # Draw rectangle if Ctrl is pressed
+        #     self.canvas.set_drawing_shape_to_square(True)
 
     # Support Functions #
     def set_format(self, save_format):
