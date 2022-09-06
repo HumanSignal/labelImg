@@ -169,10 +169,17 @@ class MainWindow(QMainWindow, WindowMixin):
         self.dock.setObjectName(get_str('labels'))
         self.dock.setWidget(label_list_container)
 
+        # Text field to find images by index
+        self.idx_text_box = QLineEdit()
+        self.jump_button = QPushButton('Show image', self)
+        self.jump_button.clicked.connect(self.jump_on_click)
+        
         self.file_list_widget = QListWidget()
         self.file_list_widget.itemDoubleClicked.connect(self.file_item_double_clicked)
         file_list_layout = QVBoxLayout()
         file_list_layout.setContentsMargins(0, 0, 0, 0)
+        file_list_layout.addWidget(self.idx_text_box)
+        file_list_layout.addWidget(self.jump_button)
         file_list_layout.addWidget(self.file_list_widget)
         file_list_container = QWidget()
         file_list_container.setLayout(file_list_layout)
@@ -768,6 +775,17 @@ class MainWindow(QMainWindow, WindowMixin):
         filename = self.m_img_list[self.cur_img_idx]
         if filename:
             self.load_file(filename)
+
+    # Takes index from text box and opens corresponding file
+    def jump_on_click(self):
+        self.cur_img_idx = int(self.idx_text_box.text()) - 1
+        if self.cur_img_idx > self.img_count:
+            return
+        filename = self.m_img_list[self.cur_img_idx]
+        if filename:
+            self.load_file(filename)
+        
+        self.idx_text_box.setText("")
 
     # Add chris
     def button_state(self, item=None):
