@@ -31,6 +31,7 @@ class Canvas(QWidget):
     lastPos = None
     isKeyControlPressed = False
     isKeyShortcutRotate = False
+    isKeyShortcutRotateKeepSize = False
     isMultySelected = False
     zoomRequest = pyqtSignal(int)
     lightRequest = pyqtSignal(int)
@@ -124,7 +125,16 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
         pos = self.transform_pos(ev.pos())
-        
+        if self.isKeyShortcutRotateKeepSize:
+            angle = angleFrom2Vector(QPoint(0,-1), pos - self.posRotate)
+            canvasSize = QPoint(self.pixmap.width(), self.pixmap.height())
+            for _shape in self.shapes:
+                if _shape.selected:
+                    _shape.rotateKeepSize(self.posRotate, angle, canvasSize)
+            self.shapeMoved.emit()
+            self.lastPos = pos
+            return
+
         if self.isKeyShortcutRotate:
             angle = angleFrom2Vector(QPoint(0,-1), pos - self.posRotate)
             canvasSize = QPoint(self.pixmap.width(), self.pixmap.height())
@@ -679,7 +689,7 @@ class Canvas(QWidget):
             pal = self.palette()
             pal.setColor(self.backgroundRole(), QColor(232, 232, 232, 255))
             self.setPalette(pal)
-        if self.isKeyShortcutRotate:    
+        if self.isKeyShortcutRotate or self.isKeyShortcutRotateKeepSize:    
             self.drawIconRotate()
         p.end()
 
@@ -768,6 +778,13 @@ class Canvas(QWidget):
             self.onEndAction.emit()
             self.update()
 
+        if key == Qt.Key.Key_T and not ev.isAutoRepeat():
+            self.isKeyShortcutRotateKeepSize = False
+            self.onEndAction.emit()
+            self.update()
+
+            
+
     def keyPressEvent(self, ev):
         key = ev.key()
         if key == Qt.Key.Key_Control:
@@ -779,6 +796,15 @@ class Canvas(QWidget):
                 for _shape in self.shapes:
                     _shape.pointsBeforRotate = _shape.points 
             self.isKeyShortcutRotate = True
+            self.onStartAction.emit()
+            self.update()
+            
+        if key == Qt.Key.Key_T:
+            if self.isKeyShortcutRotateKeepSize is False:
+                self.posRotate = QPointF(self.lastPos.x(), self.lastPos.y())
+                for _shape in self.shapes:
+                    _shape.pointsBeforRotate = _shape.points 
+            self.isKeyShortcutRotateKeepSize = True
             self.onStartAction.emit()
             self.update()
             

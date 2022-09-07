@@ -10,6 +10,7 @@ except ImportError:
     from PyQt4.QtCore import *
 
 import math
+from turtle import width
 from libs.utils import distance, rotateVector
 import sys
 
@@ -245,6 +246,16 @@ class Shape(object):
         points = [newPoint0, newPoint1, newPoint2, newPoint3]
 
         self.points = self.reCacularPoints(points, canvasSize)
+
+    def rotateKeepSize(self, origin: QPoint, angleRadian: float, canvasSize: QPoint):
+        minPoint, maxPoint =self.getMinMaxPoint([self.pointsBeforRotate[0],self.pointsBeforRotate[1],self.pointsBeforRotate[2],self.pointsBeforRotate[3]], canvasSize) 
+        haftSize = (maxPoint - minPoint) / 2
+        center = ((minPoint + maxPoint) / 2) - origin
+        newCenter =  origin + rotateVector(center, angleRadian)
+        newMinPoint = newCenter - haftSize
+        newMaxPoint = newCenter + haftSize
+        points = [newMinPoint, newMinPoint, newMaxPoint, newMaxPoint]
+        self.points = self.reCacularPoints(points, canvasSize)
         
     def snap_point_to_canvas(self, point : QPointF, canvasSize: QPoint):
         """
@@ -280,4 +291,20 @@ class Shape(object):
         point3 = self.snap_point_to_canvas(QPointF(minPoint.x(), minPoint.y()), canvasSize)
         return [point0, point1, point2, point3]
 
+    def getMinMaxPoint(self, points: list[QPointF], canvasSize: QPoint):
+        minPoint = QPointF(sys.maxsize, sys.maxsize)
+        maxPoint = QPointF(0,0)
+        for i in range(0,4):
+            point = points[i]
+            if point.x() < minPoint.x():
+                minPoint.setX(point.x())
+            if point.y() < minPoint.y():
+                minPoint.setY(point.y())
+            if point.x() > maxPoint.x():
+                maxPoint.setX(point.x())
+            if point.y() > maxPoint.y():
+                maxPoint.setY(point.y())
+        minPoint = self.snap_point_to_canvas(minPoint, canvasSize)
+        maxPoint = self.snap_point_to_canvas(maxPoint, canvasSize)
+        return minPoint, maxPoint
 
