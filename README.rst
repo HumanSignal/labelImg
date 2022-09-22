@@ -1,10 +1,19 @@
-LabelImg
+.. image:: /readme/images/labelimg.png
+        :target: https://github.com/heartexlabs/label-studio
+
+Label Studio is a modern, multi-modal data annotation tool
+=======
+
+LabelImg, the popular image annotation tool created by Tzutalin with the help of dozens contributors, is no longer actively being developed and has become part of the Label Studio community. Check out `Label Studio <https://github.com/heartexlabs/label-studio>`__, the most flexible open source data labeling tool for images, text, hypertext, audio, video and time-series data. `Install <https://labelstud.io/guide/install.html>`__ Label Studio and join the `slack community <https://label-studio.slack.com/>`__ to get started.
+
+About LabelImg
 ========
 
 .. image:: https://img.shields.io/pypi/v/labelimg.svg
         :target: https://pypi.python.org/pypi/labelimg
 
-.. image:: https://img.shields.io/github/workflow/status/tzutalin/labelImg/Package?style=for-the-badge   :alt: GitHub Workflow Status
+.. image:: https://img.shields.io/github/workflow/status/tzutalin/labelImg/Package?style=for-the-badge
+        :alt: GitHub Workflow Status
 
 .. image:: https://img.shields.io/badge/lang-en-blue.svg
         :target: https://github.com/tzutalin/labelImg
@@ -286,14 +295,15 @@ Citation: Tzutalin. LabelImg. Git code (2015). https://github.com/tzutalin/label
 Related and additional tools
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
+1. `Label Studio <https://github.com/heartexlabs/label-studio>`__ to label images, text, audio, video and time-series data for machine learning and AI
+2. `ImageNet Utils <https://github.com/tzutalin/ImageNet_Utils>`__ to
    download image, create a label text for machine learning, etc
-2. `Use Docker to run labelImg <https://hub.docker.com/r/tzutalin/py2qt4>`__
-3. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
-4. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
-5. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
-6. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
-7. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
+3. `Use Docker to run labelImg <https://hub.docker.com/r/tzutalin/py2qt4>`__
+4. `Generating the PASCAL VOC TFRecord files <https://github.com/tensorflow/models/blob/4f32535fe7040bb1e429ad0e3c948a492a89482d/research/object_detection/g3doc/preparing_inputs.md#generating-the-pascal-voc-tfrecord-files>`__
+5. `App Icon based on Icon by Nick Roach (GPL) <https://www.elegantthemes.com/>`__
+6. `Setup python development in vscode <https://tzutalin.blogspot.com/2019/04/set-up-visual-studio-code-for-python-in.html>`__
+7. `The link of this project on iHub platform <https://code.ihub.org.cn/projects/260/repository/labelImg>`__
+8. `Convert annotation files to CSV format or format for Google Cloud AutoML <https://github.com/tzutalin/labelImg/tree/master/tools>`__
 
 
 
