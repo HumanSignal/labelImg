@@ -1,14 +1,11 @@
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
 
 # from PyQt4.QtOpenGL import *
-
+from libs.constants import *
 from libs.shape import Shape
 from libs.utils import distance
 
@@ -538,7 +535,7 @@ class Canvas(QWidget):
             p.drawRect(int(left_top.x()), int(left_top.y()), int(rect_width), int(rect_height))
 
         if self.drawing() and not self.prev_point.isNull() and not self.out_of_pixmap(self.prev_point):
-            p.setPen(QColor(0, 0, 0))
+            p.setPen(DRAWING_COLOR)
             p.drawLine(int(self.prev_point.x()), 0, int(self.prev_point.x()), int(self.pixmap.height()))
             p.drawLine(0, int(self.prev_point.y()), int(self.pixmap.width()), int(self.prev_point.y()))
 
@@ -549,7 +546,7 @@ class Canvas(QWidget):
             self.setPalette(pal)
         else:
             pal = self.palette()
-            pal.setColor(self.backgroundRole(), QColor(232, 232, 232, 255))
+            pal.setColor(self.backgroundRole(), BACKGROUND_COLOR)
             self.setPalette(pal)
 
         p.end()

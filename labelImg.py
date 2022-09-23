@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
@@ -9,20 +9,9 @@ import sys
 import webbrowser as wb
 from functools import partial
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    # needed for py3+qt4
-    # Ref:
-    # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-    # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
-    if sys.version_info.major >= 3:
-        import sip
-        sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
@@ -31,6 +20,7 @@ from libs.constants import *
 from libs.utils import *
 from libs.settings import Settings
 from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+import libs.shape
 from libs.stringBundle import StringBundle
 from libs.canvas import Canvas
 from libs.zoomWidget import ZoomWidget
@@ -50,7 +40,6 @@ from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
 __appname__ = 'labelImg'
 
-
 class WindowMixin(object):
 
     def menu(self, title, actions=None):
@@ -68,7 +57,6 @@ class WindowMixin(object):
             add_actions(toolbar, actions)
         self.addToolBar(Qt.LeftToolBarArea, toolbar)
         return toolbar
-
 
 class MainWindow(QMainWindow, WindowMixin):
     FIT_WINDOW, FIT_WIDTH, MANUAL_ZOOM = list(range(3))
@@ -294,6 +282,13 @@ class MainWindow(QMainWindow, WindowMixin):
                           'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
+        hide_vertices = action(get_str('hideAllVertices'), partial(self.toggle_vertices, False),
+                          'Ctrl+k', 'hide', get_str('hideAllBoxDetail'),
+                          enabled=False)
+        show_vertices = action(get_str('showAllVertices'), partial(self.toggle_vertices, True),
+                          'Ctrl+T', 'hide', get_str('showAllBoxDetail'),
+                          enabled=False)
+
         help_default = action(get_str('tutorialDefault'), self.show_default_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
         show_info = action(get_str('info'), self.show_info_dialog, None, 'help', get_str('info'))
         show_shortcut = action(get_str('shortcut'), self.show_shortcuts_dialog, None, 'help', get_str('shortcut'))
@@ -399,7 +394,7 @@ class MainWindow(QMainWindow, WindowMixin):
                                                delete, shape_line_color, shape_fill_color),
                               onLoadActive=(
                                   close, create, create_mode, edit_mode),
-                              onShapesPresent=(save_as, hide_all, show_all))
+                              onShapesPresent=(save_as, hide_all, show_all, hide_vertices, show_vertices))
 
         self.menus = Struct(
             file=self.menu(get_str('menu_file')),
@@ -435,6 +430,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.display_label_option,
             labels, advanced_mode, None,
             hide_all, show_all, None,
+            hide_vertices, show_vertices, None,
             zoom_in, zoom_out, zoom_org, None,
             fit_window, fit_width, None,
             light_brighten, light_darken, light_org))
@@ -456,7 +452,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.advanced = (
             open, open_dir, change_save_dir, open_next_image, open_prev_image, save, save_format, None,
             create_mode, edit_mode, None,
-            hide_all, show_all)
+            hide_all, show_all, hide_vertices, show_vertices)
 
         self.statusBar().showMessage('%s started.' % __appname__)
         self.statusBar().show()
@@ -1089,6 +1085,9 @@ class MainWindow(QMainWindow, WindowMixin):
     def toggle_polygons(self, value):
         for item, shape in self.items_to_shapes.items():
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+
+    def toggle_vertices(self, value):
+        libs.shape.ENABLE_VERTICES = value
 
     def load_file(self, file_path=None):
         """Load the specified file, or the last opened file if None."""

@@ -1,23 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 from libs.utils import distance
+from libs.constants import *
 import sys
 
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)
 DEFAULT_FILL_COLOR = QColor(255, 0, 0, 128)
 DEFAULT_SELECT_LINE_COLOR = QColor(255, 255, 255)
 DEFAULT_SELECT_FILL_COLOR = QColor(0, 128, 255, 155)
-DEFAULT_VERTEX_FILL_COLOR = QColor(0, 255, 0, 255)
+DEFAULT_VERTEX_FILL_COLOR = QColor(59, 219, 255, 50)
 DEFAULT_HVERTEX_FILL_COLOR = QColor(255, 0, 0)
+ENABLE_VERTICES = False
 
 
 class Shape(object):
@@ -131,7 +128,8 @@ class Shape(object):
                     painter.drawText(int(min_x), int(min_y), self.label)
 
             if self.fill:
-                color = self.select_fill_color if self.selected else self.fill_color
+                # color = self.select_fill_color if self.selected else self.fill_color
+                color = self.select_fill_color if self.selected else HOVER_COLOR
                 painter.fillPath(line_path, color)
 
     def draw_vertex(self, path, i):
@@ -143,14 +141,19 @@ class Shape(object):
             d *= size
         if self._highlight_index is not None:
             self.vertex_fill_color = self.h_vertex_fill_color
+            if shape == self.P_SQUARE:
+                path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
+            elif shape == self.P_ROUND:
+                path.addEllipse(point, d / 2.0, d / 2.0)
         else:
-            self.vertex_fill_color = Shape.vertex_fill_color
-        if shape == self.P_SQUARE:
-            path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
-        elif shape == self.P_ROUND:
-            path.addEllipse(point, d / 2.0, d / 2.0)
-        else:
-            assert False, "unsupported vertex shape"
+            self.vertex_fill_color = VERTEX_FILL_COLOR
+            if ENABLE_VERTICES:
+                if shape == self.P_SQUARE:
+                    path.addRect(point.x() - d / 2, point.y() - d / 2, d, d)
+                elif shape == self.P_ROUND:
+                    path.addEllipse(point, d / 2.0, d / 2.0)
+
+
 
     def nearest_vertex(self, point, epsilon):
         index = None

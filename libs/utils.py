@@ -3,21 +3,15 @@ from libs.ustr import ustr
 import hashlib
 import re
 import sys
+from libs.constants import *
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-    QT5 = True
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-    QT5 = False
-
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+QT5 = True
 
 def new_icon(icon):
     return QIcon(':/' + icon)
-
 
 def new_button(text, icon=None, slot=None):
     b = QPushButton(text)
@@ -26,7 +20,6 @@ def new_button(text, icon=None, slot=None):
     if slot is not None:
         b.clicked.connect(slot)
     return b
-
 
 def new_action(parent, text, slot=None, shortcut=None, icon=None,
                tip=None, checkable=False, enabled=True):
@@ -85,7 +78,13 @@ def generate_color_by_text(text):
     r = int((hash_code / 255) % 255)
     g = int((hash_code / 65025) % 255)
     b = int((hash_code / 16581375) % 255)
-    return QColor(r, g, b, 100)
+    if text == '0':
+        color = CLASS_COLOR_0
+    if text == '1':
+        color = CLASS_COLOR_1
+    else:
+        color = QColor(r, g, b, 100)
+    return color
 
 
 def have_qstring():

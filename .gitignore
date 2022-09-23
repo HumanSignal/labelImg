@@ -41,3 +41,5 @@ __pycache__/
 .unison*
 .attach*
 tmp.*
+
+.venv/
