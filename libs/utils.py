@@ -115,3 +115,15 @@ if QT5:
 else:
     def trimmed(text):
         return text.trimmed()
+
+class IndexWrapper:
+    def __init__(self, content) -> None:
+        self.content = content
+    
+    def __gettitem__(self, index):
+        try:
+            result = self.content[index]
+        except IndexError:
+            return str(index)
+        else:
+            return result
