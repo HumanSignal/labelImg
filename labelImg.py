@@ -949,7 +949,7 @@ class MainWindow(QMainWindow, WindowMixin):
         label = item.text()
         if label != shape.label:
             shape.label = item.text()
-            shape.line_color = generate_color_by_text(shape.label)
+            shape.line_color = shape.fill_color = generate_color_by_text(shape.label)
             self.set_dirty()
         else:  # User probably changed item visibility
             self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
