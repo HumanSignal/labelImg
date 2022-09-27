@@ -9,8 +9,12 @@ except ImportError:
 
 # from PyQt4.QtOpenGL import *
 
+from math import fabs
+import math
+from pickle import TRUE
+from turtle import isvisible, width
 from libs.shape import Shape
-from libs.utils import distance
+from libs.utils import angleFrom2Vector, distance
 
 CURSOR_DEFAULT = Qt.ArrowCursor
 CURSOR_POINT = Qt.PointingHandCursor
@@ -22,6 +26,13 @@ CURSOR_GRAB = Qt.OpenHandCursor
 
 
 class Canvas(QWidget):
+    posRotate = None
+    imgRotate = QImage(":/rotate_360")
+    lastPos = None
+    isKeyControlPressed = False
+    isKeyShortcutRotate = False
+    isKeyShortcutRotateKeepSize = False
+    isMultySelected = False
     zoomRequest = pyqtSignal(int)
     lightRequest = pyqtSignal(int)
     scrollRequest = pyqtSignal(int, int)
@@ -29,6 +40,9 @@ class Canvas(QWidget):
     selectionChanged = pyqtSignal(bool)
     shapeMoved = pyqtSignal()
     drawingPolygon = pyqtSignal(bool)
+
+    onEndAction = pyqtSignal()
+    onStartAction = pyqtSignal()
 
     CREATE, EDIT = list(range(2))
 
@@ -38,7 +52,7 @@ class Canvas(QWidget):
         super(Canvas, self).__init__(*args, **kwargs)
         # Initialise local state.
         self.mode = self.EDIT
-        self.shapes = []
+        self.shapes : list[Shape] = [] 
         self.current = None
         self.selected_shape = None  # save the selected shape here
         self.selected_shape_copy = None
@@ -111,7 +125,25 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, ev):
         """Update line with last point and current coordinates."""
         pos = self.transform_pos(ev.pos())
+        if self.isKeyShortcutRotateKeepSize:
+            angle = angleFrom2Vector(QPoint(0,-1), pos - self.posRotate)
+            canvasSize = QPoint(self.pixmap.width(), self.pixmap.height())
+            for _shape in self.shapes:
+                if _shape.selected:
+                    _shape.rotateKeepSize(self.posRotate, angle, canvasSize)
+            self.shapeMoved.emit()
+            self.lastPos = pos
+            return
 
+        if self.isKeyShortcutRotate:
+            angle = angleFrom2Vector(QPoint(0,-1), pos - self.posRotate)
+            canvasSize = QPoint(self.pixmap.width(), self.pixmap.height())
+            for _shape in self.shapes:
+                if _shape.selected:
+                    _shape.rotate(self.posRotate, angle, canvasSize)
+            self.shapeMoved.emit()
+            self.lastPos = pos
+            return
         # Update coordinates in status bar if image is opened
         window = self.parent().window()
         if window.file_path is not None:
@@ -177,6 +209,7 @@ class Canvas(QWidget):
 
         # Polygon/Vertex moving.
         if Qt.LeftButton & ev.buttons():
+            
             if self.selected_vertex():
                 self.bounded_move_vertex(pos)
                 self.shapeMoved.emit()
@@ -190,11 +223,15 @@ class Canvas(QWidget):
                 self.parent().window().label_coordinates.setText(
                         'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             elif self.selected_shape and self.prev_point:
+                if self.isMultySelected:
+                    self.bounded_move_all_shape(pos=pos)
+                    self.repaint()
+                    return
+
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape, pos)
                 self.shapeMoved.emit()
                 self.repaint()
-
                 # Display annotation width and height while moving shape
                 point1 = self.selected_shape[1]
                 point3 = self.selected_shape[3]
@@ -203,6 +240,7 @@ class Canvas(QWidget):
                 self.parent().window().label_coordinates.setText(
                         'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             else:
+
                 # pan
                 delta = ev.pos() - self.pan_initial_pos
                 self.scrollRequest.emit(delta.x(), Qt.Horizontal)
@@ -254,6 +292,25 @@ class Canvas(QWidget):
                 self.update()
             self.h_vertex, self.h_shape = None, None
             self.override_cursor(CURSOR_DEFAULT)
+        self.lastPos = pos
+
+    def drawIconRotate(self):
+        size = 200
+        angle = angleFrom2Vector(QPointF(0,-1), self.lastPos - self.posRotate)
+        degree = angle * 180 / math.pi
+        self._painter.translate(self.posRotate.x(),self.posRotate.y())
+        self._painter.rotate(degree)
+        self._painter.translate(-self.posRotate.x() - size/2,-self.posRotate.y() - size/2)
+        self._painter.drawImage(QRect(self.posRotate.x(),self.posRotate.y(), size, size),self.imgRotate)
+        self._painter.resetTransform()
+
+        # secondColor = QColor(0,250,0)
+        # self._painter.setPen(secondColor)
+        # fontsize = 25
+        # font= QFont()
+        # font.setPointSize(fontsize)
+        # self._painter.setFont(font)
+        # self._painter.drawText(QPoint(self.posRotate.x() - fontsize, self.posRotate.y()+size/2 + fontsize),str(round(degree))+"°")
 
     def mousePressEvent(self, ev):
         pos = self.transform_pos(ev.pos())
@@ -262,7 +319,18 @@ class Canvas(QWidget):
             if self.drawing():
                 self.handle_drawing(pos)
             else:
-                selection = self.select_shape_point(pos)
+                selection = self.get_shape_point(pos)
+                if self.isKeyControlPressed:
+                    self.select_shape_point_multy_select(pos)
+                elif selection != None:
+                    if selection.selected == True:
+                        self.select_shape_point_multy_select(pos)
+                    else:
+                        selection = self.select_shape_point(pos)
+                else:
+                    self.de_select_shape()
+                    pass
+                
                 self.prev_point = pos
 
                 if selection is None:
@@ -271,11 +339,22 @@ class Canvas(QWidget):
                     self.pan_initial_pos = ev.pos()
 
         elif ev.button() == Qt.RightButton and self.editing():
+            print("Qt.RightButton")
             self.select_shape_point(pos)
             self.prev_point = pos
         self.update()
+        self.onStartAction.emit()
+        
+    def selectAll(self):
+        self.isMultySelected = True
+        for shape in self.shapes:
+            shape.selected = True
+            if self.isVisible(shape) != True:
+                self.set_shape_visible(shape, True)
+
 
     def mouseReleaseEvent(self, ev):
+
         if ev.button() == Qt.RightButton:
             menu = self.menus[bool(self.selected_shape_copy)]
             self.restore_cursor()
@@ -302,6 +381,7 @@ class Canvas(QWidget):
         shape = self.selected_shape_copy
         # del shape.fill_color
         # del shape.line_color
+        print("end move")
         if copy:
             self.shapes.append(shape)
             self.selected_shape.selected = False
@@ -375,6 +455,32 @@ class Canvas(QWidget):
                 return self.selected_shape
         return None
 
+    def get_shape_point(self, point):
+        for shape in reversed(self.shapes):
+            if  self.isVisible(shape) and shape.contains_point(point):
+                return shape
+        return None
+    def select_shape_point_multy_select(self, point):
+        """Select the first shape created which contains this point."""
+        containShape = False
+        for shape in reversed(self.shapes):
+            if  self.isVisible(shape) and shape.contains_point(point):
+                if self.isKeyControlPressed == True:
+                    if shape.selected:
+                        shape.selected = False
+                    else:
+                        shape.selected = True
+                        self.selected_shape = shape
+                else:
+                    self.selected_shape = shape
+                    shape.selected =  True 
+                containShape = True
+                break
+        if containShape == False:
+            self.de_select_shape()
+        self.isMultySelected = True
+        return self.selected_shape
+        #return None
     def calculate_offsets(self, shape, point):
         rect = shape.bounding_rect()
         x1 = rect.x() - point.x()
@@ -432,6 +538,33 @@ class Canvas(QWidget):
             right_shift = QPointF(0, shift_pos.y())
         shape.move_vertex_by(right_index, right_shift)
         shape.move_vertex_by(left_index, left_shift)
+    def bounded_move_all_shape(self, pos):
+        if self.out_of_pixmap(pos):
+            return False
+        originPos = pos
+        # The next line tracks the new position of the cursor
+        # relative to the shape, but also results in making it
+        # a bit "shaky" when nearing the border and allows it to
+        # go outside of the shape's area for some reason. XXX
+        # self.calculateOffsets(self.selectedShape, pos)
+        self.offsets = QPointF(self.pixmap.width(), self.pixmap.height()), QPointF(0,0)
+        for _shape in self.shapes:
+            if _shape.selected == False:
+                continue
+            pos = originPos
+            #self.calculate_offsets(_shape,pos )
+            o1 = pos + self.offsets[0]
+            if self.out_of_pixmap(o1):
+                pos -= QPointF(min(0, o1.x()), min(0, o1.y()))
+            o2 = pos + self.offsets[1]
+            if self.out_of_pixmap(o2):
+                pos += QPointF(min(0, self.pixmap.width() - o2.x()),
+                            min(0, self.pixmap.height() - o2.y()))
+            dp = pos - self.prev_point
+            if dp:
+                _shape.move_by(dp)
+        self.prev_point = pos
+        return True
 
     def bounded_move_shape(self, shape, pos):
         if self.out_of_pixmap(pos):
@@ -456,6 +589,9 @@ class Canvas(QWidget):
         return False
 
     def de_select_shape(self):
+        self.isMultySelected = False
+        for _shape in self.shapes:
+            _shape.selected = False
         if self.selected_shape:
             self.selected_shape.selected = False
             self.selected_shape = None
@@ -477,6 +613,7 @@ class Canvas(QWidget):
             shape = self.selected_shape.copy()
             self.de_select_shape()
             self.shapes.append(shape)
+            print("copy_selected_shape")
             shape.selected = True
             self.selected_shape = shape
             self.bounded_shift_shape(shape)
@@ -491,6 +628,7 @@ class Canvas(QWidget):
         self.prev_point = point
         if not self.bounded_move_shape(shape, point - offset):
             self.bounded_move_shape(shape, point + offset)
+            self.onEndAction.emit()
 
     def paintEvent(self, event):
         if not self.pixmap:
@@ -551,7 +689,8 @@ class Canvas(QWidget):
             pal = self.palette()
             pal.setColor(self.backgroundRole(), QColor(232, 232, 232, 255))
             self.setPalette(pal)
-
+        if self.isKeyShortcutRotate or self.isKeyShortcutRotateKeepSize:    
+            self.drawIconRotate()
         p.end()
 
     def transform_pos(self, point):
@@ -578,7 +717,7 @@ class Canvas(QWidget):
             self.drawingPolygon.emit(False)
             self.update()
             return
-
+        print("finalise")
         self.current.close()
         self.shapes.append(self.current)
         self.current = None
@@ -625,9 +764,50 @@ class Canvas(QWidget):
             v_delta and self.scrollRequest.emit(v_delta, Qt.Vertical)
             h_delta and self.scrollRequest.emit(h_delta, Qt.Horizontal)
         ev.accept()
+        
+    def focusOutEvent(self, a0):
+        self.isKeyControlPressed = False
+
+    def keyReleaseEvent(self, ev):
+        key = ev.key()
+        if key == Qt.Key.Key_Control and not ev.isAutoRepeat():
+            self.isKeyControlPressed = False
+
+        if key == Qt.Key.Key_R and not ev.isAutoRepeat():
+            self.isKeyShortcutRotate = False
+            self.onEndAction.emit()
+            self.update()
+
+        if key == Qt.Key.Key_T and not ev.isAutoRepeat():
+            self.isKeyShortcutRotateKeepSize = False
+            self.onEndAction.emit()
+            self.update()
+
+            
 
     def keyPressEvent(self, ev):
         key = ev.key()
+        if key == Qt.Key.Key_Control:
+            self.isKeyControlPressed = True
+
+        if key == Qt.Key.Key_R:
+            if self.isKeyShortcutRotate is False:
+                self.posRotate = QPointF(self.lastPos.x(), self.lastPos.y())
+                for _shape in self.shapes:
+                    _shape.pointsBeforRotate = _shape.points 
+            self.isKeyShortcutRotate = True
+            self.onStartAction.emit()
+            self.update()
+            
+        if key == Qt.Key.Key_T:
+            if self.isKeyShortcutRotateKeepSize is False:
+                self.posRotate = QPointF(self.lastPos.x(), self.lastPos.y())
+                for _shape in self.shapes:
+                    _shape.pointsBeforRotate = _shape.points 
+            self.isKeyShortcutRotateKeepSize = True
+            self.onStartAction.emit()
+            self.update()
+            
         if key == Qt.Key_Escape and self.current:
             print('ESC press')
             self.current = None

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
+from operator import truediv
 import os.path
 import platform
 import shutil
@@ -188,7 +189,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.zoomRequest.connect(self.zoom_request)
         self.canvas.lightRequest.connect(self.light_request)
         self.canvas.set_drawing_shape_to_square(settings.get(SETTING_DRAW_SQUARE, False))
-
+        self.canvas.onStartAction.connect(self.saveHistoryBoxes)
         scroll = QScrollArea()
         scroll.setWidget(self.canvas)
         scroll.setWidgetResizable(True)
@@ -242,6 +243,20 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
+        actionSelectAll = QAction( "Select all", self)
+        actionSelectAll.setShortcut("Ctrl+A")
+        def selectAll():
+            self.toggle_polygons(True)
+            self.canvas.selectAll()
+        actionSelectAll.triggered.connect(selectAll)
+        self.addAction(actionSelectAll)
+
+        #add action undo
+        # actionUndo =QAction("Undo", self)
+        # actionUndo.setShortcut("Ctrl+Z")
+        # actionUndo.triggered.connect(self.undoActions)
+        # self.addAction(actionUndo)
+
         def get_format_meta(format):
             """
             returns a tuple containing (title, icon_name) of the selected format
@@ -291,7 +306,7 @@ class MainWindow(QMainWindow, WindowMixin):
                           'Ctrl+H', 'hide', get_str('hideAllBoxDetail'),
                           enabled=False)
         show_all = action(get_str('showAllBox'), partial(self.toggle_polygons, True),
-                          'Ctrl+A', 'hide', get_str('showAllBoxDetail'),
+                          'Ctrl+I', 'hide', get_str('showAllBoxDetail'),
                           enabled=False)
 
         help_default = action(get_str('tutorialDefault'), self.show_default_tutorial_dialog, None, 'help', get_str('tutorialDetail'))
@@ -540,13 +555,15 @@ class MainWindow(QMainWindow, WindowMixin):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Control:
-            self.canvas.set_drawing_shape_to_square(False)
+        print("key release")
+        # if event.key() == Qt.Key_Control:
+        #     self.canvas.set_drawing_shape_to_square(False)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Control:
-            # Draw rectangle if Ctrl is pressed
-            self.canvas.set_drawing_shape_to_square(True)
+        print("key Pressed")
+        # if event.key() == Qt.Key_Control:
+        #     # Draw rectangle if Ctrl is pressed
+        #     self.canvas.set_drawing_shape_to_square(True)
 
     # Support Functions #
     def set_format(self, save_format):
@@ -1178,6 +1195,8 @@ class MainWindow(QMainWindow, WindowMixin):
         return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
     def show_bounding_box_from_annotation_file(self, file_path):
+        if file_path is None:
+            return
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
             xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
@@ -1205,7 +1224,6 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.load_yolo_txt_by_filename(txt_path)
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
-            
 
     def resizeEvent(self, event):
         if self.canvas and not self.image.isNull()\
@@ -1449,7 +1467,17 @@ class MainWindow(QMainWindow, WindowMixin):
 
         if filename:
             self.load_file(filename)
+    def saveHistoryBoxes(self, firstTime = False):
+        pass
+        # for shape in self.canvas.shapes:
+        #     shape.saveHistory()
 
+    def undoActions(self):
+        print("Undo")
+        for shape in self.canvas.shapes:
+            shape.undoAction()
+        self.canvas.update()
+            
     def open_file(self, _value=False):
         if not self.may_continue():
             return
@@ -1478,6 +1506,7 @@ class MainWindow(QMainWindow, WindowMixin):
             saved_path = os.path.join(image_file_dir, saved_file_name)
             self._save_file(saved_path if self.label_file
                             else self.save_file_dialog(remove_ext=False))
+        self.saveHistoryBoxes()
 
     def save_file_as(self, _value=False):
         assert not self.image.isNull(), "cannot save empty image"
