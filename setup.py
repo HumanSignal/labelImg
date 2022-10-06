@@ -10,7 +10,7 @@ import os
 here = os.path.abspath(os.path.dirname(__file__))
 NAME = 'labelImg'
 REQUIRES_PYTHON = '>=3.0.0'
-REQUIRED_DEP = ['pyqt5', 'lxml']
+REQUIRED_DEP = ['pyqt6', 'lxml']
 about = {}
 
 with open(os.path.join(here, 'libs', '__init__.py')) as f:
