@@ -1,0 +1,27 @@
+Todo:
+    refactor file reader, file writer, labelfile class
+
+2022/10/30 morning:
+    In labelImg.py:
+        add comments to note refactoring dependencies
+
+2022/10/30 afternoon:
+    In labelImg.py, def save_labels():
+        code smell:
+            the function originally uses multiple if else statements to check the label format,
+            and then call the corresponding method in LabelFile object to write
+
+        solving:
+            making a IOMAP in LabelFile.py
+            whenever a label needs to be save, map the label format to the corresponding reader object
+            so we have to allign the init method of all writers
+            also the save() method in each writers
+            for future extentions, writers must follow the format
+
+        result:
+            unit test passed
+
+        futher work:
+            add interface for writer that restrict the save() method and init() method
+
+

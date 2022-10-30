@@ -243,7 +243,7 @@ class MainWindow(QMainWindow, WindowMixin):
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
         ######### refactor here #########
-        # get_format_meta return a string that represent the file type
+        # get_format_meta get the path of format icon and text
         def get_format_meta(format):
             """
             returns a tuple containing (title, icon_name) of the selected format
@@ -256,13 +256,13 @@ class MainWindow(QMainWindow, WindowMixin):
                 return '&CreateML', 'format_createml'
 
         # save_format uses the attribute label_file_format(LabelFileFormat object)
-        # convert to string then utilize change format
+        # convert to string then utilize change format to toggle fileformat button
         save_format = action(get_format_meta(self.label_file_format)[0],
                              self.change_format, 'Ctrl+Y',
                              get_format_meta(self.label_file_format)[1],
                              get_str('changeSaveFormat'), enabled=True)
 
-        # save_as action do the save operation?
+        # save_as acturally saved the virtual label into file
         save_as = action(get_str('saveAs'), self.save_file_as,
                          'Ctrl+Shift+S', 'save-as', get_str('saveAsDetail'), enabled=False)
 
@@ -890,13 +890,16 @@ class MainWindow(QMainWindow, WindowMixin):
         self.combo_box.update_items(unique_text_list)
 
     ############# refactor here ############
-    # here reference the LabelFile object
-    # using its saving method to save virtual label into file
+    #! todo: refactor saving format if else statements
+    #! status: done
+    #! modified files: yolo/createml/pascal_io.py, LabelFile.py
     def save_labels(self, annotation_file_path):
         annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
             self.label_file = LabelFile()
             self.label_file.verified = self.canvas.verified
+            # syncronous LabelFileFormat in mainwindow and label LabelFile object
+            self.label_file.label_file_format = self.label_file_format
 
         def format_shape(s):
             return dict(label=s.label,
@@ -908,26 +911,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add different annotation formats here
-        ####### todo: move suffix operation into LabelFile object
         try:
-            if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-                if annotation_file_path[-4:].lower() != ".xml":
-                    annotation_file_path += XML_EXT
-                self.label_file.save_pascal_voc_format(annotation_file_path, shapes, self.file_path, self.image_data,
-                                                       self.line_color.getRgb(), self.fill_color.getRgb())
-            elif self.label_file_format == LabelFileFormat.YOLO:
-                if annotation_file_path[-4:].lower() != ".txt":
-                    annotation_file_path += TXT_EXT
-                self.label_file.save_yolo_format(annotation_file_path, shapes, self.file_path, self.image_data, self.label_hist,
-                                                 self.line_color.getRgb(), self.fill_color.getRgb())
-            elif self.label_file_format == LabelFileFormat.CREATE_ML:
-                if annotation_file_path[-5:].lower() != ".json":
-                    annotation_file_path += JSON_EXT
-                self.label_file.save_create_ml_format(annotation_file_path, shapes, self.file_path, self.image_data,
+            # use IOMAP to select writer
+            self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
-            else:
-                self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
-                                     self.line_color.getRgb(), self.fill_color.getRgb())
             print('Image:{0} -> Annotation:{1}'.format(self.file_path, annotation_file_path))
             return True
         except LabelFileError as e:

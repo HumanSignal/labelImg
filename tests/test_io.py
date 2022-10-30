@@ -52,7 +52,7 @@ class TestCreateMLRW(unittest.TestCase):
                                 local_img_path='tests/test.512.512.bmp')
         
         writer.verified = True
-        writer.write()
+        writer.save()
 
         # check written json
         with open(output_file, "r") as file:
