@@ -1,12 +1,15 @@
 resources/icons/.DS_Store
 resources.py
 labelImg.egg-info*
+zachary_notes.txt
 
 *.pyc
 .*.swp
 
 build/
 dist/
+uml/
+venv/
 
 tags
 cscope*

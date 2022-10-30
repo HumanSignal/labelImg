@@ -242,6 +242,8 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
+        ######### refactor here #########
+        # get_format_meta return a string that represent the file type
         def get_format_meta(format):
             """
             returns a tuple containing (title, icon_name) of the selected format
@@ -253,11 +255,14 @@ class MainWindow(QMainWindow, WindowMixin):
             elif format == LabelFileFormat.CREATE_ML:
                 return '&CreateML', 'format_createml'
 
+        # save_format uses the attribute label_file_format(LabelFileFormat object)
+        # convert to string then utilize change format
         save_format = action(get_format_meta(self.label_file_format)[0],
                              self.change_format, 'Ctrl+Y',
                              get_format_meta(self.label_file_format)[1],
                              get_str('changeSaveFormat'), enabled=True)
 
+        # save_as action do the save operation?
         save_as = action(get_str('saveAs'), self.save_file_as,
                          'Ctrl+Shift+S', 'save-as', get_str('saveAsDetail'), enabled=False)
 
@@ -548,7 +553,11 @@ class MainWindow(QMainWindow, WindowMixin):
             # Draw rectangle if Ctrl is pressed
             self.canvas.set_drawing_shape_to_square(True)
 
+    ########### refactor here ############
     # Support Functions #
+    # set_format is called whenever the fileformat has changed
+    # it will set the UI and modify labelfileformat attribute
+    # last, change the suffix of output label
     def set_format(self, save_format):
         if save_format == FORMAT_PASCALVOC:
             self.actions.save_format.setText(FORMAT_PASCALVOC)
@@ -568,6 +577,10 @@ class MainWindow(QMainWindow, WindowMixin):
             self.label_file_format = LabelFileFormat.CREATE_ML
             LabelFile.suffix = JSON_EXT
 
+    
+    # change_format is called when the fileformat buttom is toggled
+    # it change the LabelFileFormat attribute
+    # then call the set_format function
     def change_format(self):
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
             self.set_format(FORMAT_YOLO)
@@ -876,6 +889,9 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.combo_box.update_items(unique_text_list)
 
+    ############# refactor here ############
+    # here reference the LabelFile object
+    # using its saving method to save virtual label into file
     def save_labels(self, annotation_file_path):
         annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
@@ -892,6 +908,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add different annotation formats here
+        ####### todo: move suffix operation into LabelFile object
         try:
             if self.label_file_format == LabelFileFormat.PASCAL_VOC:
                 if annotation_file_path[-4:].lower() != ".xml":
@@ -1177,6 +1194,9 @@ class MainWindow(QMainWindow, WindowMixin):
         """
         return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
+    ##### refactor here ######
+    # here using the internal method of mainwindow
+    # to reference to corresponding reader then show the virtual labels in display
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
@@ -1616,6 +1636,8 @@ class MainWindow(QMainWindow, WindowMixin):
                     else:
                         self.label_hist.append(line)
 
+    ######### refactor here #############
+    #### todo: move loading methods into LabelFile object
     def load_pascal_xml_by_filename(self, xml_path):
         if self.file_path is None:
             return
