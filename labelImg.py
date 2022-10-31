@@ -37,7 +37,7 @@ from libs.zoomWidget import ZoomWidget
 from libs.lightWidget import LightWidget
 from libs.labelDialog import LabelDialog
 from libs.colorDialog import ColorDialog
-from libs.labelFile import LabelFile, LabelFileError, LabelFileFormat
+from libs.labelFile import LabelFile, LabelFileError, PascalVoc, Yolo, CreateML #! todo: extract labelfileformat
 from libs.toolBar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Save as Pascal voc xml
         self.default_save_dir = default_save_dir
-        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, LabelFileFormat.PASCAL_VOC)
+        self.label_file_format = settings.get(SETTING_LABEL_FILE_FORMAT, PascalVoc)
 
         # For loading all image under a directory
         self.m_img_list = []
@@ -243,23 +243,11 @@ class MainWindow(QMainWindow, WindowMixin):
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
         ######### refactor here #########
-        # get_format_meta get the path of format icon and text
-        def get_format_meta(format):
-            """
-            returns a tuple containing (title, icon_name) of the selected format
-            """
-            if format == LabelFileFormat.PASCAL_VOC:
-                return '&PascalVOC', 'format_voc'
-            elif format == LabelFileFormat.YOLO:
-                return '&YOLO', 'format_yolo'
-            elif format == LabelFileFormat.CREATE_ML:
-                return '&CreateML', 'format_createml'
-
-        # save_format uses the attribute label_file_format(LabelFileFormat object)
-        # convert to string then utilize change format to toggle fileformat button
-        save_format = action(get_format_meta(self.label_file_format)[0],
+        #! todo: link labelformat with labelfile to replace IOmapping
+        #! status: done
+        save_format = action(self.label_file_format.meta[0],
                              self.change_format, 'Ctrl+Y',
-                             get_format_meta(self.label_file_format)[1],
+                             self.label_file_format.meta[1],
                              get_str('changeSaveFormat'), enabled=True)
 
         # save_as acturally saved the virtual label into file
@@ -555,39 +543,21 @@ class MainWindow(QMainWindow, WindowMixin):
 
     ########### refactor here ############
     # Support Functions #
-    # set_format is called whenever the fileformat has changed
-    # it will set the UI and modify labelfileformat attribute
-    # last, change the suffix of output label
+    #! todo: refactor LabelFileFormat object for format switching and format setting
+    #! status: done
+    #! futher work: remove if else statements in change_format()
     def set_format(self, save_format):
-        if save_format == FORMAT_PASCALVOC:
-            self.actions.save_format.setText(FORMAT_PASCALVOC)
-            self.actions.save_format.setIcon(new_icon("format_voc"))
-            self.label_file_format = LabelFileFormat.PASCAL_VOC
-            LabelFile.suffix = XML_EXT
-
-        elif save_format == FORMAT_YOLO:
-            self.actions.save_format.setText(FORMAT_YOLO)
-            self.actions.save_format.setIcon(new_icon("format_yolo"))
-            self.label_file_format = LabelFileFormat.YOLO
-            LabelFile.suffix = TXT_EXT
-
-        elif save_format == FORMAT_CREATEML:
-            self.actions.save_format.setText(FORMAT_CREATEML)
-            self.actions.save_format.setIcon(new_icon("format_createml"))
-            self.label_file_format = LabelFileFormat.CREATE_ML
-            LabelFile.suffix = JSON_EXT
-
+        self.actions.save_format.setText(save_format.text)
+        self.actions.save_format.setIcon(new_icon(save_format.meta[1]))
+        self.label_file_format = save_format
     
-    # change_format is called when the fileformat buttom is toggled
-    # it change the LabelFileFormat attribute
-    # then call the set_format function
     def change_format(self):
-        if self.label_file_format == LabelFileFormat.PASCAL_VOC:
-            self.set_format(FORMAT_YOLO)
-        elif self.label_file_format == LabelFileFormat.YOLO:
-            self.set_format(FORMAT_CREATEML)
-        elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            self.set_format(FORMAT_PASCALVOC)
+        if self.label_file_format == PascalVoc:
+            self.set_format(Yolo)
+        elif self.label_file_format == Yolo:
+            self.set_format(CreateML)
+        elif self.label_file_format == CreateML:
+            self.set_format(PascalVoc)
         else:
             raise ValueError('Unknown label file format.')
         self.set_dirty()
@@ -1328,7 +1298,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         path = os.path.dirname(ustr(self.file_path))\
             if self.file_path else '.'
-        if self.label_file_format == LabelFileFormat.PASCAL_VOC:
+        if self.label_file_format == PascalVoc:
             filters = "Open Annotation XML file (%s)" % ' '.join(['*.xml'])
             filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a xml file' % __appname__, path, filters))
             if filename:
@@ -1336,7 +1306,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     filename = filename[0]
             self.load_pascal_xml_by_filename(filename)
 
-        elif self.label_file_format == LabelFileFormat.CREATE_ML:
+        elif self.label_file_format == CreateML:
             
             filters = "Open Annotation JSON file (%s)" % ' '.join(['*.json'])
             filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a json file' % __appname__, path, filters))
@@ -1462,7 +1432,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
         path = os.path.dirname(ustr(self.file_path)) if self.file_path else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
-        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.suffix])
+        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.label_file_format.suffix])
         filename,_ = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
             if isinstance(filename, (tuple, list)):
@@ -1492,10 +1462,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def save_file_dialog(self, remove_ext=True):
         caption = '%s - Choose File' % __appname__
-        filters = 'File (*%s)' % LabelFile.suffix
+        filters = 'File (*%s)' % LabelFile.label_file_format.suffix
         open_dialog_path = self.current_path()
         dlg = QFileDialog(self, caption, open_dialog_path, filters)
-        dlg.setDefaultSuffix(LabelFile.suffix[1:])
+        dlg.setDefaultSuffix(LabelFile.label_file_format.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
         filename_without_extension = os.path.splitext(self.file_path)[0]
         dlg.selectFile(filename_without_extension)

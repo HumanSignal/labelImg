@@ -6,7 +6,7 @@ from pathlib import Path
 from libs.constants import DEFAULT_ENCODING
 import os
 
-JSON_EXT = '.json'
+JSON_EXT = 'json'
 ENCODE_METHOD = DEFAULT_ENCODING
 
 

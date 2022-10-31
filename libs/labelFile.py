@@ -9,48 +9,55 @@ except ImportError:
 import os.path
 from enum import Enum
 
-from libs.create_ml_io import CreateMLWriter
-from libs.pascal_voc_io import PascalVocWriter
-from libs.pascal_voc_io import XML_EXT
-from libs.yolo_io import YOLOWriter
+#! todo: make abstract class for reader and writer
+from libs.create_ml_io import CreateMLReader, CreateMLWriter, JSON_EXT
+from libs.pascal_voc_io import PascalVocReader, PascalVocWriter, XML_EXT
+from libs.yolo_io import YoloReader, YOLOWriter, TXT_EXT
 
-# Mapping label format with corresponding writer, reader and suffix
-IOMAP = {
-    LabelFileFormat.PASCAL_VOC:
-    {
-        suffix: ".xml"
-        Reader: None
-        Writer: PascalVocWriter
-    }
-    LabelFileFormat.YOLO:
-    {
-        suffix: ".txt"
-        Reader: None
-        Writer: YOLOWriter
-    }
-    LabelFileFormat.CREATE_ML:
-    {
-        suffix: "json"
-        Reader: None
-        Writer: CreateMLWriter
-    }
-}
+import abc
 
-class LabelFileFormat(Enum):
-    PASCAL_VOC = 1
-    YOLO = 2
-    CREATE_ML = 3
+# create a abstract class for label format type
+class LabelFileFormat(abc.ABC):
+    reader = None
+    writer = None
+    suffix = None
+
+    text = None
+    icon = None
+    meta = None
+
+
+class PascalVoc(LabelFileFormat):
+    reader = PascalVocReader
+    writer = PascalVocWriter
+    suffix = XML_EXT
+
+    text = 'PascalVOC'
+    meta = ['&PascalVOC', 'format_voc']
+
+class Yolo(LabelFileFormat):
+    reader = YoloReader
+    writer = YOLOWriter
+    suffix = TXT_EXT
+
+    text = 'Yolo'
+    meta = ['&yolo', 'format_yolo']
+
+class CreateML(LabelFileFormat):
+    reader = CreateMLReader
+    writer = CreateMLWriter
+    suffix = JSON_EXT
+
+    text = 'CreateML'
+    meta = ['&CreateML', 'format_createml']
 
 class LabelFileError(Exception):
     pass
 
 class LabelFile(object):
-    # It might be changed as window creates. By default, using XML ext
-    # suffix = '.lif'
-    suffix = XML_EXT
 
     def __init__(self, filename=None):
-        self.label_file_format = LabelFileFormat.PASCAL_VOC
+        self.label_file_format = PascalVoc
         self.shapes = ()
         self.image_path = None
         self.image_data = None
@@ -58,8 +65,8 @@ class LabelFile(object):
 
     def save(self, filename, shapes, image_path, image_data, class_list,
                          line_color=None, fill_color=None, database_src=None):
-        if filename[-4:].lower() != IOMAP[self.label_file_format][suffix]: 
-            filename += IOMAP[self.label_file_format][EXT]
+        if filename[-4:].lower() != self.label_file_format.suffix: 
+            filename += self.label_file_format.suffix
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
@@ -70,8 +77,8 @@ class LabelFile(object):
             image.load(image_path)
         image_shape = [image.height(), image.width(),
                        1 if image.isGrayscale() else 3]
-        writer = IOMAP[self.label_file_format][Writer](img_folder_name, img_file_name,
-                                                       image_shape, shapes, filename, local_img_path=image_path)
+        writer = self.label_file_format.writer.write(img_folder_name, img_file_name,
+                                                     image_shape, shapes, filename, local_img_path=image_path)
         writer.verified = self.verified
 
         for shape in shapes:

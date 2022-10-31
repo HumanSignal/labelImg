@@ -1,18 +1,19 @@
 Todo:
-    refactor file reader, file writer, labelfile class
+    refactor labelImg repository, mainly focus on io operations
+    refactoring classes: LabelFile, LabelFileFormat, LabelIO
 
 2022/10/30 morning:
     In labelImg.py:
-        add comments to note refactoring dependencies
+        add comments to note some code smells for refactory
 
 2022/10/30 afternoon:
     In labelImg.py, def save_labels():
         code smell:
             the function originally uses multiple if else statements to check the label format,
-            and then call the corresponding method in LabelFile object to write
+            and then call the corresponding method in LabelFile object to write the file
 
         solving:
-            making a IOMAP in LabelFile.py
+            making a IOMAP(dictionary) in LabelFile.py
             whenever a label needs to be save, map the label format to the corresponding reader object
             so we have to allign the init method of all writers
             also the save() method in each writers
@@ -23,5 +24,27 @@ Todo:
 
         futher work:
             add interface for writer that restrict the save() method and init() method
+            (done)link labelformat with labelfile to remove dictionary mapping
+
+2022/10/31:
+    In labelImg.py, def set_format():
+        code smell:
+            using if else statements to set each format
+
+        solving:
+            making LabelFileFomat an abstract class, contain corresponding writer/reader(io), icon, text
+            then implement the LabelFileFomat object with current available formats
+
+            whenever the labelformat is specified, then the corresponding icon, text, io will be noticed,
+            because the abstract class force the derived class to have the corresponding attributes,
+            the only if-else statement remain is the toggle button
+
+        result:
+            unit test passed
+
+        futher work:
+            solve if-else in def change_format(), probably using a list, 
+            or making a patch to search all derived class of LabelFileFormat
+
 
 
