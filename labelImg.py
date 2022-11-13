@@ -37,7 +37,8 @@ from libs.zoomWidget import ZoomWidget
 from libs.lightWidget import LightWidget
 from libs.labelDialog import LabelDialog
 from libs.colorDialog import ColorDialog
-from libs.labelFile import LabelFile, LabelFileError, PascalVoc, Yolo, CreateML #! todo: extract labelfileformat
+from libs.labelFile import LabelFile, LabelFileError
+from libs.labelFileFormat import PascalVoc, Yolo, CreateML
 from libs.toolBar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
@@ -244,10 +245,11 @@ class MainWindow(QMainWindow, WindowMixin):
 
         ######### refactor here #########
         #! todo: link labelformat with labelfile to replace IOmapping
+        #!       understand action arguments and make them members of labelFileFormat object
         #! status: done
-        save_format = action(self.label_file_format.meta[0],
+        save_format = action(self.label_file_format.text,
                              self.change_format, 'Ctrl+Y',
-                             self.label_file_format.meta[1],
+                             self.label_file_format.icon,
                              get_str('changeSaveFormat'), enabled=True)
 
         # save_as acturally saved the virtual label into file
@@ -548,7 +550,7 @@ class MainWindow(QMainWindow, WindowMixin):
     #! futher work: remove if else statements in change_format()
     def set_format(self, save_format):
         self.actions.save_format.setText(save_format.text)
-        self.actions.save_format.setIcon(new_icon(save_format.meta[1]))
+        self.actions.save_format.setIcon(new_icon(save_format.icon))
         self.label_file_format = save_format
     
     def change_format(self):
@@ -863,6 +865,7 @@ class MainWindow(QMainWindow, WindowMixin):
     #! todo: refactor saving format if else statements
     #! status: done
     #! modified files: yolo/createml/pascal_io.py, LabelFile.py
+    #! futher work: reconsider sycronization of Mainwindow and labelfile
     def save_labels(self, annotation_file_path):
         annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
@@ -882,7 +885,6 @@ class MainWindow(QMainWindow, WindowMixin):
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add different annotation formats here
         try:
-            # use IOMAP to select writer
             self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
             print('Image:{0} -> Annotation:{1}'.format(self.file_path, annotation_file_path))
@@ -1152,8 +1154,8 @@ class MainWindow(QMainWindow, WindowMixin):
         return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
     ##### refactor here ######
-    # here using the internal method of mainwindow
-    # to reference to corresponding reader then show the virtual labels in display
+    #! todo: use the read method of LabelFileFormat object to replace if-else statements
+    #! status: undone
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])

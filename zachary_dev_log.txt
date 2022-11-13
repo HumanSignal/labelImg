@@ -2,11 +2,10 @@ Todo:
     refactor labelImg repository, mainly focus on io operations
     refactoring classes: LabelFile, LabelFileFormat, LabelIO
 
-2022/10/30 morning:
+2022/10/30:
     In labelImg.py:
         add comments to note some code smells for refactory
 
-2022/10/30 afternoon:
     In labelImg.py, def save_labels():
         code smell:
             the function originally uses multiple if else statements to check the label format,
@@ -46,5 +45,22 @@ Todo:
             solve if-else in def change_format(), probably using a list, 
             or making a patch to search all derived class of LabelFileFormat
 
+2022/11/6:
+    In labelFile.py
+        code smell:
+            Extracting abstract class for labelFileFormat does not make sence.
+            Ideally, abstract class provide a set of abstract method
+            and concrete class must implement them.
+            But for the fileformat design, we only need every format to own corresponding
+            io as attribute. not method
 
+        solving:
+            thus, I redesign the labelFileFormat class as a concrete class
+            Each format is a instance of this class, the init method force each instance to have
+            the required attributes assigned
 
+        result:
+            unit test passed
+
+        futher work:
+            explore some design pattern to apply on format/io interfaces

@@ -7,49 +7,7 @@ except ImportError:
     from PyQt4.QtGui import QImage
 
 import os.path
-from enum import Enum
-
-#! todo: make abstract class for reader and writer
-from libs.create_ml_io import CreateMLReader, CreateMLWriter, JSON_EXT
-from libs.pascal_voc_io import PascalVocReader, PascalVocWriter, XML_EXT
-from libs.yolo_io import YoloReader, YOLOWriter, TXT_EXT
-
-import abc
-
-# create a abstract class for label format type
-class LabelFileFormat(abc.ABC):
-    reader = None
-    writer = None
-    suffix = None
-
-    text = None
-    icon = None
-    meta = None
-
-
-class PascalVoc(LabelFileFormat):
-    reader = PascalVocReader
-    writer = PascalVocWriter
-    suffix = XML_EXT
-
-    text = 'PascalVOC'
-    meta = ['&PascalVOC', 'format_voc']
-
-class Yolo(LabelFileFormat):
-    reader = YoloReader
-    writer = YOLOWriter
-    suffix = TXT_EXT
-
-    text = 'Yolo'
-    meta = ['&yolo', 'format_yolo']
-
-class CreateML(LabelFileFormat):
-    reader = CreateMLReader
-    writer = CreateMLWriter
-    suffix = JSON_EXT
-
-    text = 'CreateML'
-    meta = ['&CreateML', 'format_createml']
+from libs.labelFileFormat import PascalVoc, Yolo, CreateML
 
 class LabelFileError(Exception):
     pass
@@ -64,7 +22,7 @@ class LabelFile(object):
         self.verified = False
 
     def save(self, filename, shapes, image_path, image_data, class_list,
-                         line_color=None, fill_color=None, database_src=None):
+             line_color=None, fill_color=None, database_src=None):
         if filename[-4:].lower() != self.label_file_format.suffix: 
             filename += self.label_file_format.suffix
         img_folder_path = os.path.dirname(image_path)
@@ -77,8 +35,8 @@ class LabelFile(object):
             image.load(image_path)
         image_shape = [image.height(), image.width(),
                        1 if image.isGrayscale() else 3]
-        writer = self.label_file_format.writer.write(img_folder_name, img_file_name,
-                                                     image_shape, shapes, filename, local_img_path=image_path)
+        writer = self.label_file_format.write(img_folder_name, img_file_name, image_shape, 
+                                                     shapes, filename, local_img_path=image_path)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -123,10 +81,10 @@ class LabelFile(object):
                     f, ensure_ascii=True, indent=2)
     '''
 
-    @staticmethod
-    def is_label_file(filename):
+    #@staticmethod
+    def is_label_file(self, filename):
         file_suffix = os.path.splitext(filename)[1].lower()
-        return file_suffix == LabelFile.suffix
+        return file_suffix == self.label_file_format.suffix
 
     @staticmethod
     def convert_points_to_bnd_box(points):
