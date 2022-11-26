@@ -7,7 +7,7 @@ except ImportError:
     from PyQt4.QtGui import QImage
 
 import os.path
-from libs.labelFileFormat import PascalVoc, Yolo, CreateML
+from libs.labelFileFormat import LabelFileFormat, PascalVoc, Yolo, CreateML
 
 class LabelFileError(Exception):
     pass
@@ -35,8 +35,8 @@ class LabelFile(object):
             image.load(image_path)
         image_shape = [image.height(), image.width(),
                        1 if image.isGrayscale() else 3]
-        writer = self.label_file_format.write(img_folder_name, img_file_name, image_shape, 
-                                                     shapes, filename, local_img_path=image_path)
+        writer = self.label_file_format.writer(img_folder_name, img_file_name, image_shape, 
+                                              database_src, image_path)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -81,10 +81,10 @@ class LabelFile(object):
                     f, ensure_ascii=True, indent=2)
     '''
 
-    #@staticmethod
-    def is_label_file(self, filename):
+    @staticmethod
+    def is_label_file(filename):
         file_suffix = os.path.splitext(filename)[1].lower()
-        return file_suffix == self.label_file_format.suffix
+        return (file_suffix in LabelFileFormat.suffixes)
 
     @staticmethod
     def convert_points_to_bnd_box(points):

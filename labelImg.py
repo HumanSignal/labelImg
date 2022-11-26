@@ -38,7 +38,7 @@ from libs.lightWidget import LightWidget
 from libs.labelDialog import LabelDialog
 from libs.colorDialog import ColorDialog
 from libs.labelFile import LabelFile, LabelFileError
-from libs.labelFileFormat import PascalVoc, Yolo, CreateML
+from libs.labelFileFormat import LabelFileFormat, PascalVoc, Yolo, CreateML
 from libs.toolBar import ToolBar
 from libs.pascal_voc_io import PascalVocReader
 from libs.pascal_voc_io import XML_EXT
@@ -554,14 +554,14 @@ class MainWindow(QMainWindow, WindowMixin):
         self.label_file_format = save_format
     
     def change_format(self):
-        if self.label_file_format == PascalVoc:
-            self.set_format(Yolo)
-        elif self.label_file_format == Yolo:
-            self.set_format(CreateML)
-        elif self.label_file_format == CreateML:
-            self.set_format(PascalVoc)
+        if self.label_file_format in LabelFileFormat.formats:
+            index = self.label_file_format.formats.index(self.label_file_format)
+            self.label_file_format = LabelFileFormat.formats[index+1 if index+1 < len(self.label_file_format.formats) else 0]
+            self.set_format(self.label_file_format)
         else:
             raise ValueError('Unknown label file format.')
+        #! todo: error when only label file is change then save
+        #! this should not be dirty if no image is imported/ no label is plotted
         self.set_dirty()
 
     def no_shapes(self):
@@ -1434,7 +1434,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
         path = os.path.dirname(ustr(self.file_path)) if self.file_path else '.'
         formats = ['*.%s' % fmt.data().decode("ascii").lower() for fmt in QImageReader.supportedImageFormats()]
-        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % LabelFile.label_file_format.suffix])
+        filters = "Image & Label files (%s)" % ' '.join(formats + ['*%s' % suffix for suffix in LabelFileFormat.suffixes])
         filename,_ = QFileDialog.getOpenFileName(self, '%s - Choose Image or Label file' % __appname__, path, filters)
         if filename:
             if isinstance(filename, (tuple, list)):
@@ -1464,10 +1464,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def save_file_dialog(self, remove_ext=True):
         caption = '%s - Choose File' % __appname__
-        filters = 'File (*%s)' % LabelFile.label_file_format.suffix
+        filters = 'File (*%s)' % self.label_file_format.suffix
         open_dialog_path = self.current_path()
         dlg = QFileDialog(self, caption, open_dialog_path, filters)
-        dlg.setDefaultSuffix(LabelFile.label_file_format.suffix[1:])
+        dlg.setDefaultSuffix(self.label_file_format.suffix[1:])
         dlg.setAcceptMode(QFileDialog.AcceptSave)
         filename_without_extension = os.path.splitext(self.file_path)[0]
         dlg.selectFile(filename_without_extension)

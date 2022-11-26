@@ -64,3 +64,30 @@ Todo:
 
         futher work:
             explore some design pattern to apply on format/io interfaces
+
+2022/11/26:
+    Debugging for application:
+        though we passed the unit test, I found that the application will crash if some functions are used
+        1. the toggle label file format button
+        2. save button
+        3. openfile button
+
+   the toggle label file format button:
+        this error occur when we compare two LabelFileFormat objects, in python the compairson is based on pointer address
+        however, here we want to compare only the attributes for the identity.
+        Thus, a __eq__ method is written into labelFileFormat class, then the issue is solved
+
+   save button:
+        for each save operator, we initialize a new writer based on the format
+        it is important to keep each writer consistent of input parameters
+        currently, we cannot fuse writer into label file format operation, this will be left to foward work
+
+   openfile button:
+        this error occur when detecting if the file is available for import
+        we are checking validity by checking image format and label suffix
+        the suffix of all labels are not saved, we can only see one suffix at a time
+        to solve this issue, we add suffixes attribute in labelFileFormat class
+        thus we can now see all the suffixes of the objects
+
+   futher work:
+        fuse writer into labelFileFormat object

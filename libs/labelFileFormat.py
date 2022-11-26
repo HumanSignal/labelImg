@@ -3,26 +3,38 @@ from libs.yolo_io import YoloReader, YOLOWriter, TXT_EXT
 from libs.create_ml_io import CreateMLReader, CreateMLWriter, JSON_EXT
 
 class LabelFileFormat(object):
+    # here we record suffix of all file format that filter input file
+    formats = []
+    suffixes = []
     def __init__(self, reader, writer, suffix, text, icon):
         self.reader = reader
         self.writer = writer
         self.suffix = suffix
         self.text = text
         self.icon = icon
+        self.formats.append(self)
+        self.suffixes.append(self.suffix)
 
-    def read(*args, **kwargs):
+    def read(self, *args, **kwargs):
         #! todo: implement read method
         pass
 
-    def write(*args, **kwargs):
-        writer.write(*args, **kwargs)
+    def write(self, *args, **kwargs):
+        #! todo: define method as a single function to write label file
+        self.writer = self.writer(*args, **kwargs)
+        self.writer.save()
+        pass
+
+    # define format compairson
+    def __eq__(self, other):
+        return (self.reader == other.reader and self.writer == other.writer)
 
 
 PascalVoc = LabelFileFormat(PascalVocReader,
-                            PascalVocWriter,
-                            XML_EXT,
-                            'PascalVOC',
-                            'format_voc')
+                   PascalVocWriter,
+                   XML_EXT,
+                   'PascalVOC',
+                   'format_voc')
 
 Yolo = LabelFileFormat(YoloReader,
                        YOLOWriter,
