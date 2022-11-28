@@ -1637,6 +1637,12 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.set_format(FORMAT_YOLO)
         t_yolo_parse_reader = YoloReader(txt_path, self.image)
+        self.label_hist = []
+        for cls in t_yolo_parse_reader.classes:
+            self.label_hist.append(cls)
+        if len(self.label_hist) > 0:
+            self.label_dialog = LabelDialog(
+                    parent=self, list_item=self.label_hist)
         shapes = t_yolo_parse_reader.get_shapes()
         print(shapes)
         self.load_labels(shapes)
