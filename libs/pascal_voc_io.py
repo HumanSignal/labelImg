@@ -14,13 +14,14 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 class PascalVocWriter:
 
-    def __init__(self, folder_name, filename, img_size, database_src='Unknown', local_img_path=None):
-        self.folder_name = folder_name
+    def __init__(self, img_folder_name, img_file_name,
+                 img_shape, shapes, filename):
+        self.folder_name = img_folder_name
         self.filename = filename
-        self.database_src = database_src
-        self.img_size = img_size
+        self.database_src = ""
+        self.img_size = img_shape
         self.box_list = []
-        self.local_img_path = local_img_path
+        self.local_img_path = None
         self.verified = False
 
     def prettify(self, elem):
@@ -126,7 +127,7 @@ class PascalVocWriter:
 
 class PascalVocReader:
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, image = None):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         self.shapes = []

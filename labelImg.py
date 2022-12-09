@@ -547,7 +547,6 @@ class MainWindow(QMainWindow, WindowMixin):
     # Support Functions #
     #! todo: refactor LabelFileFormat object for format switching and format setting
     #! status: done
-    #! futher work: remove if else statements in change_format()
     def set_format(self, save_format):
         self.actions.save_format.setText(save_format.text)
         self.actions.save_format.setIcon(new_icon(save_format.icon))
@@ -865,13 +864,11 @@ class MainWindow(QMainWindow, WindowMixin):
     #! todo: refactor saving format if else statements
     #! status: done
     #! modified files: yolo/createml/pascal_io.py, LabelFile.py
-    #! futher work: reconsider sycronization of Mainwindow and labelfile
     def save_labels(self, annotation_file_path):
         annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
             self.label_file = LabelFile()
             self.label_file.verified = self.canvas.verified
-            # syncronous LabelFileFormat in mainwindow and label LabelFile object
             self.label_file.label_file_format = self.label_file_format
 
         def format_shape(s):
@@ -886,7 +883,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Can add different annotation formats here
         try:
             self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
-                                                      self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
+                                                      self.label_hist)
             print('Image:{0} -> Annotation:{1}'.format(self.file_path, annotation_file_path))
             return True
         except LabelFileError as e:
@@ -1159,32 +1156,13 @@ class MainWindow(QMainWindow, WindowMixin):
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
-            xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
-            txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
-            json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
 
-            """Annotation file priority:
-            PascalXML > YOLO
-            """
-            if os.path.isfile(xml_path):
-                self.load_pascal_xml_by_filename(xml_path)
-            elif os.path.isfile(txt_path):
-                self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(json_path):
-                self.load_create_ml_json_by_filename(json_path, file_path)
+            for suffix in LabelFileFormat.suffixes:
+                label_path = os.path.join(self.default_save_dir, basename + suffix)
 
-        else:
-            xml_path = os.path.splitext(file_path)[0] + XML_EXT
-            txt_path = os.path.splitext(file_path)[0] + TXT_EXT
-            json_path = os.path.splitext(file_path)[0] + JSON_EXT
-
-            if os.path.isfile(xml_path):
-                self.load_pascal_xml_by_filename(xml_path)
-            elif os.path.isfile(txt_path):
-                self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(json_path):
-                self.load_create_ml_json_by_filename(json_path, file_path)
-            
+                if os.path.isfile(label_path):
+                    self.load_label_by_filename(label_path)
+                    break
 
     def resizeEvent(self, event):
         if self.canvas and not self.image.isNull()\
@@ -1337,8 +1315,6 @@ class MainWindow(QMainWindow, WindowMixin):
         self.last_open_dir = target_dir_path
         self.import_dir_images(target_dir_path)
         self.default_save_dir = target_dir_path
-        if self.file_path:
-            self.show_bounding_box_from_annotation_file(file_path=self.file_path)
 
     def import_dir_images(self, dir_path):
         if not self.may_continue() or not dir_path:
@@ -1596,45 +1572,20 @@ class MainWindow(QMainWindow, WindowMixin):
                         self.label_hist.append(line)
 
     ######### refactor here #############
-    #### todo: move loading methods into LabelFile object
-    def load_pascal_xml_by_filename(self, xml_path):
+    #! todo: move loading methods into LabelFile object
+    #! status: undone
+    def load_label_by_filename(self, label_path):
         if self.file_path is None:
             return
-        if os.path.isfile(xml_path) is False:
+        if os.path.isfile(label_path) is False:
             return
-
-        self.set_format(FORMAT_PASCALVOC)
-
-        t_voc_parse_reader = PascalVocReader(xml_path)
-        shapes = t_voc_parse_reader.get_shapes()
+        suffix = os.path.splitext(label_path)[1]
+        format_id = LabelFileFormat.suffixes.index(suffix)
+        file_format = LabelFileFormat.formats[format_id]
+        self.set_format(file_format)
+        shapes = self.label_file_format.read(label_path, self.image)
         self.load_labels(shapes)
-        self.canvas.verified = t_voc_parse_reader.verified
-
-    def load_yolo_txt_by_filename(self, txt_path):
-        if self.file_path is None:
-            return
-        if os.path.isfile(txt_path) is False:
-            return
-
-        self.set_format(FORMAT_YOLO)
-        t_yolo_parse_reader = YoloReader(txt_path, self.image)
-        shapes = t_yolo_parse_reader.get_shapes()
-        print(shapes)
-        self.load_labels(shapes)
-        self.canvas.verified = t_yolo_parse_reader.verified
-
-    def load_create_ml_json_by_filename(self, json_path, file_path):
-        if self.file_path is None:
-            return
-        if os.path.isfile(json_path) is False:
-            return
-
-        self.set_format(FORMAT_CREATEML)
-
-        create_ml_parse_reader = CreateMLReader(json_path, file_path)
-        shapes = create_ml_parse_reader.get_shapes()
-        self.load_labels(shapes)
-        self.canvas.verified = create_ml_parse_reader.verified
+        self.canvas.verified = self.label_file_format.file_reader.verified
 
     def copy_previous_bounding_boxes(self):
         current_index = self.m_img_list.index(self.file_path)

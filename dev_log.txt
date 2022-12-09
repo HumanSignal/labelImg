@@ -91,3 +91,18 @@ Todo:
 
    futher work:
         fuse writer into labelFileFormat object
+        
+2022/12/09:
+    Today's work:
+        1. solving if-else statements in load_file_by_filename()
+        2. redefining clear parameter for writer objects
+        3. E2E debugging for labelfile io operation
+
+    Code smell:
+        long if-else statements for loading label file
+
+    Solve:
+        search for matching suffix in LabelFileFormat object
+        then use the method of LabelFileFormat.read to load any file
+
+    futher work: abstract interface for writer and reader objects

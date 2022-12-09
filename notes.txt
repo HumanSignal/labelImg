@@ -1,0 +1,7 @@
+Unit testing:
+    python -m unittest tests/test_xx.py
+    python -m unittest tests/*.py
+
+Env:
+    source venv/bin/activate
+

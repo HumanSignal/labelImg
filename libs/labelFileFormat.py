@@ -17,13 +17,12 @@ class LabelFileFormat(object):
 
     def read(self, *args, **kwargs):
         #! todo: implement read method
-        pass
+        self.file_reader = self.reader(*args, **kwargs)
+        return self.file_reader.get_shapes()
 
     def write(self, *args, **kwargs):
-        #! todo: define method as a single function to write label file
-        self.writer = self.writer(*args, **kwargs)
-        self.writer.save()
-        pass
+        self.file_writer = self.writer(*args, **kwargs)
+        self.file_writer.save()
 
     # define format compairson
     def __eq__(self, other):

@@ -10,13 +10,12 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 class YOLOWriter:
 
-    def __init__(self, folder_name, filename, img_size, database_src='Unknown', local_img_path=None):
-        self.folder_name = folder_name
+    def __init__(self, img_folder_name, img_file_name,
+                 img_shape, shapes, filename):
+        self.folder_name = img_folder_name
         self.filename = filename
-        self.database_src = database_src
-        self.img_size = img_size
+        self.img_size = img_shape
         self.box_list = []
-        self.local_img_path = local_img_path
         self.verified = False
 
     def add_bnd_box(self, x_min, y_min, x_max, y_max, name, difficult):

@@ -12,11 +12,12 @@ class TestPascalVocRW(unittest.TestCase):
         from pascal_voc_io import PascalVocReader
 
         # Test Write/Read
-        writer = PascalVocWriter('tests', 'test', (512, 512, 1), local_img_path='tests/test.512.512.bmp')
-        difficult = 1
-        writer.add_bnd_box(60, 40, 430, 504, 'person', difficult)
-        writer.add_bnd_box(113, 40, 450, 403, 'face', difficult)
-        writer.save('tests/test.xml')
+        shapes = [
+                  ['person',  [(60, 40), (430, 40), (430, 504), (60, 504)]],
+                  ['face', [(113, 40), (450, 40), (450, 403), (113, 403)]]
+                 ]
+        writer = PascalVocWriter('tests', 'test', (512, 512, 1), shapes, 'tests/test.xml')
+        writer.save()
 
         reader = PascalVocReader('tests/test.xml')
         shapes = reader.get_shapes()
@@ -48,8 +49,7 @@ class TestCreateMLRW(unittest.TestCase):
         shapes = [person, face]
         output_file = dir_name + "/tests.json"
 
-        writer = CreateMLWriter('tests', 'test.512.512.bmp', (512, 512, 1), shapes, output_file,
-                                local_img_path='tests/test.512.512.bmp')
+        writer = CreateMLWriter('tests', 'test.512.512.bmp', (512, 512, 1), shapes, output_file)
         
         writer.verified = True
         writer.save()

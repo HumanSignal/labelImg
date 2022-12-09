@@ -21,10 +21,10 @@ class LabelFile(object):
         self.image_data = None
         self.verified = False
 
-    def save(self, filename, shapes, image_path, image_data, class_list,
-             line_color=None, fill_color=None, database_src=None):
-        if filename[-4:].lower() != self.label_file_format.suffix: 
+    def save(self, filename, shapes, image_path, image_data, class_list):
+        if os.path.splitext(filename)[1] != self.label_file_format.suffix: 
             filename += self.label_file_format.suffix
+            label_filename = filename
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
@@ -33,10 +33,9 @@ class LabelFile(object):
         else:
             image = QImage()
             image.load(image_path)
-        image_shape = [image.height(), image.width(),
+        img_shape = [image.height(), image.width(),
                        1 if image.isGrayscale() else 3]
-        writer = self.label_file_format.writer(img_folder_name, img_file_name, image_shape, 
-                                              database_src, image_path)
+        writer = self.label_file_format.writer(img_folder_name, img_file_name, img_shape, shapes, label_filename)
         writer.verified = self.verified
 
         for shape in shapes:
@@ -44,7 +43,10 @@ class LabelFile(object):
             label = shape['label']
             difficult = int(shape['difficult'])
             bnd_box = LabelFile.convert_points_to_bnd_box(points)
-            writer.add_bnd_box(bnd_box[0], bnd_box[1], bnd_box[2], bnd_box[3], label, difficult)
+            try:
+                writer.add_bnd_box(bnd_box[0], bnd_box[1], bnd_box[2], bnd_box[3], label, difficult)
+            except:
+                pass
 
         writer.save(target_file=filename, class_list=class_list)
         return
