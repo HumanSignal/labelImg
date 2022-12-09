@@ -11,6 +11,7 @@ ENCODE_METHOD = DEFAULT_ENCODING
 
 
 class CreateMLWriter:
+
     def __init__(self, img_folder_name, img_file_name,
                  img_shape, shapes, filename):
         self.folder_name = img_folder_name
@@ -93,6 +94,7 @@ class CreateMLWriter:
 
 
 class CreateMLReader:
+
     def __init__(self, json_path, image):
         self.json_path = json_path
         self.shapes = []

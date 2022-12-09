@@ -3,9 +3,10 @@ from libs.yolo_io import YoloReader, YOLOWriter, TXT_EXT
 from libs.create_ml_io import CreateMLReader, CreateMLWriter, JSON_EXT
 
 class LabelFileFormat(object):
-    # here we record suffix of all file format that filter input file
+
     formats = []
     suffixes = []
+
     def __init__(self, reader, writer, suffix, text, icon):
         self.reader = reader
         self.writer = writer
@@ -16,7 +17,6 @@ class LabelFileFormat(object):
         self.suffixes.append(self.suffix)
 
     def read(self, *args, **kwargs):
-        #! todo: implement read method
         self.file_reader = self.reader(*args, **kwargs)
         return self.file_reader.get_shapes()
 
@@ -24,7 +24,6 @@ class LabelFileFormat(object):
         self.file_writer = self.writer(*args, **kwargs)
         self.file_writer.save()
 
-    # define format compairson
     def __eq__(self, other):
         return (self.reader == other.reader and self.writer == other.writer)
 

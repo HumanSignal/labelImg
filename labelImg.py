@@ -243,16 +243,11 @@ class MainWindow(QMainWindow, WindowMixin):
         save = action(get_str('save'), self.save_file,
                       'Ctrl+S', 'save', get_str('saveDetail'), enabled=False)
 
-        ######### refactor here #########
-        #! todo: link labelformat with labelfile to replace IOmapping
-        #!       understand action arguments and make them members of labelFileFormat object
-        #! status: done
         save_format = action(self.label_file_format.text,
                              self.change_format, 'Ctrl+Y',
                              self.label_file_format.icon,
                              get_str('changeSaveFormat'), enabled=True)
 
-        # save_as acturally saved the virtual label into file
         save_as = action(get_str('saveAs'), self.save_file_as,
                          'Ctrl+Shift+S', 'save-as', get_str('saveAsDetail'), enabled=False)
 
@@ -543,10 +538,6 @@ class MainWindow(QMainWindow, WindowMixin):
             # Draw rectangle if Ctrl is pressed
             self.canvas.set_drawing_shape_to_square(True)
 
-    ########### refactor here ############
-    # Support Functions #
-    #! todo: refactor LabelFileFormat object for format switching and format setting
-    #! status: done
     def set_format(self, save_format):
         self.actions.save_format.setText(save_format.text)
         self.actions.save_format.setIcon(new_icon(save_format.icon))
@@ -860,10 +851,6 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.combo_box.update_items(unique_text_list)
 
-    ############# refactor here ############
-    #! todo: refactor saving format if else statements
-    #! status: done
-    #! modified files: yolo/createml/pascal_io.py, LabelFile.py
     def save_labels(self, annotation_file_path):
         annotation_file_path = ustr(annotation_file_path)
         if self.label_file is None:
@@ -1150,16 +1137,11 @@ class MainWindow(QMainWindow, WindowMixin):
         """
         return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
-    ##### refactor here ######
-    #! todo: use the read method of LabelFileFormat object to replace if-else statements
-    #! status: undone
     def show_bounding_box_from_annotation_file(self, file_path):
         if self.default_save_dir is not None:
             basename = os.path.basename(os.path.splitext(file_path)[0])
-
             for suffix in LabelFileFormat.suffixes:
                 label_path = os.path.join(self.default_save_dir, basename + suffix)
-
                 if os.path.isfile(label_path):
                     self.load_label_by_filename(label_path)
                     break
@@ -1571,9 +1553,6 @@ class MainWindow(QMainWindow, WindowMixin):
                     else:
                         self.label_hist.append(line)
 
-    ######### refactor here #############
-    #! todo: move loading methods into LabelFile object
-    #! status: undone
     def load_label_by_filename(self, label_path):
         if self.file_path is None:
             return
