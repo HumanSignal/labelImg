@@ -7,22 +7,21 @@ from lxml import etree
 import codecs
 from libs.constants import DEFAULT_ENCODING
 from libs.ustr import ustr
+from libs.io_abstract_class import FileReader, FileWriter
 
 
 XML_EXT = '.xml'
 ENCODE_METHOD = DEFAULT_ENCODING
 
-class PascalVocWriter:
+class PascalVocWriter(FileWriter):
 
     def __init__(self, img_folder_name, img_file_name,
                  img_shape, shapes, filename):
-        self.folder_name = img_folder_name
-        self.filename = filename
+        super().__init__(img_folder_name, 
+                img_file_name, img_shape, shapes, filename)
         self.database_src = ""
-        self.img_size = img_shape
         self.box_list = []
         self.local_img_path = None
-        self.verified = False
 
     def prettify(self, elem):
         """
@@ -125,18 +124,12 @@ class PascalVocWriter:
         out_file.close()
 
 
-class PascalVocReader:
+class PascalVocReader(FileReader):
 
-    def __init__(self, file_path, image = None):
+    def __init__(self, file_path):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
-        self.shapes = []
-        self.file_path = file_path
-        self.verified = False
-        try:
-            self.parse_xml()
-        except:
-            pass
+        super().__init__(file_path)
 
     def get_shapes(self):
         return self.shapes
@@ -149,7 +142,7 @@ class PascalVocReader:
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
         self.shapes.append((label, points, None, None, difficult))
 
-    def parse_xml(self):
+    def parse_file(self):
         assert self.file_path.endswith(XML_EXT), "Unsupported file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)
         xml_tree = ElementTree.parse(self.file_path, parser=parser).getroot()

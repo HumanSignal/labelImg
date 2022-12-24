@@ -4,23 +4,19 @@ import json
 from pathlib import Path
 
 from libs.constants import DEFAULT_ENCODING
+from libs.io_abstract_class import FileReader, FileWriter
 import os
 
 JSON_EXT = '.json'
 ENCODE_METHOD = DEFAULT_ENCODING
 
 
-class CreateMLWriter:
+class CreateMLWriter(FileWriter):
 
     def __init__(self, img_folder_name, img_file_name,
                  img_shape, shapes, filename):
-        self.folder_name = img_folder_name
-        self.filename = img_file_name
-        self.img_size = img_shape
-        self.box_list = []
-        self.verified = False
-        self.shapes = shapes
-        self.output_file = filename
+        super().__init__(img_folder_name, 
+                img_file_name, img_shape, shapes, filename)
 
     def save(self, target_file=None, class_list=None):
         if os.path.isfile(self.output_file):
@@ -93,19 +89,14 @@ class CreateMLWriter:
         return height, width, x, y
 
 
-class CreateMLReader:
+class CreateMLReader(FileReader):
 
-    def __init__(self, json_path, image):
+    def __init__(self, json_path, file_path):
         self.json_path = json_path
-        self.shapes = []
-        self.verified = False
         self.filename = os.path.basename(json_path)
-        try:
-            self.parse_json()
-        except ValueError:
-            print("JSON decoding failed")
+        super().__init__(file_path)
 
-    def parse_json(self):
+    def parse_file(self):
         with open(self.json_path, "r") as file:
             input_data = file.read()
 
@@ -132,5 +123,3 @@ class CreateMLReader:
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
         self.shapes.append((label, points, None, None, True))
 
-    def get_shapes(self):
-        return self.shapes

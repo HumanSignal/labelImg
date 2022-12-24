@@ -106,3 +106,8 @@ Todo:
         then use the method of LabelFileFormat.read to load any file
 
     futher work: abstract interface for writer and reader objects
+    
+2022/12/24:
+    Today's work:
+        build abstract class for file reader and file writer
+        for future extension, any format should inherit the writer and reader class for implementation
