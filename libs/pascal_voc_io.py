@@ -126,7 +126,7 @@ class PascalVocWriter(FileWriter):
 
 class PascalVocReader(FileReader):
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, image = None):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
         super().__init__(file_path)
