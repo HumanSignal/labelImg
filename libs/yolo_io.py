@@ -4,20 +4,17 @@ import codecs
 import os
 
 from libs.constants import DEFAULT_ENCODING
+from libs.io_abstract_class import FileReader, FileWriter
 
 TXT_EXT = '.txt'
 ENCODE_METHOD = DEFAULT_ENCODING
 
 class YOLOWriter:
 
-    def __init__(self, folder_name, filename, img_size, database_src='Unknown', local_img_path=None):
-        self.folder_name = folder_name
-        self.filename = filename
-        self.database_src = database_src
-        self.img_size = img_size
-        self.box_list = []
-        self.local_img_path = local_img_path
-        self.verified = False
+    def __init__(self, img_folder_name, img_file_name,
+                 img_shape, shapes, filename):
+        super().__init__(img_folder_name, 
+                img_file_name, img_shape, shapes, filename)
 
     def add_bnd_box(self, x_min, y_min, x_max, y_max, name, difficult):
         bnd_box = {'xmin': x_min, 'ymin': y_min, 'xmax': x_max, 'ymax': y_max}
@@ -78,12 +75,11 @@ class YOLOWriter:
 
 
 
-class YoloReader:
+class YoloReader(FileReader):
 
-    def __init__(self, file_path, image, class_list_path=None):
+    def __init__(self, file_path, image):
         # shapes type:
         # [labbel, [(x1,y1), (x2,y2), (x3,y3), (x4,y4)], color, color, difficult]
-        self.shapes = []
         self.file_path = file_path
 
         if class_list_path is None:
@@ -103,12 +99,7 @@ class YoloReader:
                     1 if image.isGrayscale() else 3]
 
         self.img_size = img_size
-
-        self.verified = False
-        # try:
-        self.parse_yolo_format()
-        # except:
-        #     pass
+        super().__init__(file_path)
 
     def get_shapes(self):
         return self.shapes

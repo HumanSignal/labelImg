@@ -1,0 +1,113 @@
+Todo:
+    refactor labelImg repository, mainly focus on io operations
+    refactoring classes: LabelFile, LabelFileFormat, LabelIO
+
+2022/10/30:
+    In labelImg.py:
+        add comments to note some code smells for refactory
+
+    In labelImg.py, def save_labels():
+        code smell:
+            the function originally uses multiple if else statements to check the label format,
+            and then call the corresponding method in LabelFile object to write the file
+
+        solving:
+            making a IOMAP(dictionary) in LabelFile.py
+            whenever a label needs to be save, map the label format to the corresponding reader object
+            so we have to allign the init method of all writers
+            also the save() method in each writers
+            for future extentions, writers must follow the format
+
+        result:
+            unit test passed
+
+        futher work:
+            add interface for writer that restrict the save() method and init() method
+            (done)link labelformat with labelfile to remove dictionary mapping
+
+2022/10/31:
+    In labelImg.py, def set_format():
+        code smell:
+            using if else statements to set each format
+
+        solving:
+            making LabelFileFomat an abstract class, contain corresponding writer/reader(io), icon, text
+            then implement the LabelFileFomat object with current available formats
+
+            whenever the labelformat is specified, then the corresponding icon, text, io will be noticed,
+            because the abstract class force the derived class to have the corresponding attributes,
+            the only if-else statement remain is the toggle button
+
+        result:
+            unit test passed
+
+        futher work:
+            solve if-else in def change_format(), probably using a list, 
+            or making a patch to search all derived class of LabelFileFormat
+
+2022/11/6:
+    In labelFile.py
+        code smell:
+            Extracting abstract class for labelFileFormat does not make sence.
+            Ideally, abstract class provide a set of abstract method
+            and concrete class must implement them.
+            But for the fileformat design, we only need every format to own corresponding
+            io as attribute. not method
+
+        solving:
+            thus, I redesign the labelFileFormat class as a concrete class
+            Each format is a instance of this class, the init method force each instance to have
+            the required attributes assigned
+
+        result:
+            unit test passed
+
+        futher work:
+            explore some design pattern to apply on format/io interfaces
+
+2022/11/26:
+    Debugging for application:
+        though we passed the unit test, I found that the application will crash if some functions are used
+        1. the toggle label file format button
+        2. save button
+        3. openfile button
+
+   the toggle label file format button:
+        this error occur when we compare two LabelFileFormat objects, in python the compairson is based on pointer address
+        however, here we want to compare only the attributes for the identity.
+        Thus, a __eq__ method is written into labelFileFormat class, then the issue is solved
+
+   save button:
+        for each save operator, we initialize a new writer based on the format
+        it is important to keep each writer consistent of input parameters
+        currently, we cannot fuse writer into label file format operation, this will be left to foward work
+
+   openfile button:
+        this error occur when detecting if the file is available for import
+        we are checking validity by checking image format and label suffix
+        the suffix of all labels are not saved, we can only see one suffix at a time
+        to solve this issue, we add suffixes attribute in labelFileFormat class
+        thus we can now see all the suffixes of the objects
+
+   futher work:
+        fuse writer into labelFileFormat object
+        
+2022/12/09:
+    Today's work:
+        1. solving if-else statements in load_file_by_filename()
+        2. redefining clear parameter for writer objects
+        3. E2E debugging for labelfile io operation
+
+    Code smell:
+        long if-else statements for loading label file
+
+    Solve:
+        search for matching suffix in LabelFileFormat object
+        then use the method of LabelFileFormat.read to load any file
+
+    futher work: abstract interface for writer and reader objects
+    
+2022/12/24:
+    Today's work:
+        build abstract class for file reader and file writer
+        for future extension, any format should inherit the writer and reader class for implementation

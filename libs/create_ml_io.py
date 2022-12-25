@@ -4,25 +4,21 @@ import json
 from pathlib import Path
 
 from libs.constants import DEFAULT_ENCODING
+from libs.io_abstract_class import FileReader, FileWriter
 import os
 
 JSON_EXT = '.json'
 ENCODE_METHOD = DEFAULT_ENCODING
 
 
-class CreateMLWriter:
-    def __init__(self, folder_name, filename, img_size, shapes, output_file, database_src='Unknown', local_img_path=None):
-        self.folder_name = folder_name
-        self.filename = filename
-        self.database_src = database_src
-        self.img_size = img_size
-        self.box_list = []
-        self.local_img_path = local_img_path
-        self.verified = False
-        self.shapes = shapes
-        self.output_file = output_file
+class CreateMLWriter(FileWriter):
 
-    def write(self):
+    def __init__(self, img_folder_name, img_file_name,
+                 img_shape, shapes, filename):
+        super().__init__(img_folder_name, 
+                img_file_name, img_shape, shapes, filename)
+
+    def save(self, target_file=None, class_list=None):
         if os.path.isfile(self.output_file):
             with open(self.output_file, "r") as file:
                 input_data = file.read()
@@ -93,18 +89,14 @@ class CreateMLWriter:
         return height, width, x, y
 
 
-class CreateMLReader:
+class CreateMLReader(FileReader):
+
     def __init__(self, json_path, file_path):
         self.json_path = json_path
-        self.shapes = []
-        self.verified = False
-        self.filename = os.path.basename(file_path)
-        try:
-            self.parse_json()
-        except ValueError:
-            print("JSON decoding failed")
+        self.filename = os.path.basename(json_path)
+        super().__init__(file_path)
 
-    def parse_json(self):
+    def parse_file(self):
         with open(self.json_path, "r") as file:
             input_data = file.read()
 
@@ -117,9 +109,9 @@ class CreateMLReader:
         if len(self.shapes) > 0:
             self.shapes = []
         for image in output_list:
-            if image["image"] == self.filename:
-                for shape in image["annotations"]:
-                    self.add_shape(shape["label"], shape["coordinates"])
+            #if os.path.splitext(image["image"])[0] == os.path.splitext(self.filename)[0]:
+            for shape in image["annotations"]:
+                self.add_shape(shape["label"], shape["coordinates"])
 
     def add_shape(self, label, bnd_box):
         x_min = bnd_box["x"] - (bnd_box["width"] / 2)
@@ -131,5 +123,3 @@ class CreateMLReader:
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
         self.shapes.append((label, points, None, None, True))
 
-    def get_shapes(self):
-        return self.shapes
