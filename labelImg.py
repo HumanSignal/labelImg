@@ -995,7 +995,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.canvas.reset_all_lines()
 
     def scroll_request(self, delta, orientation):
-        units = - delta / (8 * 15)
+        units = - delta // (8 * 15)
         bar = self.scroll_bars[orientation]
         bar.setValue(int(bar.value() + bar.singleStep() * units))
 
