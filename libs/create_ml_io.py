@@ -129,7 +129,7 @@ class CreateMLReader:
         y_max = bnd_box["y"] + (bnd_box["height"] / 2)
 
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-        self.shapes.append((label, points, None, None, True))
+        self.shapes.append((label, points, None, None, True, 0))
 
     def get_shapes(self):
         return self.shapes

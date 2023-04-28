@@ -116,7 +116,7 @@ class YoloReader:
     def add_shape(self, label, x_min, y_min, x_max, y_max, difficult):
 
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-        self.shapes.append((label, points, None, None, difficult))
+        self.shapes.append((label, points, None, None, difficult, 0))
 
     def yolo_line_to_shape(self, class_index, x_center, y_center, w, h):
         label = self.classes[int(class_index)]

@@ -1,3 +1,4 @@
+import math
 
 try:
     from PyQt5.QtGui import *
@@ -65,6 +66,9 @@ class Canvas(QWidget):
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
         self.draw_square = False
+
+        # judge can draw rotate rect
+        self.canDrawRotatedRect = True
 
         # initialisation for panning
         self.pan_initial_pos = QPoint()
@@ -166,7 +170,11 @@ class Canvas(QWidget):
 
         # Polygon copy moving.
         if Qt.RightButton & ev.buttons():
-            if self.selected_shape_copy and self.prev_point:
+            if self.selected_vertex() and self.canDrawRotatedRect:
+                self.boundedRotateShape(pos)
+                self.shapeMoved.emit()
+                self.repaint()
+            elif self.selected_shape_copy and self.prev_point:
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape_copy, pos)
                 self.repaint()
@@ -396,7 +404,7 @@ class Canvas(QWidget):
             return x, y, True
 
         return x, y, False
-
+    
     def bounded_move_vertex(self, pos):
         index, shape = self.h_vertex, self.h_shape
         point = shape[index]
@@ -432,6 +440,33 @@ class Canvas(QWidget):
             right_shift = QPointF(0, shift_pos.y())
         shape.move_vertex_by(right_index, right_shift)
         shape.move_vertex_by(left_index, left_shift)
+    
+    def boundedRotateShape(self, pos):
+        index, shape = self.h_vertex, self.h_shape
+        point = shape[index]
+
+        angle = self.getAngle(shape.center, pos, point)
+        if not self.rotateOutOfBound(angle):
+            shape.rotate(angle)
+            self.prev_point = pos
+
+    def getAngle(self, center, p1, p2):
+        dx1 = p1.x() - center.x()
+        dy1 = p1.y() - center.y()
+
+        dx2 = p2.x() - center.x()
+        dy2 = p2.y() - center.y()
+
+        c = math.sqrt(dx1*dx1 + dy1*dy1) * math.sqrt(dx2*dx2 + dy2*dy2)
+        if c == 0: return 0
+        y = (dx1*dx2+dy1*dy2)/c
+        if y>1: return 0
+        angle = math.acos(y)
+
+        if (dx1*dy2-dx2*dy1)>0:   
+            return angle
+        else:
+            return -angle
 
     def bounded_move_shape(self, shape, pos):
         if self.out_of_pixmap(pos):
@@ -643,6 +678,32 @@ class Canvas(QWidget):
             self.move_one_pixel('Up')
         elif key == Qt.Key_Down and self.selected_shape:
             self.move_one_pixel('Down')
+        elif key == Qt.Key_Z and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(0.1):
+            self.selected_shape.rotate(0.1)
+            self.shapeMoved.emit() 
+            self.update()  
+        elif key == Qt.Key_X and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(0.01):
+            self.selected_shape.rotate(0.01) 
+            self.shapeMoved.emit()
+            self.update()  
+        elif key == Qt.Key_C and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(-0.01):
+            self.selected_shape.rotate(-0.01) 
+            self.shapeMoved.emit()
+            self.update()  
+        elif key == Qt.Key_V and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(-0.1):
+            self.selected_shape.rotate(-0.1)
+            self.shapeMoved.emit()
+            self.update()
+
+    def rotateOutOfBound(self, angle):
+        for i, p in enumerate(self.selected_shape.points):
+            if self.out_of_pixmap(self.selected_shape.rotatePoint(p,angle)):
+                return True
+        return False
 
     def move_one_pixel(self, direction):
         # print(self.selectedShape.points)
@@ -652,24 +713,28 @@ class Canvas(QWidget):
             self.selected_shape.points[1] += QPointF(-1.0, 0)
             self.selected_shape.points[2] += QPointF(-1.0, 0)
             self.selected_shape.points[3] += QPointF(-1.0, 0)
+            self.selected_shape.center += QPointF(-1.0, 0)
         elif direction == 'Right' and not self.move_out_of_bound(QPointF(1.0, 0)):
             # print("move Right one pixel")
             self.selected_shape.points[0] += QPointF(1.0, 0)
             self.selected_shape.points[1] += QPointF(1.0, 0)
             self.selected_shape.points[2] += QPointF(1.0, 0)
             self.selected_shape.points[3] += QPointF(1.0, 0)
+            self.selected_shape.center += QPointF(1.0, 0)
         elif direction == 'Up' and not self.move_out_of_bound(QPointF(0, -1.0)):
             # print("move Up one pixel")
             self.selected_shape.points[0] += QPointF(0, -1.0)
             self.selected_shape.points[1] += QPointF(0, -1.0)
             self.selected_shape.points[2] += QPointF(0, -1.0)
             self.selected_shape.points[3] += QPointF(0, -1.0)
+            self.selected_shape.center += QPointF(0.0, -1.0)
         elif direction == 'Down' and not self.move_out_of_bound(QPointF(0, 1.0)):
             # print("move Down one pixel")
             self.selected_shape.points[0] += QPointF(0, 1.0)
             self.selected_shape.points[1] += QPointF(0, 1.0)
             self.selected_shape.points[2] += QPointF(0, 1.0)
             self.selected_shape.points[3] += QPointF(0, 1.0)
+            self.selected_shape.center += QPointF(0.0, 1.0)
         self.shapeMoved.emit()
         self.repaint()
 

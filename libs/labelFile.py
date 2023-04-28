@@ -1,5 +1,6 @@
 # Copyright (c) 2016 Tzutalin
 # Create by TzuTaLin <tzu.ta.lin@gmail.com>
+import math
 
 try:
     from PyQt5.QtGui import QImage
@@ -13,12 +14,14 @@ from libs.create_ml_io import CreateMLWriter
 from libs.pascal_voc_io import PascalVocWriter
 from libs.pascal_voc_io import XML_EXT
 from libs.yolo_io import YOLOWriter
+from libs.rotated_yolo_io import RotatedYOLOWriter
 
 
 class LabelFileFormat(Enum):
     PASCAL_VOC = 1
     YOLO = 2
     CREATE_ML = 3
+    ROTATED_YOLO = 4
 
 
 class LabelFileError(Exception):
@@ -111,6 +114,32 @@ class LabelFile(object):
         writer.save(target_file=filename, class_list=class_list)
         return
 
+    def save_rotated_yolo_format(self, filename, shapes, image_path, image_data,
+                               line_color=None, fill_color=None, database_src=None):
+        img_folder_path = os.path.dirname(image_path)
+        img_folder_name = os.path.split(img_folder_path)[-1]
+        img_file_name = os.path.basename(image_path)
+        if isinstance(image_data, QImage):
+            image = image_data
+        else:
+            image = QImage()
+            image.load(image_path)
+        image_shape = [image.height(), image.width(),
+                       1 if image.isGrayscale() else 3]
+        writer = RotatedYOLOWriter(img_folder_name, img_file_name,
+                                 image_shape, local_img_path=image_path)
+        writer.verified = self.verified
+
+        for shape in shapes:
+            label = shape['label']
+            # Add Chris
+            difficult = int(shape['difficult'])
+            points = shape['points']
+            writer.add_bnd_box(points, label, difficult)
+
+        writer.save(target_file=filename)
+        return
+
     def toggle_verify(self):
         self.verified = not self.verified
 
@@ -172,3 +201,4 @@ class LabelFile(object):
             y_min = 1
 
         return int(x_min), int(y_min), int(x_max), int(y_max)
+    

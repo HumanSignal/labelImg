@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import math
 
 try:
     from PyQt5.QtGui import *
@@ -53,6 +53,9 @@ class Shape(object):
             self.MOVE_VERTEX: (1.5, self.P_SQUARE),
         }
 
+        self.direction = 0
+        self.center = None
+
         self._closed = False
 
         if line_color is not None:
@@ -62,6 +65,7 @@ class Shape(object):
             self.line_color = line_color
 
     def close(self):
+        self.center = QPointF((self.points[0].x()+self.points[2].x()) / 2, (self.points[0].y()+self.points[2].y()) / 2)
         self._closed = True
 
     def reach_max_points(self):
@@ -83,6 +87,21 @@ class Shape(object):
 
     def set_open(self):
         self._closed = False
+
+    def rotate(self, theta):
+        for i, p in enumerate(self.points):
+            self.points[i] = self.rotatePoint(p, theta)
+        self.direction -= theta
+        self.direction = self.direction % (2 * math.pi)
+
+    def rotatePoint(self, p, theta):
+        order = p-self.center
+        cosTheta = math.cos(theta)
+        sinTheta = math.sin(theta)
+        pResx = cosTheta * order.x() + sinTheta * order.y()
+        pResy = - sinTheta * order.x() + cosTheta * order.y()
+        pRes = QPointF(self.center.x() + pResx, self.center.y() + pResy)
+        return pRes
 
     def paint(self, painter):
         if self.points:
@@ -189,6 +208,8 @@ class Shape(object):
     def copy(self):
         shape = Shape("%s" % self.label)
         shape.points = [p for p in self.points]
+        shape.center = self.center
+        shape.direction = self.direction
         shape.fill = self.fill
         shape.selected = self.selected
         shape._closed = self._closed

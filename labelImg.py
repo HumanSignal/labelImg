@@ -45,6 +45,7 @@ from libs.yolo_io import YoloReader
 from libs.yolo_io import TXT_EXT
 from libs.create_ml_io import CreateMLReader
 from libs.create_ml_io import JSON_EXT
+from libs.rotated_yolo_io import RotatedYOLOReader
 from libs.ustr import ustr
 from libs.hashableQListWidgetItem import HashableQListWidgetItem
 
@@ -252,6 +253,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 return '&YOLO', 'format_yolo'
             elif format == LabelFileFormat.CREATE_ML:
                 return '&CreateML', 'format_createml'
+            elif format == LabelFileFormat.ROTATED_YOLO:
+                return '&RotatedYOLO', 'format_rotated_yolo'
 
         save_format = action(get_format_meta(self.label_file_format)[0],
                              self.change_format, 'Ctrl+Y',
@@ -409,6 +412,10 @@ class MainWindow(QMainWindow, WindowMixin):
             recentFiles=QMenu(get_str('menu_openRecent')),
             labelList=label_menu)
 
+        # Save label to image folder
+        self.save_label_to_image_folder = QAction(get_str('saveLabelToImageFolder'), self)
+        self.save_label_to_image_folder.setCheckable(True)
+        self.save_label_to_image_folder.setChecked(settings.get(SETTING_SAVE_LABEL_TO_IMAGE_FOLDER, False))
         # Auto saving : Enable auto saving if pressing next
         self.auto_saving = QAction(get_str('autoSaveMode'), self)
         self.auto_saving.setCheckable(True)
@@ -431,6 +438,7 @@ class MainWindow(QMainWindow, WindowMixin):
         add_actions(self.menus.help, (help_default, show_info, show_shortcut))
         add_actions(self.menus.view, (
             self.auto_saving,
+            self.save_label_to_image_folder,
             self.single_class_mode,
             self.display_label_option,
             labels, advanced_mode, None,
@@ -550,6 +558,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     # Support Functions #
     def set_format(self, save_format):
+        self.canvas.canDrawRotatedRect = False
         if save_format == FORMAT_PASCALVOC:
             self.actions.save_format.setText(FORMAT_PASCALVOC)
             self.actions.save_format.setIcon(new_icon("format_voc"))
@@ -567,6 +576,13 @@ class MainWindow(QMainWindow, WindowMixin):
             self.actions.save_format.setIcon(new_icon("format_createml"))
             self.label_file_format = LabelFileFormat.CREATE_ML
             LabelFile.suffix = JSON_EXT
+        
+        elif save_format == FORMAT_ROTATED_YOLO:
+            self.canvas.canDrawRotatedRect = True
+            self.actions.save_format.setText(FORMAT_ROTATED_YOLO)
+            self.actions.save_format.setIcon(new_icon("format_yolo"))
+            self.label_file_format = LabelFileFormat.ROTATED_YOLO
+            LabelFile.suffix = TXT_EXT
 
     def change_format(self):
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
@@ -574,6 +590,8 @@ class MainWindow(QMainWindow, WindowMixin):
         elif self.label_file_format == LabelFileFormat.YOLO:
             self.set_format(FORMAT_CREATEML)
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
+            self.set_format(FORMAT_ROTATED_YOLO)
+        elif self.label_file_format == LabelFileFormat.ROTATED_YOLO:
             self.set_format(FORMAT_PASCALVOC)
         else:
             raise ValueError('Unknown label file format.')
@@ -724,7 +742,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def set_create_mode(self):
         assert self.advanced()
         self.toggle_draw_mode(False)
-
+    
     def set_edit_mode(self):
         assert self.advanced()
         self.toggle_draw_mode(True)
@@ -837,7 +855,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def load_labels(self, shapes):
         s = []
-        for label, points, line_color, fill_color, difficult in shapes:
+        for label, points, line_color, fill_color, difficult, direction in shapes:
             shape = Shape(label=label)
             for x, y in points:
 
@@ -848,6 +866,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
                 shape.add_point(QPointF(x, y))
             shape.difficult = difficult
+            shape.direction = direction
             shape.close()
             s.append(shape)
 
@@ -888,7 +907,10 @@ class MainWindow(QMainWindow, WindowMixin):
                         fill_color=s.fill_color.getRgb(),
                         points=[(p.x(), p.y()) for p in s.points],
                         # add chris
-                        difficult=s.difficult)
+                        difficult=s.difficult,
+                        direction=s.direction,
+                        center=s.center,
+            )
 
         shapes = [format_shape(shape) for shape in self.canvas.shapes]
         # Can add different annotation formats here
@@ -908,6 +930,11 @@ class MainWindow(QMainWindow, WindowMixin):
                     annotation_file_path += JSON_EXT
                 self.label_file.save_create_ml_format(annotation_file_path, shapes, self.file_path, self.image_data,
                                                       self.label_hist, self.line_color.getRgb(), self.fill_color.getRgb())
+            elif self.label_file_format == LabelFileFormat.ROTATED_YOLO:
+                if annotation_file_path[-4:].lower() != ".txt":
+                    annotation_file_path += TXT_EXT
+                self.label_file.save_rotated_yolo_format(annotation_file_path, shapes, self.file_path, self.image_data, self.label_hist,
+                                                 self.line_color.getRgb(), self.fill_color.getRgb())
             else:
                 self.label_file.save(annotation_file_path, shapes, self.file_path, self.image_data,
                                      self.line_color.getRgb(), self.fill_color.getRgb())
@@ -1099,6 +1126,9 @@ class MainWindow(QMainWindow, WindowMixin):
         # Make sure that filePath is a regular python string, rather than QString
         file_path = ustr(file_path)
 
+        if self.save_label_to_image_folder.isChecked():
+            self.default_save_dir = os.path.dirname(file_path)
+
         # Fix bug: An  index error after select a directory when open a new file.
         unicode_file_path = ustr(file_path)
         unicode_file_path = os.path.abspath(unicode_file_path)
@@ -1190,7 +1220,11 @@ class MainWindow(QMainWindow, WindowMixin):
             if os.path.isfile(xml_path):
                 self.load_pascal_xml_by_filename(xml_path)
             elif os.path.isfile(txt_path):
-                self.load_yolo_txt_by_filename(txt_path)
+                self.check_txt_label_type(txt_path)
+                if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
+                    self.load_rotated_yolo_txt_by_filename(txt_path)
+                else:
+                    self.load_yolo_txt_by_filename(txt_path)
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
 
@@ -1202,7 +1236,11 @@ class MainWindow(QMainWindow, WindowMixin):
             if os.path.isfile(xml_path):
                 self.load_pascal_xml_by_filename(xml_path)
             elif os.path.isfile(txt_path):
-                self.load_yolo_txt_by_filename(txt_path)
+                self.check_txt_label_type(txt_path)
+                if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
+                    self.load_rotated_yolo_txt_by_filename(txt_path)
+                else:
+                    self.load_yolo_txt_by_filename(txt_path)
             elif os.path.isfile(json_path):
                 self.load_create_ml_json_by_filename(json_path, file_path)
             
@@ -1270,6 +1308,7 @@ class MainWindow(QMainWindow, WindowMixin):
             settings[SETTING_LAST_OPEN_DIR] = ''
 
         settings[SETTING_AUTO_SAVE] = self.auto_saving.isChecked()
+        settings[SETTING_SAVE_LABEL_TO_IMAGE_FOLDER] = self.save_label_to_image_folder.isChecked()
         settings[SETTING_SINGLE_CLASS] = self.single_class_mode.isChecked()
         settings[SETTING_PAINT_LABEL] = self.display_label_option.isChecked()
         settings[SETTING_DRAW_SQUARE] = self.draw_squares_option.isChecked()
@@ -1638,9 +1677,30 @@ class MainWindow(QMainWindow, WindowMixin):
         self.set_format(FORMAT_YOLO)
         t_yolo_parse_reader = YoloReader(txt_path, self.image)
         shapes = t_yolo_parse_reader.get_shapes()
-        print(shapes)
         self.load_labels(shapes)
         self.canvas.verified = t_yolo_parse_reader.verified
+
+    def load_rotated_yolo_txt_by_filename(self, txt_path):
+        if self.file_path is None:
+            return
+        if os.path.isfile(txt_path) is False:
+            return
+
+        self.set_format(FORMAT_ROTATED_YOLO)
+        t_yolo_parse_reader = RotatedYOLOReader(txt_path)
+        shapes = t_yolo_parse_reader.get_shapes()
+        self.load_labels(shapes)
+        self.canvas.verified = t_yolo_parse_reader.verified
+    
+    def check_txt_label_type(self, txt_path):
+        with open(txt_path, 'r') as f:
+            line = f.readline()
+            if len(line.strip().split()) == 5:
+                self.set_format(FORMAT_YOLO)
+            elif len(line.strip().split()) == 10:
+                self.set_format(FORMAT_ROTATED_YOLO)
+            else:
+                raise ValueError('Invalid label file format')
 
     def load_create_ml_json_by_filename(self, json_path, file_path):
         if self.file_path is None:
