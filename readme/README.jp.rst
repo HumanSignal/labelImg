@@ -22,12 +22,15 @@ labelImg
 
 LabelImgは、PythonとQtを使うアノテーション補助ツールです。
 
-このツールはPascalVOCフォーマットとYOLOとCreateMLをサポートしています。
+このツールはPascalVOC形式、YOLO、RotatedYOLO、そしてCreateMLをサポートしています。
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
+     :alt: Demo Image
+
+.. image:: /demo/demo6.png
      :alt: Demo Image
 
 `サンプル動画は <https://youtu.be/p0nR2YsCY_U>にあります。`__
@@ -189,6 +192,14 @@ Dockerの場合
 | Ctrl--             | 画像を縮小                                  |
 +--------------------+--------------------------------------------+
 | ↑→↓←               | 十字キーで矩形を移動する                     |
++--------------------+--------------------------------------------+
+| z                  | 逆時針大角度に矩形を回転する (RotatedYOLOのみ対応)|
++--------------------+--------------------------------------------+
+| x                  | 逆時針に矩形を少しずつ回転する (RotatedYOLOのみ対応)|
++--------------------+--------------------------------------------+
+| c                  | 時計回りに矩形を少しずつ回転する (RotatedYOLOのみ対応)|
++--------------------+--------------------------------------------+
+| v                  | 時計回りに矩形を大きく回転する (RotatedYOLOのみ対応)|
 +--------------------+--------------------------------------------+
 
 開発に参加するには？
