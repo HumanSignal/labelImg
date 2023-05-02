@@ -408,38 +408,92 @@ class Canvas(QWidget):
     def bounded_move_vertex(self, pos):
         index, shape = self.h_vertex, self.h_shape
         point = shape[index]
-        if self.out_of_pixmap(pos):
-            size = self.pixmap.size()
-            clipped_x = min(max(0, pos.x()), size.width())
-            clipped_y = min(max(0, pos.y()), size.height())
-            pos = QPointF(clipped_x, clipped_y)
+        if self.canDrawRotatedRect:
+            if self.out_of_pixmap(pos):
+                return
 
-        if self.draw_square:
-            opposite_point_index = (index + 2) % 4
-            opposite_point = shape[opposite_point_index]
+            sindex = (index + 2) % 4
+            p2,p3,p4 = self.getAdjointPoints(shape.direction, shape[sindex], pos, index)
+            
+            pcenter = (pos+p3)/2        
+            # if one pixal out of map , do nothing
+            if self.out_of_pixmap(pcenter) or self.out_of_pixmap(p2) or \
+                self.out_of_pixmap(p3) or self.out_of_pixmap(p4):
+                    return
 
-            min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
-            direction_x = -1 if pos.x() - opposite_point.x() < 0 else 1
-            direction_y = -1 if pos.y() - opposite_point.y() < 0 else 1
-            shift_pos = QPointF(opposite_point.x() + direction_x * min_size - point.x(),
-                                opposite_point.y() + direction_y * min_size - point.y())
+            # move 4 pixal one by one 
+            shape.move_vertex_by(index, pos - point)
+            lindex = (index + 1) % 4
+            
+            rindex = (index + 3) % 4
+            shape[lindex] = p2
+            shape[rindex] = p4
+            shape.close()
         else:
-            shift_pos = pos - point
+            if self.out_of_pixmap(pos):
+                size = self.pixmap.size()
+                clipped_x = min(max(0, pos.x()), size.width())
+                clipped_y = min(max(0, pos.y()), size.height())
+                pos = QPointF(clipped_x, clipped_y)
 
-        shape.move_vertex_by(index, shift_pos)
+            if self.draw_square:
+                opposite_point_index = (index + 2) % 4
+                opposite_point = shape[opposite_point_index]
 
-        left_index = (index + 1) % 4
-        right_index = (index + 3) % 4
-        left_shift = None
-        right_shift = None
-        if index % 2 == 0:
-            right_shift = QPointF(shift_pos.x(), 0)
-            left_shift = QPointF(0, shift_pos.y())
-        else:
-            left_shift = QPointF(shift_pos.x(), 0)
-            right_shift = QPointF(0, shift_pos.y())
-        shape.move_vertex_by(right_index, right_shift)
-        shape.move_vertex_by(left_index, left_shift)
+                min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
+                direction_x = -1 if pos.x() - opposite_point.x() < 0 else 1
+                direction_y = -1 if pos.y() - opposite_point.y() < 0 else 1
+                shift_pos = QPointF(opposite_point.x() + direction_x * min_size - point.x(),
+                                    opposite_point.y() + direction_y * min_size - point.y())
+            else:
+                shift_pos = pos - point
+
+            shape.move_vertex_by(index, shift_pos)
+
+            left_index = (index + 1) % 4
+            right_index = (index + 3) % 4
+            left_shift = None
+            right_shift = None
+            if index % 2 == 0:
+                right_shift = QPointF(shift_pos.x(), 0)
+                left_shift = QPointF(0, shift_pos.y())
+            else:
+                left_shift = QPointF(shift_pos.x(), 0)
+                right_shift = QPointF(0, shift_pos.y())
+            shape.move_vertex_by(right_index, right_shift)
+            shape.move_vertex_by(left_index, left_shift)
+    
+    def getAdjointPoints(self, theta, p3, p1, index):
+        a1 = math.tan(theta)
+        if (a1 == 0):
+            if index % 2 == 0:
+                p2 = QPointF(p3.x(), p1.y())
+                p4 = QPointF(p1.x(), p3.y())
+            else:            
+                p4 = QPointF(p3.x(), p1.y())
+                p2 = QPointF(p1.x(), p3.y())
+        else:    
+            a3 = a1
+            a2 = - 1/a1
+            a4 = - 1/a1
+            b1 = p1.y() - a1 * p1.x()
+            b2 = p1.y() - a2 * p1.x()
+            b3 = p3.y() - a1 * p3.x()
+            b4 = p3.y() - a2 * p3.x()
+
+            if index % 2 == 0:
+                p2 = self.getCrossPoint(a1,b1,a4,b4)
+                p4 = self.getCrossPoint(a2,b2,a3,b3)
+            else:            
+                p4 = self.getCrossPoint(a1,b1,a4,b4)
+                p2 = self.getCrossPoint(a2,b2,a3,b3)
+
+        return p2,p3,p4
+
+    def getCrossPoint(self,a1,b1,a2,b2):
+        x = (b2-b1)/(a1-a2)
+        y = (a1*b2 - a2*b1)/(a1-a2)
+        return QPointF(x,y)
     
     def boundedRotateShape(self, pos):
         index, shape = self.h_vertex, self.h_shape
