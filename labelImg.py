@@ -1208,41 +1208,42 @@ class MainWindow(QMainWindow, WindowMixin):
         return '[{} / {}]'.format(self.cur_img_idx + 1, self.img_count)
 
     def show_bounding_box_from_annotation_file(self, file_path):
-        if self.default_save_dir is not None:
-            basename = os.path.basename(os.path.splitext(file_path)[0])
-            xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
-            txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
-            json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
+        if  file_path is not None:
+            if self.default_save_dir is not None:
+                basename = os.path.basename(os.path.splitext(file_path)[0])
+                xml_path = os.path.join(self.default_save_dir, basename + XML_EXT)
+                txt_path = os.path.join(self.default_save_dir, basename + TXT_EXT)
+                json_path = os.path.join(self.default_save_dir, basename + JSON_EXT)
 
-            """Annotation file priority:
-            PascalXML > YOLO
-            """
-            if os.path.isfile(xml_path):
-                self.load_pascal_xml_by_filename(xml_path)
-            elif os.path.isfile(txt_path):
-                self.check_txt_label_type(txt_path)
-                if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
-                    self.load_rotated_yolo_txt_by_filename(txt_path)
-                else:
-                    self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(json_path):
-                self.load_create_ml_json_by_filename(json_path, file_path)
+                """Annotation file priority:
+                PascalXML > YOLO
+                """
+                if os.path.isfile(xml_path):
+                    self.load_pascal_xml_by_filename(xml_path)
+                elif os.path.isfile(txt_path):
+                    self.check_txt_label_type(txt_path)
+                    if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
+                        self.load_rotated_yolo_txt_by_filename(txt_path)
+                    else:
+                        self.load_yolo_txt_by_filename(txt_path)
+                elif os.path.isfile(json_path):
+                    self.load_create_ml_json_by_filename(json_path, file_path)
 
-        else:
-            xml_path = os.path.splitext(file_path)[0] + XML_EXT
-            txt_path = os.path.splitext(file_path)[0] + TXT_EXT
-            json_path = os.path.splitext(file_path)[0] + JSON_EXT
+            else:
+                xml_path = os.path.splitext(file_path)[0] + XML_EXT
+                txt_path = os.path.splitext(file_path)[0] + TXT_EXT
+                json_path = os.path.splitext(file_path)[0] + JSON_EXT
 
-            if os.path.isfile(xml_path):
-                self.load_pascal_xml_by_filename(xml_path)
-            elif os.path.isfile(txt_path):
-                self.check_txt_label_type(txt_path)
-                if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
-                    self.load_rotated_yolo_txt_by_filename(txt_path)
-                else:
-                    self.load_yolo_txt_by_filename(txt_path)
-            elif os.path.isfile(json_path):
-                self.load_create_ml_json_by_filename(json_path, file_path)
+                if os.path.isfile(xml_path):
+                    self.load_pascal_xml_by_filename(xml_path)
+                elif os.path.isfile(txt_path):
+                    self.check_txt_label_type(txt_path)
+                    if self.label_file_format == LabelFileFormat.ROTATED_YOLO:
+                        self.load_rotated_yolo_txt_by_filename(txt_path)
+                    else:
+                        self.load_yolo_txt_by_filename(txt_path)
+                elif os.path.isfile(json_path):
+                    self.load_create_ml_json_by_filename(json_path, file_path)
             
 
     def resizeEvent(self, event):
@@ -1697,10 +1698,8 @@ class MainWindow(QMainWindow, WindowMixin):
             line = f.readline()
             if len(line.strip().split()) == 5:
                 self.set_format(FORMAT_YOLO)
-            elif len(line.strip().split()) == 10:
-                self.set_format(FORMAT_ROTATED_YOLO)
             else:
-                raise ValueError('Invalid label file format')
+                self.set_format(FORMAT_ROTATED_YOLO)
 
     def load_create_ml_json_by_filename(self, json_path, file_path):
         if self.file_path is None:
