@@ -32,12 +32,15 @@ LabelImg is a graphical image annotation tool.
 It is written in Python and uses Qt for its graphical interface.
 
 Annotations are saved as XML files in PASCAL VOC format, the format used
-by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO and CreateML formats.
+by `ImageNet <http://www.image-net.org/>`__.  Besides, it also supports YOLO, RotatedYOLO and CreateML formats.
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
+     :alt: Demo Image
+
+.. image:: /demo/demo6.png
      :alt: Demo Image
 
 `Watch a demo video <https://youtu.be/p0nR2YsCY_U>`__
@@ -236,33 +239,41 @@ Annotation visualization
 Hotkeys
 ~~~~~~~
 
-+--------------------+--------------------------------------------+
-| Ctrl + u           | Load all of the images from a directory    |
-+--------------------+--------------------------------------------+
-| Ctrl + r           | Change the default annotation target dir   |
-+--------------------+--------------------------------------------+
-| Ctrl + s           | Save                                       |
-+--------------------+--------------------------------------------+
-| Ctrl + d           | Copy the current label and rect box        |
-+--------------------+--------------------------------------------+
-| Ctrl + Shift + d   | Delete the current image                   |
-+--------------------+--------------------------------------------+
-| Space              | Flag the current image as verified         |
-+--------------------+--------------------------------------------+
-| w                  | Create a rect box                          |
-+--------------------+--------------------------------------------+
-| d                  | Next image                                 |
-+--------------------+--------------------------------------------+
-| a                  | Previous image                             |
-+--------------------+--------------------------------------------+
-| del                | Delete the selected rect box               |
-+--------------------+--------------------------------------------+
-| Ctrl++             | Zoom in                                    |
-+--------------------+--------------------------------------------+
-| Ctrl--             | Zoom out                                   |
-+--------------------+--------------------------------------------+
-| ↑→↓←               | Keyboard arrows to move selected rect box  |
-+--------------------+--------------------------------------------+
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl + u           | Load all of the images from a directory                                                  |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl + r           | Change the default annotation target dir                                                 |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl + s           | Save                                                                                     |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl + d           | Copy the current label and rect box                                                      |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl + Shift + d   | Delete the current image                                                                 |
++--------------------+------------------------------------------------------------------------------------------+
+| Space              | Flag the current image as verified                                                       |
++--------------------+------------------------------------------------------------------------------------------+
+| w                  | Create a rect box                                                                        |
++--------------------+------------------------------------------------------------------------------------------+
+| d                  | Next image                                                                               |
++--------------------+------------------------------------------------------------------------------------------+
+| a                  | Previous image                                                                           |
++--------------------+------------------------------------------------------------------------------------------+
+| del                | Delete the selected rect box                                                             |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl++             | Zoom in                                                                                  |
++--------------------+------------------------------------------------------------------------------------------+
+| Ctrl--             | Zoom out                                                                                 |
++--------------------+------------------------------------------------------------------------------------------+
+| ↑→↓←               | Keyboard arrows to move selected rect box                                                |
++--------------------+------------------------------------------------------------------------------------------+
+| z                  | Counter-clockwise rotation of the selected rect box at a large angle. (RotatedYOLO Only) |
++--------------------+------------------------------------------------------------------------------------------+
+| x                  | Counter-clockwise rotation of the selected rect box at a small angle. (RotatedYOLO Only) |
++--------------------+------------------------------------------------------------------------------------------+
+| c                  | Clockwise rotation of the selected rect box at a small angle. (RotatedYOLO Only)         |
++--------------------+------------------------------------------------------------------------------------------+
+| v                  | Clockwise rotation of the selected rect box at a large angle. (RotatedYOLO Only)         |
++--------------------+------------------------------------------------------------------------------------------+
 
 **Verify Image:**
 

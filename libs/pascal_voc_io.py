@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import sys
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element, SubElement
 from lxml import etree
@@ -82,7 +81,7 @@ class PascalVocWriter:
         bnd_box['name'] = name
         bnd_box['difficult'] = difficult
         self.box_list.append(bnd_box)
-
+    
     def append_objects(self, top):
         for each_object in self.box_list:
             object_item = SubElement(top, 'object')
@@ -146,8 +145,8 @@ class PascalVocReader:
         x_max = int(float(bnd_box.find('xmax').text))
         y_max = int(float(bnd_box.find('ymax').text))
         points = [(x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max)]
-        self.shapes.append((label, points, None, None, difficult))
-
+        self.shapes.append((label, points, None, None, difficult, 0))
+    
     def parse_xml(self):
         assert self.file_path.endswith(XML_EXT), "Unsupported file format"
         parser = etree.XMLParser(encoding=ENCODE_METHOD)

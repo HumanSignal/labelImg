@@ -1,3 +1,4 @@
+import math
 
 try:
     from PyQt5.QtGui import *
@@ -65,6 +66,9 @@ class Canvas(QWidget):
         self.setFocusPolicy(Qt.WheelFocus)
         self.verified = False
         self.draw_square = False
+
+        # judge can draw rotate rect
+        self.canDrawRotatedRect = True
 
         # initialisation for panning
         self.pan_initial_pos = QPoint()
@@ -166,7 +170,11 @@ class Canvas(QWidget):
 
         # Polygon copy moving.
         if Qt.RightButton & ev.buttons():
-            if self.selected_shape_copy and self.prev_point:
+            if self.selected_vertex() and self.canDrawRotatedRect:
+                self.boundedRotateShape(pos)
+                self.shapeMoved.emit()
+                self.repaint()
+            elif self.selected_shape_copy and self.prev_point:
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape_copy, pos)
                 self.repaint()
@@ -396,42 +404,123 @@ class Canvas(QWidget):
             return x, y, True
 
         return x, y, False
-
+    
     def bounded_move_vertex(self, pos):
         index, shape = self.h_vertex, self.h_shape
         point = shape[index]
-        if self.out_of_pixmap(pos):
-            size = self.pixmap.size()
-            clipped_x = min(max(0, pos.x()), size.width())
-            clipped_y = min(max(0, pos.y()), size.height())
-            pos = QPointF(clipped_x, clipped_y)
+        if self.canDrawRotatedRect:
+            if self.out_of_pixmap(pos):
+                return
 
-        if self.draw_square:
-            opposite_point_index = (index + 2) % 4
-            opposite_point = shape[opposite_point_index]
+            sindex = (index + 2) % 4
+            p2,p3,p4 = self.getAdjointPoints(shape.direction, shape[sindex], pos, index)
+            
+            pcenter = (pos+p3)/2        
+            # if one pixal out of map , do nothing
+            if self.out_of_pixmap(pcenter) or self.out_of_pixmap(p2) or \
+                self.out_of_pixmap(p3) or self.out_of_pixmap(p4):
+                    return
 
-            min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
-            direction_x = -1 if pos.x() - opposite_point.x() < 0 else 1
-            direction_y = -1 if pos.y() - opposite_point.y() < 0 else 1
-            shift_pos = QPointF(opposite_point.x() + direction_x * min_size - point.x(),
-                                opposite_point.y() + direction_y * min_size - point.y())
+            # move 4 pixal one by one 
+            shape.move_vertex_by(index, pos - point)
+            lindex = (index + 1) % 4
+            
+            rindex = (index + 3) % 4
+            shape[lindex] = p2
+            shape[rindex] = p4
+            shape.close()
         else:
-            shift_pos = pos - point
+            if self.out_of_pixmap(pos):
+                size = self.pixmap.size()
+                clipped_x = min(max(0, pos.x()), size.width())
+                clipped_y = min(max(0, pos.y()), size.height())
+                pos = QPointF(clipped_x, clipped_y)
 
-        shape.move_vertex_by(index, shift_pos)
+            if self.draw_square:
+                opposite_point_index = (index + 2) % 4
+                opposite_point = shape[opposite_point_index]
 
-        left_index = (index + 1) % 4
-        right_index = (index + 3) % 4
-        left_shift = None
-        right_shift = None
-        if index % 2 == 0:
-            right_shift = QPointF(shift_pos.x(), 0)
-            left_shift = QPointF(0, shift_pos.y())
+                min_size = min(abs(pos.x() - opposite_point.x()), abs(pos.y() - opposite_point.y()))
+                direction_x = -1 if pos.x() - opposite_point.x() < 0 else 1
+                direction_y = -1 if pos.y() - opposite_point.y() < 0 else 1
+                shift_pos = QPointF(opposite_point.x() + direction_x * min_size - point.x(),
+                                    opposite_point.y() + direction_y * min_size - point.y())
+            else:
+                shift_pos = pos - point
+
+            shape.move_vertex_by(index, shift_pos)
+
+            left_index = (index + 1) % 4
+            right_index = (index + 3) % 4
+            left_shift = None
+            right_shift = None
+            if index % 2 == 0:
+                right_shift = QPointF(shift_pos.x(), 0)
+                left_shift = QPointF(0, shift_pos.y())
+            else:
+                left_shift = QPointF(shift_pos.x(), 0)
+                right_shift = QPointF(0, shift_pos.y())
+            shape.move_vertex_by(right_index, right_shift)
+            shape.move_vertex_by(left_index, left_shift)
+    
+    def getAdjointPoints(self, theta, p3, p1, index):
+        a1 = math.tan(theta)
+        if (a1 == 0):
+            if index % 2 == 0:
+                p2 = QPointF(p3.x(), p1.y())
+                p4 = QPointF(p1.x(), p3.y())
+            else:            
+                p4 = QPointF(p3.x(), p1.y())
+                p2 = QPointF(p1.x(), p3.y())
+        else:    
+            a3 = a1
+            a2 = - 1/a1
+            a4 = - 1/a1
+            b1 = p1.y() - a1 * p1.x()
+            b2 = p1.y() - a2 * p1.x()
+            b3 = p3.y() - a1 * p3.x()
+            b4 = p3.y() - a2 * p3.x()
+
+            if index % 2 == 0:
+                p2 = self.getCrossPoint(a1,b1,a4,b4)
+                p4 = self.getCrossPoint(a2,b2,a3,b3)
+            else:            
+                p4 = self.getCrossPoint(a1,b1,a4,b4)
+                p2 = self.getCrossPoint(a2,b2,a3,b3)
+
+        return p2,p3,p4
+
+    def getCrossPoint(self,a1,b1,a2,b2):
+        x = (b2-b1)/(a1-a2)
+        y = (a1*b2 - a2*b1)/(a1-a2)
+        return QPointF(x,y)
+    
+    def boundedRotateShape(self, pos):
+        index, shape = self.h_vertex, self.h_shape
+        point = shape[index]
+
+        angle = self.getAngle(shape.center, pos, point)
+        if not self.rotateOutOfBound(angle):
+            shape.rotate(angle)
+            self.prev_point = pos
+
+    def getAngle(self, center, p1, p2):
+        dx1 = p1.x() - center.x()
+        dy1 = p1.y() - center.y()
+
+        dx2 = p2.x() - center.x()
+        dy2 = p2.y() - center.y()
+
+        c = math.sqrt(dx1*dx1 + dy1*dy1) * math.sqrt(dx2*dx2 + dy2*dy2)
+        if c == 0: return 0
+        y = (dx1*dx2+dy1*dy2)/c
+        if y>1: return 0
+        angle = math.acos(y)
+
+        if (dx1*dy2-dx2*dy1)>0:   
+            return angle
         else:
-            left_shift = QPointF(shift_pos.x(), 0)
-            right_shift = QPointF(0, shift_pos.y())
-        shape.move_vertex_by(right_index, right_shift)
-        shape.move_vertex_by(left_index, left_shift)
+            return -angle
 
     def bounded_move_shape(self, shape, pos):
         if self.out_of_pixmap(pos):
@@ -643,6 +732,32 @@ class Canvas(QWidget):
             self.move_one_pixel('Up')
         elif key == Qt.Key_Down and self.selected_shape:
             self.move_one_pixel('Down')
+        elif key == Qt.Key_Z and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(0.1):
+            self.selected_shape.rotate(0.1)
+            self.shapeMoved.emit() 
+            self.update()  
+        elif key == Qt.Key_X and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(0.01):
+            self.selected_shape.rotate(0.01) 
+            self.shapeMoved.emit()
+            self.update()  
+        elif key == Qt.Key_C and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(-0.01):
+            self.selected_shape.rotate(-0.01) 
+            self.shapeMoved.emit()
+            self.update()  
+        elif key == Qt.Key_V and self.selected_shape and\
+             self.canDrawRotatedRect and not self.rotateOutOfBound(-0.1):
+            self.selected_shape.rotate(-0.1)
+            self.shapeMoved.emit()
+            self.update()
+
+    def rotateOutOfBound(self, angle):
+        for i, p in enumerate(self.selected_shape.points):
+            if self.out_of_pixmap(self.selected_shape.rotatePoint(p,angle)):
+                return True
+        return False
 
     def move_one_pixel(self, direction):
         # print(self.selectedShape.points)
@@ -652,24 +767,28 @@ class Canvas(QWidget):
             self.selected_shape.points[1] += QPointF(-1.0, 0)
             self.selected_shape.points[2] += QPointF(-1.0, 0)
             self.selected_shape.points[3] += QPointF(-1.0, 0)
+            self.selected_shape.center += QPointF(-1.0, 0)
         elif direction == 'Right' and not self.move_out_of_bound(QPointF(1.0, 0)):
             # print("move Right one pixel")
             self.selected_shape.points[0] += QPointF(1.0, 0)
             self.selected_shape.points[1] += QPointF(1.0, 0)
             self.selected_shape.points[2] += QPointF(1.0, 0)
             self.selected_shape.points[3] += QPointF(1.0, 0)
+            self.selected_shape.center += QPointF(1.0, 0)
         elif direction == 'Up' and not self.move_out_of_bound(QPointF(0, -1.0)):
             # print("move Up one pixel")
             self.selected_shape.points[0] += QPointF(0, -1.0)
             self.selected_shape.points[1] += QPointF(0, -1.0)
             self.selected_shape.points[2] += QPointF(0, -1.0)
             self.selected_shape.points[3] += QPointF(0, -1.0)
+            self.selected_shape.center += QPointF(0.0, -1.0)
         elif direction == 'Down' and not self.move_out_of_bound(QPointF(0, 1.0)):
             # print("move Down one pixel")
             self.selected_shape.points[0] += QPointF(0, 1.0)
             self.selected_shape.points[1] += QPointF(0, 1.0)
             self.selected_shape.points[2] += QPointF(0, 1.0)
             self.selected_shape.points[3] += QPointF(0, 1.0)
+            self.selected_shape.center += QPointF(0.0, 1.0)
         self.shapeMoved.emit()
         self.repaint()
 

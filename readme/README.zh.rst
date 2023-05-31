@@ -21,12 +21,15 @@ LabelImg
 
 LabelImg 是影像標註工具，它是用python 和 QT 寫成的.
 
-支持的儲存格式包括PASCAL VOC format, YOLO, createML.
+支持的儲存格式包括PASCAL VOC format, YOLO, RotatedYOLO, createML.
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo3.jpg
      :alt: Demo Image
 
 .. image:: https://raw.githubusercontent.com/tzutalin/labelImg/master/demo/demo.jpg
+     :alt: Demo Image
+
+.. image:: /demo/demo6.png
      :alt: Demo Image
 
 `展示影片 <https://youtu.be/p0nR2YsCY_U>`__
@@ -187,6 +190,14 @@ Use Docker
 | Ctrl--             | 縮小影像                                   |
 +--------------------+--------------------------------------------+
 | ↑→↓←               | 移動所選的物件區塊                         |
++--------------------+--------------------------------------------+
+| z                  | 逆時針大角度選轉所選的物件區塊 (只支援 RotatedYOLO) |
++--------------------+--------------------------------------------+
+| x                  | 逆時針小角度選轉所選的物件區塊 (只支援 RotatedYOLO) |
++--------------------+--------------------------------------------+
+| c                  | 順時針小角度選轉所選的物件區塊 (只支援 RotatedYOLO) |
++--------------------+--------------------------------------------+
+| v                  | 順時針大角度選轉所選的物件區塊 (只支援 RotatedYOLO) |
 +--------------------+--------------------------------------------+
 
 如何貢獻
