@@ -210,7 +210,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.file_dock.setFeatures(QDockWidget.DockWidgetFloatable)
 
         self.dock_features = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
-        self.dock.setFeatures(self.dock.features() ^ self.dock_features)
+        self.dock.setFeatures(self.dock.features() ^ int(self.dock_features))
 
         # Actions
         action = partial(new_action, self)
