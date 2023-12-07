@@ -211,7 +211,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         self.dock_features = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ int(self.dock_features))
-        
+
         # Actions
         action = partial(new_action, self)
         quit = action(get_str('quit'), self.close,
