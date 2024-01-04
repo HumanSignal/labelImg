@@ -109,6 +109,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
         # Load predefined classes to the list
         self.load_predefined_classes(default_prefdef_class_file)
+        self.default_prefdef_class_file = default_prefdef_class_file
 
         if self.label_hist:
             self.default_label = self.label_hist[0]
@@ -1636,7 +1637,7 @@ class MainWindow(QMainWindow, WindowMixin):
             return
 
         self.set_format(FORMAT_YOLO)
-        t_yolo_parse_reader = YoloReader(txt_path, self.image)
+        t_yolo_parse_reader = YoloReader(txt_path, self.image, self.default_prefdef_class_file)
         shapes = t_yolo_parse_reader.get_shapes()
         print(shapes)
         self.load_labels(shapes)
