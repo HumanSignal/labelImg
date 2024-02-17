@@ -23,7 +23,8 @@ except ImportError:
         sip.setapi('QVariant', 2)
     from PyQt4.QtGui import *
     from PyQt4.QtCore import *
-
+    
+import qdarkstyle
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
 from libs.resources import *
@@ -426,6 +427,14 @@ class MainWindow(QMainWindow, WindowMixin):
         self.display_label_option.setChecked(settings.get(SETTING_PAINT_LABEL, False))
         self.display_label_option.triggered.connect(self.toggle_paint_labels_option)
 
+        # Add a toggle action for dark/light mode
+        dark_mode_init = True # Set the initial mode
+        self.dark_mode_action = QAction('Dark Mode', self)
+        self.dark_mode_action.setCheckable(True)
+        self.dark_mode_action.setChecked(dark_mode_init)  
+        self.dark_mode_action.triggered.connect(self.toggle_dark_mode)
+        self.toggle_dark_mode() if dark_mode_init else None
+
         add_actions(self.menus.file,
                     (open, open_dir, change_save_dir, open_annotation, copy_prev_bounding, self.menus.recentFiles, save, save_format, save_as, close, reset_all, delete_image, quit))
         add_actions(self.menus.help, (help_default, show_info, show_shortcut))
@@ -433,6 +442,7 @@ class MainWindow(QMainWindow, WindowMixin):
             self.auto_saving,
             self.single_class_mode,
             self.display_label_option,
+            self.dark_mode_action,
             labels, advanced_mode, None,
             hide_all, show_all, None,
             zoom_in, zoom_out, zoom_org, None,
@@ -1668,6 +1678,14 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_draw_square(self):
         self.canvas.set_drawing_shape_to_square(self.draw_squares_option.isChecked())
+
+    def toggle_dark_mode(self):
+        if self.dark_mode_action.isChecked():
+            # Apply dark mode stylesheet
+            self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+        else:
+            # Apply light mode stylesheet or your default stylesheet
+            self.setStyleSheet("")  # Replace with your default stylesheet if any
 
 def inverted(color):
     return QColor(*[255 - v for v in color.getRgb()])
